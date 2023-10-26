@@ -18,6 +18,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     # packages
     "rest_framework",
+    "src.apps.users",
     # 3rd party
 ]
 
@@ -36,7 +37,7 @@ ROOT_URLCONF = "config.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [BASE_DIR / "templates"],
+        "DIRS": [BASE_DIR / "src/templates"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -93,10 +94,10 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 
-STATIC_URL = "static/"
+STATIC_URL = "src/static/"
 
-MEDIA_URL = "media/"
-MEDIA_ROOT = BASE_DIR / "media"
+MEDIA_URL = "src/media/"
+MEDIA_ROOT = BASE_DIR / "src/media"
 
 # Default primary key field type
 
