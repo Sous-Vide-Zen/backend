@@ -1,0 +1,7 @@
+Django==4.2.6
+django-filter==23.3
+djangorestframework==3.14.0
+Markdown==3.5
+Pillow==10.1.0
+black==22.10.0
+requests==2.31.0
