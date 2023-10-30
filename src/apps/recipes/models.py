@@ -9,7 +9,7 @@ class Recipe(models.Model):
     """
 
     author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    title = models.CharField(max_length=500)
+    title = models.CharField(max_length=150)
     full_text = models.TextField(max_length=5000, blank=True)
     short_text = models.CharField(max_length=200)
     #ingredient = models.ManyToManyField('Ingredient',related_name='recipes')
@@ -23,5 +23,8 @@ class Recipe(models.Model):
         return self.title
 
     def save(self, *args, **kwargs):
-        self.short_text = self.full_text[:100]  # TODO: round by word?
+        short_text = self.full_text[:100]
+        if len(self.full_text)>100 and self.full_text[100] != "":
+            short_text = short_text[:short_text.rfind(" ")]
+        self.short_text = short_text
         super().save(*args, **kwargs)
