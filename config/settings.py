@@ -21,6 +21,7 @@ INSTALLED_APPS = [
     "rest_framework",
     # apps
     "src.apps.users",
+    "src.apps.recipes",
 ]
 
 MIDDLEWARE = [

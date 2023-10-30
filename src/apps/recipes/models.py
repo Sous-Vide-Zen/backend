@@ -8,10 +8,10 @@ class Recipe(models.Model):
     Recipe model
     """
 
-    # author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    title = models.CharField()
+    author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    title = models.CharField(max_length=500)
     full_text = models.TextField(max_length=5000, blank=True)
-    short_text = models.CharField()
+    short_text = models.CharField(max_length=200)
     #ingredient = models.ManyToManyField('Ingredient',related_name='recipes')
     #tag = models.ManyToManyField('Tag',related_name='recipes')
     #category = models.ManyToManyField('Category',related_name='recipes')
