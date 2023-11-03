@@ -10,6 +10,7 @@ class Recipe(models.Model):
 
     author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     title = models.CharField(max_length=150)
+    slug = models.SlugField()
     full_text = models.TextField(max_length=5000, blank=True)
     short_text = models.CharField(max_length=200)
     # ingredient = models.ManyToManyField('Ingredient',related_name='recipes')
