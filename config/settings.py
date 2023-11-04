@@ -1,10 +1,13 @@
 from pathlib import Path
+from decouple import config
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = "django-insecure-_$i&ghy42$5ki+155q9$dpz6e410wec7adv*c3u0@6tjn7&yv+"
+SECRET_KEY = config(
+    "SECRET_KEY", default="bad-key-_$i&ghy42$5ki+155q9$dpz6e410wec7adv*c3u0@6tjn7&yv+"
+)
 
-DEBUG = True
+DEBUG = config("DEBUG", default=False, cast=bool)
 
 ALLOWED_HOSTS = []
 
