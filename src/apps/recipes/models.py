@@ -1,6 +1,7 @@
 from django.db import models
 from django.core.validators import MaxValueValidator
 from django.conf import settings
+from src.apps.api.services import shorten_text
 
 
 class Recipe(models.Model):
@@ -24,8 +25,5 @@ class Recipe(models.Model):
         return self.title
 
     def save(self, *args, **kwargs):
-        short_text = self.full_text[:100]
-        if len(self.full_text) > 100 and self.full_text[100] != "":
-            short_text = short_text[: short_text.rfind(" ")]
-        self.short_text = short_text
+        self.short_text = shorten_text(self.full_text, 100)
         super().save(*args, **kwargs)
