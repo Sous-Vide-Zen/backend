@@ -22,6 +22,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     # 3rd party
     "rest_framework",
+    "taggit",
     # apps
     "src.apps.users",
     "src.apps.recipes",
@@ -107,3 +108,7 @@ MEDIA_ROOT = BASE_DIR / "src/media"
 # Default primary key field type
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# Settings for django-taggit
+
+TAGGIT_STRIP_UNICODE_WHEN_SLUGIFYING = True
