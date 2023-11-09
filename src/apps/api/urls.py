@@ -1,1 +1,3 @@
 # All urls here
+
+urlpatterns = []
