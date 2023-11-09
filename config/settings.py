@@ -22,6 +22,9 @@ INSTALLED_APPS = [
     "djoser",
     "rest_framework_simplejwt",
     "drf_yasg",
+    'social_django',
+    'rest_framework_social_oauth2',
+    'oauth2_provider',
     # apps
     "src.apps.users",
 ]
@@ -107,8 +110,11 @@ REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.IsAuthenticated",
     ],
+
     "DEFAULT_AUTHENTICATION_CLASSES": [
         "rest_framework_simplejwt.authentication.JWTAuthentication",
+        'oauth2_provider.contrib.rest_framework.OAuth2Authentication',
+        'rest_framework_social_oauth2.authentication.SocialAuthentication',
     ],
 }
 
@@ -156,3 +162,35 @@ SWAGGER_SETTINGS = {
     },
     "USE_SESSION_AUTH": False,
 }
+
+AUTHENTICATION_BACKENDS = (
+    'social_core.backends.vk.VKOAuth2',  # бекенд авторизации через ВКонтакте
+    'rest_framework_social_oauth2.backends.DjangoOAuth2',
+    'django.contrib.auth.backends.ModelBackend',
+# бекенд классической аутентификации, чтобы работала авторизация через обычный логин и пароль
+)
+
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [],
+        'APP_DIRS': True,
+        'OPTIONS': {
+            'context_processors': [
+                'django.template.context_processors.debug',
+                'django.template.context_processors.request',
+                'django.contrib.auth.context_processors.auth',
+                'django.contrib.messages.context_processors.messages',
+                'social_django.context_processors.backends',  # Добавил эту строку
+            ],
+        },
+    },
+]
+
+SOCIAL_AUTH_VK_OAUTH2_KEY = '51788997'
+SOCIAL_AUTH_VK_OAUTH2_SECRET = '03jnhOQgeNVfU0HMdr2Y'
+
+LOGIN_REDIRECT_URL = '/'
+
+# важно иметь доступ к email пользователю, чтобы уведомлять его о новых событиях
+SOCIAL_AUTH_VK_OAUTH2_SCOPE = ['email']
