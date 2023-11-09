@@ -18,14 +18,4 @@ class Comment(models.Model):
     )
     text = models.TextField(max_length=1000)
     pub_date = models.DateTimeField(auto_now_add=True)
-    parent = models.ForeignKey(
-        "self", on_delete=models.DO_NOTHING, null=True, blank=True
-    )
-
-    def delete(self, using=None, keep_parents=False):
-        """
-        to copy parent of deleted object
-        """
-        self.parent = self.parent.parent
-        self.save()
-        super(Comment, self).delete(using=using, keep_parents=keep_parents)
+    parent = models.ForeignKey("self", on_delete=models.SET_NULL, null=True, blank=True)
