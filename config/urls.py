@@ -1,3 +1,4 @@
+from backend.src.apps.users.views import auth
 from django.contrib import admin
 from django.urls import path, include, re_path
 from django.views.generic import RedirectView
@@ -18,7 +19,8 @@ urlpatterns = [
     path("api/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
     path("api/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     path("api/token/verify/", TokenVerifyView.as_view(), name="token_verify"),
-    path("auth/", include("rest_framework_social_oauth2.urls")),
+    re_path("", include("social_django.urls", namespace="social")),
+    path("vk_auth/", auth),
 ]
 # ссылка на шаблон
 # <a href="/login/vk-oauth2"><img src="/static/lvk.png" class="avatar-3" data-toggle="tooltip" title="{% trans 'Login via VKontakte' %}"></a>

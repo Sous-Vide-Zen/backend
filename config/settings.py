@@ -164,7 +164,7 @@ SWAGGER_SETTINGS = {
 
 AUTHENTICATION_BACKENDS = (
     "social_core.backends.vk.VKOAuth2",  # бекенд авторизации через ВКонтакте
-    "rest_framework_social_oauth2.backends.DjangoOAuth2",
+    "social_core.backends.yandex.YandexOAuth2",
     "django.contrib.auth.backends.ModelBackend",
     # бекенд классической аутентификации, чтобы работала авторизация через обычный логин и пароль
 )
@@ -189,7 +189,8 @@ TEMPLATES = [
 SOCIAL_AUTH_VK_OAUTH2_KEY = "51788997"
 SOCIAL_AUTH_VK_OAUTH2_SECRET = "03jnhOQgeNVfU0HMdr2Y"
 
-LOGIN_REDIRECT_URL = "/"
+SOCIAL_AUTH_YANDEX_OAUTH2_KEY = "b57308fc10884dc5ab8e5f39d728c99d"
+SOCIAL_AUTH_YANDEX_OAUTH2_SECRET = "60921ea4d2e94741888d5a9ba4009811"
 
-# важно иметь доступ к email пользователю, чтобы уведомлять его о новых событиях
-SOCIAL_AUTH_VK_OAUTH2_SCOPE = ["email"]
+
+SOCIAL_AUTH_JSONFIELD_ENABLED = True
