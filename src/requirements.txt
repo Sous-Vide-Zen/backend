@@ -2,6 +2,8 @@ Django==4.2.6
 django-filter==23.3
 djangorestframework==3.14.0
 django-taggit==5.0.1
+djoser==2.2.2
+drf-yasg==1.21.7
 Markdown==3.5
 Pillow==10.1.0
 black==22.10.0

@@ -23,7 +23,7 @@ INSTALLED_APPS = [
     # 3rd party
     "rest_framework",
     "djoser",
-    "rest_framework_simplejwt",
+    # "rest_framework_simplejwt",
     "drf_yasg",
     "social_django",
     "rest_framework_social_oauth2",
@@ -58,6 +58,7 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
                 "social_django.context_processors.backends",
+                "social_django.context_processors.login_redirect",
             ],
         },
     },
@@ -68,54 +69,66 @@ REST_FRAMEWORK = {
         "rest_framework.permissions.IsAuthenticated",
     ],
     "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework.authentication.TokenAuthentication",
         "rest_framework_simplejwt.authentication.JWTAuthentication",
+        "rest_framework.authentication.SessionAuthentication",
         "oauth2_provider.contrib.rest_framework.OAuth2Authentication",
         "rest_framework_social_oauth2.authentication.SocialAuthentication",
     ],
 }
 
 
+DJOSER = {
+    "PASSWORD_RESET_CONFIRM_URL": "#/password/reset/confirm/{uid}/{token}",
+    "USERNAME_RESET_CONFIRM_URL": "#/username/reset/confirm/{uid}/{token}",
+    "ACTIVATION_URL": "#/activate/{uid}/{token}",
+    "SEND_ACTIVATION_EMAIL": False,
+    "SERIALIZERS": {},
+    "LOGIN_FIELD": "email",
+    "HIDE_USERS": False,
+}
+
+
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=5),
-    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
-    "ROTATE_REFRESH_TOKENS": False,
-    "BLACKLIST_AFTER_ROTATION": False,
-    "UPDATE_LAST_LOGIN": False,
-    "ALGORITHM": "HS256",
-    "SIGNING_KEY": SECRET_KEY,
-    "VERIFYING_KEY": "",
-    "AUDIENCE": None,
-    "ISSUER": None,
-    "JSON_ENCODER": None,
-    "JWK_URL": None,
-    "LEEWAY": 0,
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60),
+    #     "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+    #     "ROTATE_REFRESH_TOKENS": False,
+    #     "BLACKLIST_AFTER_ROTATION": False,
+    #     "UPDATE_LAST_LOGIN": False,
+    #     "ALGORITHM": "HS256",
+    #     "SIGNING_KEY": SECRET_KEY,
+    #     "VERIFYING_KEY": "",
+    #     "AUDIENCE": None,
+    #     "ISSUER": None,
+    #     "JSON_ENCODER": None,
+    #     "JWK_URL": None,
+    #     "LEEWAY": 0,
     "AUTH_HEADER_TYPES": ("Bearer",),
-    "AUTH_HEADER_NAME": "HTTP_AUTHORIZATION",
-    "USER_ID_FIELD": "id",
-    "USER_ID_CLAIM": "user_id",
-    "USER_AUTHENTICATION_RULE": "rest_framework_simplejwt.authentication.default_user_authentication_rule",
-    "AUTH_TOKEN_CLASSES": ("rest_framework_simplejwt.tokens.AccessToken",),
-    "TOKEN_TYPE_CLAIM": "token_type",
-    "TOKEN_USER_CLASS": "rest_framework_simplejwt.models.TokenUser",
-    "JTI_CLAIM": "jti",
-    "SLIDING_TOKEN_REFRESH_EXP_CLAIM": "refresh_exp",
-    "SLIDING_TOKEN_LIFETIME": timedelta(minutes=5),
-    "SLIDING_TOKEN_REFRESH_LIFETIME": timedelta(days=1),
-    "TOKEN_OBTAIN_SERIALIZER": "rest_framework_simplejwt.serializers.TokenObtainPairSerializer",
-    "TOKEN_REFRESH_SERIALIZER": "rest_framework_simplejwt.serializers.TokenRefreshSerializer",
-    "TOKEN_VERIFY_SERIALIZER": "rest_framework_simplejwt.serializers.TokenVerifySerializer",
-    "TOKEN_BLACKLIST_SERIALIZER": "rest_framework_simplejwt.serializers.TokenBlacklistSerializer",
-    "SLIDING_TOKEN_OBTAIN_SERIALIZER": "rest_framework_simplejwt.serializers.TokenObtainSlidingSerializer",
-    "SLIDING_TOKEN_REFRESH_SERIALIZER": "rest_framework_simplejwt.serializers.TokenRefreshSlidingSerializer",
+    #     "AUTH_HEADER_NAME": "HTTP_AUTHORIZATION",
+    #     "USER_ID_FIELD": "id",
+    #     "USER_ID_CLAIM": "user_id",
+    #     "USER_AUTHENTICATION_RULE": "rest_framework_simplejwt.authentication.default_user_authentication_rule",
+    #     "AUTH_TOKEN_CLASSES": ("rest_framework_simplejwt.tokens.AccessToken",),
+    #     "TOKEN_TYPE_CLAIM": "token_type",
+    #     "TOKEN_USER_CLASS": "rest_framework_simplejwt.models.TokenUser",
+    #     "JTI_CLAIM": "jti",
+    #     "SLIDING_TOKEN_REFRESH_EXP_CLAIM": "refresh_exp",
+    #     "SLIDING_TOKEN_LIFETIME": timedelta(minutes=5),
+    #     "SLIDING_TOKEN_REFRESH_LIFETIME": timedelta(days=1),
+    #     "TOKEN_OBTAIN_SERIALIZER": "rest_framework_simplejwt.serializers.TokenObtainPairSerializer",
+    #     "TOKEN_REFRESH_SERIALIZER": "rest_framework_simplejwt.serializers.TokenRefreshSerializer",
+    #     "TOKEN_VERIFY_SERIALIZER": "rest_framework_simplejwt.serializers.TokenVerifySerializer",
+    #     "TOKEN_BLACKLIST_SERIALIZER": "rest_framework_simplejwt.serializers.TokenBlacklistSerializer",
+    #     "SLIDING_TOKEN_OBTAIN_SERIALIZER": "rest_framework_simplejwt.serializers.TokenObtainSlidingSerializer",
+    #     "SLIDING_TOKEN_REFRESH_SERIALIZER": "rest_framework_simplejwt.serializers.TokenRefreshSlidingSerializer",
 }
 
 AUTHENTICATION_BACKENDS = (
-    "social_core.backends.vk.VKOAuth2",  # бекенд авторизации через ВКонтакте
-    "social_core.backends.yandex.YandexOAuth2",
+    "social_core.backends.vk.VKOAuth2",
+    # "social_core.backends.yandex.YandexOAuth2",
+    "rest_framework_social_oauth2.backends.DjangoOAuth2",
     "django.contrib.auth.backends.ModelBackend",
-    # бекенд классической аутентификации, чтобы работала авторизация через обычный логин и пароль
 )
-
 
 
 WSGI_APPLICATION = "config.wsgi.application"
@@ -163,32 +176,43 @@ STATIC_URL = "src/static/"
 MEDIA_URL = "src/media/"
 MEDIA_ROOT = BASE_DIR / "src/media"
 
+# User model
+
+AUTH_USER_MODEL = "users.CustomUser"
+
 # Default primary key field type
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # SWAGGER_SETTINGS
 
-SWAGGER_SETTINGS = {
-    "SECURITY_DEFINITIONS": {
-        "JWT [Bearer {JWT}]": {
-            "name": "Authorization",
-            "type": "apiKey",
-            "in": "header",
-        }
-    },
-    "USE_SESSION_AUTH": False,
-}
+# SWAGGER_SETTINGS = {
+#     "SECURITY_DEFINITIONS": {
+#         "JWT [Bearer {JWT}]": {
+#             "name": "Authorization",
+#             "type": "apiKey",
+#             "in": "header",
+#         }
+#     },
+#     "USE_SESSION_AUTH": False,
+# }
 
 
 # Social AUTH Key's
 
+SOCIAL_AUTH_VK_OAUTH2_KEY = config(
+    "SOCIAL_AUTH_VK_OAUTH2_KEY", default="b57308fc10884dc5ab8e5f39d728c99d"
+)
+SOCIAL_AUTH_VK_OAUTH2_SECRET = config(
+    "SOCIAL_AUTH_VK_OAUTH2_SECRET", default="60921ea4d2e94741888d5a9ba4009811"
+)
 
-SOCIAL_AUTH_VK_OAUTH2_KEY = "51788997"
-SOCIAL_AUTH_VK_OAUTH2_SECRET = "03jnhOQgeNVfU0HMdr2Y"
-
-SOCIAL_AUTH_YANDEX_OAUTH2_KEY = "b57308fc10884dc5ab8e5f39d728c99d"
-SOCIAL_AUTH_YANDEX_OAUTH2_SECRET = "60921ea4d2e94741888d5a9ba4009811"
+SOCIAL_AUTH_YANDEX_OAUTH2_KEY = config(
+    "SOCIAL_AUTH_YANDEX_OAUTH2_KEY", default="5fbd3f9c1f4f4d9d9a1f3c9f1f5f7f9f8"
+)
+SOCIAL_AUTH_YANDEX_OAUTH2_SECRET = config(
+    "SOCIAL_AUTH_YANDEX_OAUTH2_SECRET", default="5fbd3f9c1f4f4d9d9a1f3c9f1f5f7f9f8"
+)
 
 
 SOCIAL_AUTH_JSONFIELD_ENABLED = True
@@ -196,4 +220,3 @@ SOCIAL_AUTH_JSONFIELD_ENABLED = True
 # Settings for django-taggit
 
 TAGGIT_STRIP_UNICODE_WHEN_SLUGIFYING = True
-
