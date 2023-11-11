@@ -1,11 +1,15 @@
-from backend.src.base.services import validate_avatar_size, user_avatar_path
+from django.contrib.auth.models import AbstractUser, PermissionsMixin
 from django.core.validators import FileExtensionValidator
 from django.db import models
 from django.utils import timezone
 
+from src.base.services import validate_avatar_size, user_avatar_path
 
-class CustomUser(models.Model):
-    username = models.CharField(max_length=30, unique=True)
+
+class CustomUser(AbstractUser, PermissionsMixin):
+    USERNAME_FIELD = "email"
+    REQUIRED_FIELDS = ["username"]
+
     email = models.EmailField(max_length=150, unique=True)
     join_date = models.DateTimeField(default=timezone.now)
     country = models.CharField(max_length=30, blank=True, null=True, default=None)
@@ -27,8 +31,18 @@ class CustomUser(models.Model):
     is_staff = models.BooleanField(default=False)
     is_admin = models.BooleanField(default=False)
 
-    def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)
+    class Meta:
+        verbose_name = "user"
+        verbose_name_plural = "users"
+        ordering = ["-join_date"]
+        constraints = [
+            models.UniqueConstraint(fields=["email"], name="unique_email"),
+            models.CheckConstraint(check=~models.Q(username="me"), name="not_me"),
+        ]
+
+    @property
+    def is_autenticated(self):
+        return True
 
     def __str__(self):
-        return self.email
+        return self.username

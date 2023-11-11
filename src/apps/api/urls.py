@@ -1,3 +1,7 @@
-# All urls here
+from django.urls import include, path
 
-urlpatterns = []
+urlpatterns = [
+    path("", include("src.apps.users.routes.social_urls")),
+    path("", include("src.apps.users.routes.django_urls")),
+    path("", include("src.apps.swagger.routes")),
+]

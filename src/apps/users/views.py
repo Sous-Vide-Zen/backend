@@ -2,4 +2,4 @@ from django.shortcuts import render
 
 
 def auth(request):
-    return render(request, "login.html")
+    return render(request, "social_auth/login.html")
