@@ -14,6 +14,7 @@ from drf_yasg.views import get_schema_view
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+    path("api/v1/", include("src.apps.api.urls")),
     path("auth/", include("djoser.urls")),
     path("auth/", include("djoser.urls.jwt")),
     path("api/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
