@@ -23,11 +23,9 @@ INSTALLED_APPS = [
     # 3rd party
     "rest_framework",
     "djoser",
-    # "rest_framework_simplejwt",
+    "rest_framework_simplejwt",
     "drf_yasg",
     "social_django",
-    "rest_framework_social_oauth2",
-    "oauth2_provider",
     "taggit",
     # apps
     "src.apps.users",
@@ -73,8 +71,6 @@ REST_FRAMEWORK = {
         "rest_framework.authentication.TokenAuthentication",
         "rest_framework_simplejwt.authentication.JWTAuthentication",
         "rest_framework.authentication.SessionAuthentication",
-        "oauth2_provider.contrib.rest_framework.OAuth2Authentication",
-        "rest_framework_social_oauth2.authentication.SocialAuthentication",
     ],
 }
 
@@ -126,8 +122,7 @@ SIMPLE_JWT = {
 
 AUTHENTICATION_BACKENDS = (
     "social_core.backends.vk.VKOAuth2",
-    # "social_core.backends.yandex.YandexOAuth2",
-    "rest_framework_social_oauth2.backends.DjangoOAuth2",
+    "social_core.backends.yandex.YandexOAuth2",
     "django.contrib.auth.backends.ModelBackend",
 )
 
