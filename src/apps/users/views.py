@@ -1,5 +1,5 @@
 from django.shortcuts import render
 
 
-def auth(request):
+def soc_auth(request):
     return render(request, "social_auth/login.html")
