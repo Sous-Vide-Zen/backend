@@ -10,11 +10,10 @@ class Reaction(models.Model):
     Reaction model
     """
 
-    user = models.ForeignKey(
+    author = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         related_name="reactions",
-        on_delete=models.SET_NULL,
-        null=True,
+        on_delete=models.CASCADE,
     )
     is_deleted = models.BooleanField(default=False)
     pub_date = models.DateTimeField(auto_now_add=True)

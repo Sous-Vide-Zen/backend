@@ -1,3 +1,7 @@
 from django.contrib import admin
+from .models import Reaction
 
-# Register your models here.
+
+@admin.register(Reaction)
+class ReactionAdmin(admin.ModelAdmin):
+    list_display = ["author", "is_deleted", "emoji", "pub_date", "reaction_object"]
