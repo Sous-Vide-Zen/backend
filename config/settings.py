@@ -31,6 +31,7 @@ INSTALLED_APPS = [
     "src.apps.users",
     "src.apps.recipes",
     "src.apps.favorite",
+    "src.apps.ingredients",
 ]
 
 MIDDLEWARE = [
