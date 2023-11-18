@@ -1,3 +1,4 @@
+from datetime import timedelta
 from pathlib import Path
 from decouple import config
 
@@ -9,8 +10,7 @@ SECRET_KEY = config(
 
 DEBUG = config("DEBUG", default=False, cast=bool)
 
-ALLOWED_HOSTS = []
-
+ALLOWED_HOSTS = ["*"]
 
 INSTALLED_APPS = [
     # django
@@ -22,15 +22,23 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     # 3rd party
     "rest_framework",
+    "djoser",
+    "rest_framework_simplejwt",
+    "drf_yasg",
+    "social_django",
+    "taggit",
+    "corsheaders",
     # apps
     "src.apps.users",
     "src.apps.recipes",
     "src.apps.comments",
+    "src.apps.favorite",
 ]
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -51,13 +59,49 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "social_django.context_processors.backends",
+                "social_django.context_processors.login_redirect",
             ],
         },
     },
 ]
 
-WSGI_APPLICATION = "config.wsgi.application"
+REST_FRAMEWORK = {
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.IsAuthenticated",
+    ],
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework.authentication.TokenAuthentication",
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+        "rest_framework.authentication.SessionAuthentication",
+    ],
+}
 
+
+DJOSER = {
+    "PASSWORD_RESET_CONFIRM_URL": "#/password/reset/confirm/{uid}/{token}",
+    "USERNAME_RESET_CONFIRM_URL": "#/username/reset/confirm/{uid}/{token}",
+    "ACTIVATION_URL": "#/activate/{uid}/{token}",
+    "SEND_ACTIVATION_EMAIL": False,
+    "SERIALIZERS": {},
+    "LOGIN_FIELD": "email",
+    "HIDE_USERS": False,
+}
+
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60),
+    "AUTH_HEADER_TYPES": ("Bearer",),
+}
+
+AUTHENTICATION_BACKENDS = (
+    "social_core.backends.vk.VKOAuth2",
+    "social_core.backends.yandex.YandexOAuth2",
+    "django.contrib.auth.backends.ModelBackend",
+)
+
+
+WSGI_APPLICATION = "config.wsgi.application"
 
 # Database
 
@@ -67,7 +111,6 @@ DATABASES = {
         "NAME": BASE_DIR / "db.sqlite3",
     }
 }
-
 
 # Password validation
 
@@ -86,7 +129,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 
 LANGUAGE_CODE = "en-us"
@@ -97,7 +139,6 @@ USE_I18N = True
 
 USE_TZ = True
 
-
 # Static files (CSS, JavaScript, Images)
 
 STATIC_URL = "src/static/"
@@ -105,6 +146,51 @@ STATIC_URL = "src/static/"
 MEDIA_URL = "src/media/"
 MEDIA_ROOT = BASE_DIR / "src/media"
 
+# User model
+
+AUTH_USER_MODEL = "users.CustomUser"
+
 # Default primary key field type
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# SWAGGER_SETTINGS
+
+SWAGGER_SETTINGS = {
+    "SECURITY_DEFINITIONS": {
+        "JWT [Bearer {JWT}]": {
+            "name": "Authorization",
+            "type": "apiKey",
+            "in": "header",
+        }
+    },
+    "USE_SESSION_AUTH": False,
+}
+
+
+# Social AUTH Key's
+
+SOCIAL_AUTH_VK_OAUTH2_KEY = config(
+    "SOCIAL_AUTH_VK_OAUTH2_KEY", default="b57308fc10884dc5ab8e5f39d728c99d"
+)
+SOCIAL_AUTH_VK_OAUTH2_SECRET = config(
+    "SOCIAL_AUTH_VK_OAUTH2_SECRET", default="60921ea4d2e94741888d5a9ba4009811"
+)
+
+SOCIAL_AUTH_YANDEX_OAUTH2_KEY = config(
+    "SOCIAL_AUTH_YANDEX_OAUTH2_KEY", default="5fbd3f9c1f4f4d9d9a1f3c9f1f5f7f9f8"
+)
+SOCIAL_AUTH_YANDEX_OAUTH2_SECRET = config(
+    "SOCIAL_AUTH_YANDEX_OAUTH2_SECRET", default="5fbd3f9c1f4f4d9d9a1f3c9f1f5f7f9f8"
+)
+
+
+SOCIAL_AUTH_JSONFIELD_ENABLED = True
+
+# Settings for django-taggit
+
+TAGGIT_STRIP_UNICODE_WHEN_SLUGIFYING = True
+
+
+# Settings for django-cors-headers
+CORS_ALLOW_ALL_ORIGINS = True

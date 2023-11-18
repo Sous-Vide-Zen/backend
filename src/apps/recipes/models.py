@@ -1,6 +1,8 @@
-from django.db import models
-from django.core.validators import MaxValueValidator
 from django.conf import settings
+from django.core.validators import MaxValueValidator
+from django.db import models
+from taggit.managers import TaggableManager
+
 from src.apps.api.services import shorten_text
 
 
@@ -15,7 +17,7 @@ class Recipe(models.Model):
     full_text = models.TextField(max_length=5000, blank=True)
     short_text = models.CharField(max_length=200)
     # ingredient = models.ManyToManyField('Ingredient',related_name='recipes')
-    # tag = models.ManyToManyField('Tag',related_name='recipes')
+    tag = TaggableManager()
     # category = models.ManyToManyField('Category',related_name='recipes')
     cooking_time = models.PositiveIntegerField(validators=[MaxValueValidator(60 * 24)])
     # views, reactions - foreign keys in Views, Reactions
