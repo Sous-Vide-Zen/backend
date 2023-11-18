@@ -41,10 +41,10 @@ python3.11 -m venv venv
 pip install -r src/requirements.txt
 ```
 
-Navigate to the src directory
+Navigate to the config directory
 
 ```shell
-cd src/
+cd config/
 ```
 
 Create an .env file
@@ -55,6 +55,11 @@ touch .env
 ```dotenv
 DEBUG=TRUE
 SECRET_KEY=django-insecure-_$i&ghy42$5ki+155q9$dpz6e410wec7adv*c3u0@6tjn7&yv+
+
+SOCIAL_AUTH_VK_OAUTH2_KEY=51788997
+SOCIAL_AUTH_VK_OAUTH2_SECRET=03jnhOQgeNVfU0HMdr2Y
+SOCIAL_AUTH_YANDEX_OAUTH2_KEY=b57308fc10884dc5ab8e5f39d728c99d
+SOCIAL_AUTH_YANDEX_OAUTH2_SECRET=60921ea4d2e94741888d5a9ba4009811
 ```
 
 Return to main directory
@@ -72,4 +77,15 @@ python manage.py runserver
 ### Documentation url
 ```djangourlpath
 http://127.0.0.1:8000/api/v1/swagger/
+```
+
+### Oauth endpoints:
+```text
+Эндпоинты регистрации через соц.сети
+http://127.0.0.1:8000/api/v1/login/yandex-oauth2/ - регистрация через яндекс
+http://127.0.0.1:8000/api/v1/login/vk-oauth2 - регистрация через вк
+
+Настройка редиректа, на проде нужно поменять 127.0.0.1:8000 на домен
+http://127.0.0.1:8000/api/v1/complete/yandex-oauth2/ 
+http://127.0.0.1:8000/api/v1/complete/vk-oauth2/ - настраивается в vk.com/dev
 ```
