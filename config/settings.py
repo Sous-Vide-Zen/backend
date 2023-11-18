@@ -10,7 +10,7 @@ SECRET_KEY = config(
 
 DEBUG = config("DEBUG", default=False, cast=bool)
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
 INSTALLED_APPS = [
     # django
@@ -27,6 +27,7 @@ INSTALLED_APPS = [
     "drf_yasg",
     "social_django",
     "taggit",
+    "corsheaders",
     # apps
     "src.apps.users",
     "src.apps.recipes",
@@ -36,6 +37,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -187,3 +189,7 @@ SOCIAL_AUTH_JSONFIELD_ENABLED = True
 # Settings for django-taggit
 
 TAGGIT_STRIP_UNICODE_WHEN_SLUGIFYING = True
+
+
+# Settings for django-cors-headers
+CORS_ALLOW_ALL_ORIGINS = True
