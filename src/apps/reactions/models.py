@@ -31,3 +31,8 @@ class Reaction(models.Model):
         indexes = [
             models.Index(fields=["content_type", "object_id"]),
         ]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["author", "emoji", "reaction_object"], name="unique_reaction"
+            )
+        ]
