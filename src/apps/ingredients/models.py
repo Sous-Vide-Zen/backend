@@ -8,6 +8,9 @@ class Unit(models.Model):
 
     name = models.CharField(max_length=30)
 
+    def __str__(self):
+        return self.name
+
 
 class Ingredient(models.Model):
     """
@@ -22,3 +25,22 @@ class Ingredient(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class IngredientInRecipe(models.Model):
+    """
+    IngredientInRecipe model
+    """
+
+    ingredient = models.ForeignKey("Ingredient", null=True, on_delete=models.SET_NULL)
+    recipe = models.ForeignKey("recipes.Recipe", on_delete=models.CASCADE)
+    unit = models.ForeignKey(Unit, null=True, on_delete=models.SET_NULL)
+    amount = models.PositiveIntegerField()
+
+    def clean_unit(self):
+        if self.unit not in self.ingredient.units.all():
+            self.ingredient.units.add(self.unit)
+            self.ingredient.save()
+
+    def __str__(self):
+        return f"{self.recipe.title}_{self.ingredient.name}"
