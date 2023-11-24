@@ -77,15 +77,34 @@ REST_FRAMEWORK = {
     ],
 }
 
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.yandex.ru'
+EMAIL_PORT = 465
+EMAIL_HOST_USER = 'SousVideDzen@yandex.ru'
+DEFAULT_FROM_EMAIL = 'SousVideDzen@yandex.ru'
+EMAIL_HOST_PASSWORD = 'nwpaqngakfudbmeq'
+EMAIL_USE_TLS = False
+EMAIL_USE_SSL = True
+
+
+
 
 DJOSER = {
-    "PASSWORD_RESET_CONFIRM_URL": "#/password/reset/confirm/{uid}/{token}",
+    "PASSWORD_RESET_CONFIRM_URL": "api/v1/auth/users/password/reset/confirm/{uid}/{token}",
     "USERNAME_RESET_CONFIRM_URL": "#/username/reset/confirm/{uid}/{token}",
-    "ACTIVATION_URL": "#/activate/{uid}/{token}",
-    "SEND_ACTIVATION_EMAIL": False,
+    "ACTIVATION_URL": "api/v1/auth/activate/{uid}/{token}",
+    "SEND_ACTIVATION_EMAIL": True,
     "SERIALIZERS": {},
     "LOGIN_FIELD": "email",
     "HIDE_USERS": False,
+
+    'PERMISSIONS': {
+        'user_delete': ['rest_framework.permissions.IsAdminUser'],
+    },
+    'EMAIL': {
+        'activation': 'src.apps.users.emails.CustomActivationEmail',
+        'password_reset': 'src.apps.users.emails.CustomPasswordResetEmail',
+    },
 }
 
 
