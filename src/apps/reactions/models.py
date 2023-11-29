@@ -17,7 +17,9 @@ class Reaction(models.Model):
     )
     is_deleted = models.BooleanField(default=False)
     pub_date = models.DateTimeField(auto_now_add=True)
-    emoji = models.CharField(choices=EmojyChoice.choices, max_length=10)
+    emoji = models.CharField(
+        choices=EmojyChoice.choices, max_length=10, blank=True, default=EmojyChoice.LIKE
+    )
     limit_models = models.Q(app_label="recipes", model="recipe") | models.Q(
         app_label="comments", model="comment"
     )
