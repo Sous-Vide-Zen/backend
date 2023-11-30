@@ -60,6 +60,7 @@ cover/
 local_settings.py
 db.sqlite3
 db.sqlite3-journal
+test.db.sqlite3
 
 # Flask stuff:
 instance/
@@ -161,3 +162,4 @@ cython_debug/
 
 # Sous vide zen
 static/
+
