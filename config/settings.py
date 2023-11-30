@@ -33,6 +33,7 @@ INSTALLED_APPS = [
     "src.apps.recipes",
     "src.apps.comments",
     "src.apps.favorite",
+    "src.apps.reactions",
     "src.apps.ingredients",
 ]
 
