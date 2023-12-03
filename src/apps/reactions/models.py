@@ -35,6 +35,7 @@ class Reaction(models.Model):
         ]
         constraints = [
             models.UniqueConstraint(
-                fields=["author", "emoji", "reaction_object"], name="unique_reaction"
+                fields=["author", "emoji", "content_type", "object_id"],
+                name="unique_reaction",
             )
         ]
