@@ -18,7 +18,7 @@ class Recipe(models.Model):
     full_text = models.TextField(max_length=5000, blank=True)
     short_text = models.CharField(max_length=200)
     tag = TaggableManager()
-    category = models.ManyToManyField("Category", related_name="recipes")
+    category = models.ManyToManyField("Category", related_name="recipes", blank=True)
     cooking_time = models.PositiveIntegerField(validators=[MaxValueValidator(60 * 24)])
     # views, reactions - foreign keys in Views, Reactions, ingredients - many to many field in IngredientToRecipe model
     pub_date = models.DateTimeField(auto_now_add=True)
