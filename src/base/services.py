@@ -11,4 +11,4 @@ def validate_avatar_size(value):
 
 
 def user_avatar_path(instance, filename):
-    return f"avatar/user_{instance.username}/{filename}"
+    return f"avatar/user_{instance.id}/{file}"
