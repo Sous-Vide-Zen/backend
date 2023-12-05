@@ -20,7 +20,6 @@ class Recipe(models.Model):
     tag = TaggableManager()
     # category = models.ManyToManyField('Category',related_name='recipes')
     cooking_time = models.PositiveIntegerField(validators=[MaxValueValidator(60 * 24)])
-    # views, reactions - foreign keys in Views, Reactions
     pub_date = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
