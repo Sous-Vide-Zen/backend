@@ -33,7 +33,10 @@ INSTALLED_APPS = [
     "src.apps.recipes",
     "src.apps.comments",
     "src.apps.favorite",
+    "src.apps.reactions",
     "src.apps.ingredients",
+    "src.apps.view",
+    "src.apps.follow",
 ]
 
 MIDDLEWARE = [
@@ -77,16 +80,31 @@ REST_FRAMEWORK = {
         "rest_framework.authentication.SessionAuthentication",
     ],
 }
+EMAIL_BACKEND = config("EMAIL_BACKEND")
+EMAIL_HOST = config("EMAIL_HOST")
+EMAIL_PORT = config("EMAIL_PORT", default=465, cast=int)
+EMAIL_HOST_USER = config("EMAIL_HOST_USER")
+DEFAULT_FROM_EMAIL = config("DEFAULT_FROM_EMAIL")
+EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD")
+EMAIL_USE_TLS = False
+EMAIL_USE_SSL = True
 
 
 DJOSER = {
-    "PASSWORD_RESET_CONFIRM_URL": "#/password/reset/confirm/{uid}/{token}",
+    "PASSWORD_RESET_CONFIRM_URL": "api/v1/auth/users/password/reset/confirm/{uid}/{token}",
     "USERNAME_RESET_CONFIRM_URL": "#/username/reset/confirm/{uid}/{token}",
-    "ACTIVATION_URL": "#/activate/{uid}/{token}",
-    "SEND_ACTIVATION_EMAIL": False,
+    "ACTIVATION_URL": "api/v1/auth/activate/{uid}/{token}",
+    "SEND_ACTIVATION_EMAIL": True,
     "SERIALIZERS": {},
     "LOGIN_FIELD": "email",
     "HIDE_USERS": False,
+    "PERMISSIONS": {
+        "user_delete": ["rest_framework.permissions.IsAdminUser"],
+    },
+    "EMAIL": {
+        "activation": "src.apps.users.emails.CustomActivationEmail",
+        "password_reset": "src.apps.users.emails.CustomPasswordResetEmail",
+    },
 }
 
 
