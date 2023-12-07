@@ -3,14 +3,19 @@ from datetime import datetime
 import pytest
 from src.apps.recipes.models import Recipe, Category
 from django.db import IntegrityError
+from django.core.exceptions import ValidationError
+
+
+@pytest.fixture(scope="function")
+def new_user(django_user_model):
+    return django_user_model.objects.create_user(
+        username="test", password="changeme123", email="test@ya.ru"
+    )
 
 
 @pytest.mark.recipes
 @pytest.mark.models
-def test_recipe_fields(db, django_db_setup, django_user_model):
-    new_user = django_user_model.objects.create_user(
-        username="test", password="changeme123", email="test@ya.ru"
-    )
+def test_recipe_fields(new_user):
     new_category1 = Category.objects.create(name="cat1")
     new_category2 = Category.objects.create(name="cat2")
     title = "Recipe 1"
@@ -30,10 +35,7 @@ def test_recipe_fields(db, django_db_setup, django_user_model):
 
 @pytest.mark.recipes
 @pytest.mark.models
-def test_unique_slug(db, django_db_setup, django_user_model):
-    new_user = django_user_model.objects.create_user(
-        username="test", password="changeme123", email="test@ya.ru"
-    )
+def test_unique_slug(new_user):
     title = "Recipe 1"
     full_text = "recipe 1 full text"
     Recipe.objects.create(
