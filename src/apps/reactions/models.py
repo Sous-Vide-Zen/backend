@@ -39,3 +39,6 @@ class Reaction(models.Model):
                 name="unique_reaction",
             )
         ]
+
+    def __str__(self):
+        return f"{self.emoji} by {self.author.username}"
