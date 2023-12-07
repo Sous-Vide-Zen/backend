@@ -16,8 +16,8 @@ def new_user(django_user_model):
 @pytest.mark.recipes
 @pytest.mark.models
 def test_recipe_fields(new_user):
-    new_category1 = Category.objects.create(name="cat1")
-    new_category2 = Category.objects.create(name="cat2")
+    new_category1 = Category.objects.create(name="category 1")
+    new_category2 = Category.objects.create(name="category 2")
     title = "Recipe 1"
     full_text = "recipe 1 full text"
 
@@ -31,6 +31,8 @@ def test_recipe_fields(new_user):
     assert str(new_recipe) == title
     assert new_recipe.short_text == full_text
     assert new_recipe.slug == "recipe-1"
+    # test category
+    assert new_category1.slug == "category-1"
 
 
 @pytest.mark.recipes
@@ -50,4 +52,20 @@ def test_unique_slug(new_user):
             title=title,
             full_text=full_text,
             cooking_time=10,
+        )
+
+
+@pytest.mark.recipes
+@pytest.mark.models
+def test_cooking_time(new_user):
+    title = "Recipe 1"
+    full_text = "recipe 1 full text"
+    cooking_time = -1
+
+    with pytest.raises(IntegrityError):
+        Recipe.objects.create(
+            author=new_user,
+            title=title,
+            full_text=full_text,
+            cooking_time=cooking_time,
         )
