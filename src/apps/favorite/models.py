@@ -12,3 +12,6 @@ class Favorite(models.Model):
     )
     recipe = models.ForeignKey("recipes.Recipe", on_delete=models.SET_NULL, null=True)
     pub_date = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.author.username}'s favorite recipe: {self.recipe.title}"
