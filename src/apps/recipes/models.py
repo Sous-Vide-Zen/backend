@@ -42,3 +42,7 @@ class Category(models.Model):
     def save(self, *args, **kwargs):
         self.slug = slugify(self.name)
         super().save(*args, **kwargs)
+
+    class Meta:
+        verbose_name = "Category"
+        verbose_name_plural = "Categories"  # name in admin
