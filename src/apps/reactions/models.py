@@ -41,4 +41,4 @@ class Reaction(models.Model):
         ]
 
     def __str__(self):
-        return f"{self.emoji} by {self.author.username}"
+        return f"{self.emoji} reaction by {self.author.username}"

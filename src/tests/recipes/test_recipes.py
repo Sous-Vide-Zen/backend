@@ -31,6 +31,9 @@ def test_recipe_fields(new_user):
 @pytest.mark.recipes
 @pytest.mark.models
 def test_unique_slug(new_user):
+    """
+    Checks that two recipes with same slug can not be created
+    """
     title = "Recipe 1"
     full_text = "recipe 1 full text"
     Recipe.objects.create(
@@ -38,6 +41,7 @@ def test_unique_slug(new_user):
         title=title,
         full_text=full_text,
         cooking_time=10,
+        slug="recipe-1",
     )
     with pytest.raises(IntegrityError):
         Recipe.objects.create(
@@ -45,6 +49,7 @@ def test_unique_slug(new_user):
             title=title,
             full_text=full_text,
             cooking_time=10,
+            slug="recipe-1",
         )
 
 
