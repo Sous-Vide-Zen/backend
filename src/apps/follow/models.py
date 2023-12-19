@@ -22,7 +22,11 @@ class Follow(models.Model):
         verbose_name_plural = "Подписки"
         ordering = ("-created_at",)
         constraints = [
-            models.UniqueConstraint(fields=["user", "author"], name="unique_following")
+            models.UniqueConstraint(fields=["user", "author"], name="unique_following"),
+            models.CheckConstraint(
+                check=~models.Q(user=models.F("author")),
+                name="same_follower_constraint",
+            ),
         ]
 
     def __str__(self):
