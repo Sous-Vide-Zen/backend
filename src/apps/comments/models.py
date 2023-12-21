@@ -19,3 +19,6 @@ class Comment(models.Model):
     text = models.TextField(max_length=1000)
     pub_date = models.DateTimeField(auto_now_add=True)
     parent = models.ForeignKey("self", on_delete=models.SET_NULL, null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.author.username} comment to recipe {self.recipe.slug}"
