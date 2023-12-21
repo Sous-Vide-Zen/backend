@@ -26,3 +26,10 @@ def create_token(api_client, django_user_model):
     )
     print(f'Bearer {response.data["access"]}')
     return f'Bearer {response.data["access"]}'
+
+
+@pytest.fixture(scope="function")
+def new_user(django_user_model):
+    return django_user_model.objects.create_user(
+        username="test", password="changeme123", email="test@ya.ru"
+    )
