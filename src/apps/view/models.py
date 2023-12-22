@@ -10,6 +10,7 @@ class ViewRecipes(models.Model):
     )
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Время просмотра")
     count = models.PositiveIntegerField(default=0, verbose_name="Количество просмотров")
+
     class Meta:
         verbose_name = "Просмотр рецепта"
         verbose_name_plural = "Просмотры рецептов"
@@ -22,7 +23,7 @@ class ViewRecipes(models.Model):
         return f"Пользователь {self.user} просмотрел рецепт {self.recipe}"
 
     def increment_view_count(self):
-        #Этот метод используется, когда нужно увеличить количество
+        # Этот метод используется, когда нужно увеличить количество
         # просмотров рецепта в базе данных. Каждый раз, когда происходит
         # просмотр рецепта, этот метод должен быть вызван для соответствующего
         # объекта ViewRecipes, чтобы увеличить и сохранить обновленное количество просмотров.
