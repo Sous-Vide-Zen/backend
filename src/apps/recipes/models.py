@@ -29,7 +29,7 @@ class Recipe(models.Model):
         self.short_text = shorten_text(self.full_text, 100)
         # check if recipe with such slug already exists
 
-        same_recipes = Recipe.objects.filter(title=self.title).count()
+        same_recipes = self.__class__.objects.filter(title=self.title).count()
         slug_str = f"{self.title}_{same_recipes}" if same_recipes else self.title
         self.slug = slugify(slug_str)
         super().save(*args, **kwargs)
