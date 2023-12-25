@@ -14,7 +14,7 @@ class Recipe(models.Model):
 
     author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     title = models.CharField(max_length=150)
-    slug = models.SlugField(unique=True)
+    slug = models.SlugField(unique=True, blank=True)
     full_text = models.TextField(max_length=5000, blank=True)
     short_text = models.CharField(max_length=200)
     tag = TaggableManager()
@@ -27,7 +27,11 @@ class Recipe(models.Model):
 
     def save(self, *args, **kwargs):
         self.short_text = shorten_text(self.full_text, 100)
-        self.slug = slugify(self.title)
+        # check if recipe with such slug already exists
+
+        same_recipes = self.__class__.objects.filter(title=self.title).count()
+        slug_str = f"{self.title}_{same_recipes}" if same_recipes else self.title
+        self.slug = slugify(slug_str)
         super().save(*args, **kwargs)
 
 
@@ -38,3 +42,7 @@ class Category(models.Model):
     def save(self, *args, **kwargs):
         self.slug = slugify(self.name)
         super().save(*args, **kwargs)
+
+    class Meta:
+        verbose_name = "Category"
+        verbose_name_plural = "Categories"  # name in admin
