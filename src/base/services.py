@@ -11,4 +11,7 @@ def validate_avatar_size(value):
 
 
 def user_avatar_path(instance, filename):
-    return f"avatar/user_{instance.id}/{file}"
+    # При одновременном создании нового пользователя в админке и загрузки аватара,
+    # id будет указываться как None
+
+    return f"avatar/user_{instance.id}/{filename}"

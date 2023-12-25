@@ -6,13 +6,6 @@ from django.db import IntegrityError
 from django.core.exceptions import ValidationError
 
 
-@pytest.fixture(scope="function")
-def new_user(django_user_model):
-    return django_user_model.objects.create_user(
-        username="test", password="changeme123", email="test@ya.ru"
-    )
-
-
 @pytest.mark.recipes
 @pytest.mark.models
 def test_recipe_fields(new_user):
@@ -55,6 +48,7 @@ def test_unique_slug(new_user):
         title=title,
         full_text=full_text,
         cooking_time=10,
+        slug="recipe-1",
     )
     with pytest.raises(IntegrityError):
         Recipe.objects.filter(id=r2.id).update(slug=r1.slug)

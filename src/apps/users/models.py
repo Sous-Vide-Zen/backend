@@ -23,7 +23,7 @@ class CustomUser(AbstractUser, PermissionsMixin):
         null=True,
         validators=[
             validate_avatar_size,
-            FileExtensionValidator(allowed_extensions=[".jpg", ".jpeg", ".png"]),
+            FileExtensionValidator(allowed_extensions=["jpg", "jpeg", "png"]),
         ],
     )
     is_banned = models.BooleanField(default=False)
