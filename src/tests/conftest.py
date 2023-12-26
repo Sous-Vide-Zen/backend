@@ -36,6 +36,7 @@ def new_user(django_user_model):
         username="test", password="changeme123", email="test@ya.ru"
     )
 
+
 @pytest.fixture(scope="function")
 def new_recipe(new_user):
     recipe = Recipe.objects.create(
