@@ -1,6 +1,7 @@
 import pytest
-from src.apps.view.models import ViewRecipes
 from django.db.utils import IntegrityError
+
+from src.apps.view.models import ViewRecipes
 
 
 @pytest.mark.django_db
