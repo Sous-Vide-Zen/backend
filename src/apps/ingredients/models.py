@@ -6,7 +6,7 @@ class Unit(models.Model):
     Unit model
     """
 
-    name = models.CharField(max_length=30)
+    name = models.CharField(max_length=30, unique=True)
 
     def __str__(self):
         return self.name
@@ -17,7 +17,7 @@ class Ingredient(models.Model):
     Ingredient model
     """
 
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100, unique=True)
     units = models.ManyToManyField(Unit, related_name="ingredients")
 
     class Meta:
