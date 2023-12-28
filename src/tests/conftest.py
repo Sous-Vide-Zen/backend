@@ -2,6 +2,8 @@ import pytest
 from src.apps.recipes.models import Recipe
 from django.core.management import call_command
 from rest_framework.test import APIClient
+from src.apps.recipes.models import Recipe
+from src.apps.ingredients.models import Ingredient, Unit
 from django.utils.text import slugify
 
 
@@ -48,3 +50,13 @@ def new_recipe(new_user):
         cooking_time=30,
     )
     return recipe
+
+
+@pytest.fixture(scope="function")
+def new_ingredient():
+    # Создаем единицу измерения для ингредиента
+    unit = Unit.objects.create(name="Штука")
+    # Создаем ингредиент и добавляем единицу измерения к нему
+    ingredient = Ingredient.objects.create(name="Яйцо")
+    ingredient.units.add(unit)
+    return ingredient
