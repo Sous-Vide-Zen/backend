@@ -1,4 +1,5 @@
 import pytest
+from src.apps.recipes.models import Recipe
 from django.core.management import call_command
 from rest_framework.test import APIClient
 from src.apps.recipes.models import Recipe
