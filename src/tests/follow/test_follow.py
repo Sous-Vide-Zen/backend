@@ -1,7 +1,8 @@
 import pytest
+from django.db import IntegrityError
+
 from src.apps.follow.models import Follow
 from src.apps.users.models import CustomUser
-from django.db import IntegrityError
 
 
 @pytest.mark.follow

@@ -1,7 +1,8 @@
 import pytest
-from src.apps.recipes.models import Recipe
-from src.apps.favorite.models import Favorite
 from django.db.utils import IntegrityError
+
+from src.apps.favorite.models import Favorite
+from src.apps.recipes.models import Recipe
 
 
 @pytest.mark.favorite

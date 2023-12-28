@@ -1,10 +1,10 @@
 from django.conf import settings
 from django.core.validators import MaxValueValidator
 from django.db import models
+from django.utils.text import slugify
 from taggit.managers import TaggableManager
 
-from src.apps.api.services import shorten_text
-from django.utils.text import slugify
+from src.base.services import shorten_text
 
 
 class Recipe(models.Model):

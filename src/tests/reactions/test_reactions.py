@@ -1,12 +1,10 @@
 import pytest
-from django.db import IntegrityError
+from django.contrib.contenttypes.models import ContentType
 
+from src.apps.comments.models import Comment
 from src.apps.reactions.choices import EmojyChoice
 from src.apps.reactions.models import Reaction
 from src.apps.recipes.models import Recipe
-from src.apps.comments.models import Comment
-from django.contrib.contenttypes.models import ContentType
-from src.apps.ingredients.models import Unit
 
 
 @pytest.mark.reactions

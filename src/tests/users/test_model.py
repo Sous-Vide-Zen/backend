@@ -3,6 +3,7 @@ from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import IntegrityError
 from django.utils import timezone
+
 from src.apps.users.models import CustomUser
 
 
