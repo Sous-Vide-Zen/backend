@@ -81,7 +81,9 @@ REST_FRAMEWORK = {
         "rest_framework.authentication.SessionAuthentication",
     ],
 }
-EMAIL_BACKEND = config("EMAIL_BACKEND", default="django.core.mail.backends.smtp.EmailBackend")
+EMAIL_BACKEND = config(
+    "EMAIL_BACKEND", default="django.core.mail.backends.smtp.EmailBackend"
+)
 EMAIL_HOST = config("EMAIL_HOST", default="smtp.yandex.ru")
 EMAIL_PORT = config("EMAIL_PORT", default=465, cast=int)
 EMAIL_HOST_USER = config("EMAIL_HOST_USER", default="user@yandex.ru")
