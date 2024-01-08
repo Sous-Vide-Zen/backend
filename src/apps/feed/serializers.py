@@ -6,7 +6,7 @@ from taggit.serializers import TagListSerializerField, TaggitSerializer
 class FeedSerializer(serializers.ModelSerializer):
     comments_count = serializers.SerializerMethodField("get_comments_count")
     views_count = serializers.SerializerMethodField("get_view_count")
-    reactions_count = serializers.SerializerMethodField("get_reactions")  # ??
+    reactions_count = serializers.SerializerMethodField("get_reactions")
     tag = TagListSerializerField()
     author = serializers.CharField(source="author.username")
 
@@ -34,5 +34,4 @@ class FeedSerializer(serializers.ModelSerializer):
         return obj.views.count()
 
     def get_reactions(self, obj):
-        return "a"
-        # TODO: no attributes reactions return obj.reactions.count()
+        return obj.reactions.count()

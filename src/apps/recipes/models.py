@@ -5,6 +5,8 @@ from taggit.managers import TaggableManager
 
 from src.apps.api.services import shorten_text
 from django.utils.text import slugify
+from django.contrib.contenttypes.fields import GenericRelation
+from src.apps.reactions.models import Reaction
 
 
 class Recipe(models.Model):
@@ -21,6 +23,7 @@ class Recipe(models.Model):
     category = models.ManyToManyField("Category", related_name="recipes", blank=True)
     cooking_time = models.PositiveIntegerField(validators=[MaxValueValidator(60 * 24)])
     pub_date = models.DateTimeField(auto_now_add=True)
+    reactions = GenericRelation(Reaction, related_query_name="reactions")
 
     def __str__(self):
         return self.title
