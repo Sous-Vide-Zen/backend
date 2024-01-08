@@ -25,7 +25,6 @@ class FeedSerializer(serializers.ModelSerializer):
             "reactions_count",
             "tag",
         ]
-        depth = 1
 
     def get_comments_count(self, obj):
         return obj.comments.count()
