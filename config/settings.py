@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     "src.apps.ingredients",
     "src.apps.view",
     "src.apps.follow",
+    "src.apps.feed",
 ]
 
 MIDDLEWARE = [
