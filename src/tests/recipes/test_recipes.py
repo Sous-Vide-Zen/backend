@@ -1,9 +1,7 @@
-from datetime import datetime
-
 import pytest
-from src.apps.recipes.models import Recipe, Category
 from django.db import IntegrityError
-from django.core.exceptions import ValidationError
+
+from src.apps.recipes.models import Recipe, Category
 
 
 @pytest.mark.recipes

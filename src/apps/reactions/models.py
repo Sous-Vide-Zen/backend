@@ -1,8 +1,9 @@
-from django.db import models
-from django.contrib.contenttypes.fields import GenericForeignKey
 from django.conf import settings
-from .choices import EmojyChoice
+from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
+from django.db import models
+
+from .choices import EmojyChoice
 
 
 class Reaction(models.Model):

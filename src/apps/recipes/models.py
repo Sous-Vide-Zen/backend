@@ -1,12 +1,15 @@
 from django.conf import settings
 from django.core.validators import MaxValueValidator
 from django.db import models
+from django.utils.text import slugify
 from taggit.managers import TaggableManager
 
-from src.apps.api.services import shorten_text
+
+from src.base.services import shorten_text
 from django.utils.text import slugify
 from django.contrib.contenttypes.fields import GenericRelation
 from src.apps.reactions.models import Reaction
+
 
 
 class Recipe(models.Model):
@@ -17,7 +20,7 @@ class Recipe(models.Model):
     author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     title = models.CharField(max_length=150)
     slug = models.SlugField(unique=True, blank=True)
-    full_text = models.TextField(max_length=5000, blank=True)
+    full_text = models.TextField()
     short_text = models.CharField(max_length=200)
     tag = TaggableManager()
     category = models.ManyToManyField("Category", related_name="recipes", blank=True)
