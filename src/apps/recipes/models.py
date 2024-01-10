@@ -11,7 +11,6 @@ from django.contrib.contenttypes.fields import GenericRelation
 from src.apps.reactions.models import Reaction
 
 
-
 class Recipe(models.Model):
     """
     Recipe model
