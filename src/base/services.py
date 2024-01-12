@@ -16,6 +16,10 @@ def user_avatar_path(instance, filename):
     return f"avatar/user_{instance.id}/{filename}"
 
 
+def recipe_preview_path(instance, filename):
+    return f"preview/recipe_{instance.slug}/{filename}"
+
+
 def shorten_text(full_text, n) -> str:
     """
     Shorten text to n characters with rounding by last word
