@@ -16,6 +16,7 @@ class FeedSerializer(serializers.ModelSerializer):
             "id",
             "title",
             "short_text",
+            "preview_image",
             "author",
             "pub_date",
             "tag",
