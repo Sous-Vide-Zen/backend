@@ -104,6 +104,10 @@ DJOSER = {
     "PERMISSIONS": {
         "user_delete": ["rest_framework.permissions.IsAdminUser"],
     },
+    "SERIALIZERS": {
+        "current_user": "src.apps.users.serializers.CustomUserMeSerializer",  # Путь к вашему сериализатору
+        "user": "src.apps.users.serializers.CustomUserDetailsSerializer",  # Тот же сериализатор для текущего пользователя
+    },
     "EMAIL": {
         "activation": "src.apps.users.emails.CustomActivationEmail",
         "password_reset": "src.apps.users.emails.CustomPasswordResetEmail",
