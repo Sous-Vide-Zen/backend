@@ -46,7 +46,7 @@ class FeedSerializer(serializers.ModelSerializer):
         return obj.views.count()
 
     def get_reactions(self, obj):
-        reactions = Reaction.objects.filter(is_deleted=False)
+        reactions = obj.reactions
         serializer = ReactionSerializer(reactions, many=True)
         return serializer.data
 
