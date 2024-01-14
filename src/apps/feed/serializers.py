@@ -11,12 +11,12 @@ class ReactionSerializer(serializers.ModelSerializer):
 
 
 class FeedSerializer(serializers.ModelSerializer):
-    comments_count = serializers.SerializerMethodField()
-    views_count = serializers.SerializerMethodField()
+    comments_count = serializers.IntegerField()
+    views_count = serializers.IntegerField()
     reactions = serializers.SerializerMethodField()
     tag = TagListSerializerField()
     author = serializers.CharField(source="author.username")
-    activity_count = serializers.SerializerMethodField()
+    activity_count = serializers.IntegerField()
 
     class Meta:
         model = Recipe
@@ -39,16 +39,7 @@ class FeedSerializer(serializers.ModelSerializer):
             "activity_count",
         ]
 
-    def get_comments_count(self, obj):
-        return obj.comments.count()
-
-    def get_views_count(self, obj):
-        return obj.views.count()
-
     def get_reactions(self, obj):
-        reactions = Reaction.objects.filter(is_deleted=False)
+        reactions = obj.reactions
         serializer = ReactionSerializer(reactions, many=True)
         return serializer.data
-
-    def get_activity_count(self, obj):
-        return obj.comments.count() + obj.views.count() + obj.reactions.count()
