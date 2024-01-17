@@ -217,3 +217,7 @@ TAGGIT_STRIP_UNICODE_WHEN_SLUGIFYING = True
 
 # Settings for django-cors-headers
 CORS_ALLOW_ALL_ORIGINS = True
+
+
+# Pagination
+FEED_PAGE_SIZE = 5

@@ -1,22 +1,10 @@
 from src.apps.recipes.models import Recipe
 from rest_framework.response import Response
-from rest_framework.pagination import PageNumberPagination
 from rest_framework.filters import OrderingFilter
 from rest_framework import generics, viewsets, filters, mixins
 from .serializers import FeedSerializer
+from .pagination import FeedPagination
 from django.db.models import Sum, Count, F
-
-
-class FeedSubscriptionsPagination(PageNumberPagination):
-    page_size = 5
-
-
-class FeedUserPagination(PageNumberPagination):
-    page_size = 5
-
-
-class FeedPopularPagination(PageNumberPagination):
-    page_size = 5
 
 
 class FeedSubscriptionsList(mixins.ListModelMixin, viewsets.GenericViewSet):
@@ -24,7 +12,7 @@ class FeedSubscriptionsList(mixins.ListModelMixin, viewsets.GenericViewSet):
     Listing all posts of authors user subscribed to sorted by pub date
     """
 
-    pagination_class = FeedSubscriptionsPagination
+    pagination_class = FeedPagination
     serializer_class = FeedSerializer
 
     def get_queryset(self):
@@ -52,7 +40,7 @@ class FeedUserList(mixins.ListModelMixin, viewsets.GenericViewSet):
     """
 
     serializer_class = FeedSerializer
-    pagination_class = FeedUserPagination
+    pagination_class = FeedPagination
 
     def get_queryset(self):
         user = self.request.user
@@ -83,7 +71,7 @@ class FeedPopularList(mixins.ListModelMixin, viewsets.GenericViewSet):
         reactions_count=Count("reactions"),
         activity_count=F("comments_count") + F("views_count") + F("reactions_count"),
     )
-    pagination_class = FeedPopularPagination
+    pagination_class = FeedPagination
     serializer_class = FeedSerializer
     filter_backends = [filters.OrderingFilter]
     ordering_fields = ["pub_date"]
