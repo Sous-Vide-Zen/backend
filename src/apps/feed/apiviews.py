@@ -1,7 +1,10 @@
+from datetime import datetime, timedelta
+
 from src.apps.recipes.models import Recipe
 from rest_framework.response import Response
 from rest_framework.filters import OrderingFilter
 from rest_framework import generics, viewsets, filters, mixins
+from rest_framework.permissions import AllowAny
 from .serializers import FeedSerializer
 from .pagination import FeedPagination
 from django.db.models import Sum, Count, F
@@ -19,7 +22,10 @@ class FeedSubscriptionsList(mixins.ListModelMixin, viewsets.GenericViewSet):
         user = self.request.user
         users_subscribed_to = user.following.all().values_list("user_id", flat=True)
         queryset = (
-            Recipe.objects.filter(author__in=users_subscribed_to)
+            Recipe.objects.filter(
+                author__in=users_subscribed_to,
+                pub_date__gte=datetime.now() - timedelta(days=30),
+            )
             .order_by("-pub_date")
             .annotate(
                 comments_count=Count("comments"),
@@ -45,7 +51,10 @@ class FeedUserList(mixins.ListModelMixin, viewsets.GenericViewSet):
     def get_queryset(self):
         user = self.request.user
         queryset = (
-            Recipe.objects.filter(author=user)
+            Recipe.objects.filter(
+                author=user,
+                pub_date__gte=datetime.now() - timedelta(days=30),
+            )
             .order_by("-pub_date")
             .annotate(
                 comments_count=Count("comments"),
@@ -65,7 +74,11 @@ class FeedPopularList(mixins.ListModelMixin, viewsets.GenericViewSet):
     Listing all popular posts with additional sort by pub_date
     """
 
-    queryset = Recipe.objects.annotate(
+    permission_classes = [AllowAny]
+
+    queryset = Recipe.objects.filter(
+        pub_date__gte=datetime.now() - timedelta(days=30),
+    ).annotate(
         comments_count=Count("comments"),
         views_count=Count("views"),
         reactions_count=Count("reactions"),
