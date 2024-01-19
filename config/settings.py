@@ -27,6 +27,7 @@ INSTALLED_APPS = [
     "rest_framework_simplejwt",
     "drf_yasg",
     "social_django",
+    "django_filters",
     "taggit",
     "corsheaders",
     # apps
