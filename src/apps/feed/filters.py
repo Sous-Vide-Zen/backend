@@ -1,5 +1,4 @@
 from django_filters import rest_framework as filters
-from src.apps.recipes.models import Recipe
 
 
 class FeedFilter(filters.FilterSet):

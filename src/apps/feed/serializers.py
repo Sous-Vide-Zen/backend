@@ -1,7 +1,8 @@
-from src.apps.recipes.models import Recipe
 from rest_framework import serializers
-from taggit.serializers import TagListSerializerField, TaggitSerializer
+from taggit.serializers import TagListSerializerField
+
 from src.apps.reactions.models import Reaction
+from src.apps.recipes.models import Recipe
 from src.apps.users.models import CustomUser
 
 

@@ -222,3 +222,7 @@ CORS_ALLOW_ALL_ORIGINS = True
 
 # Pagination
 FEED_PAGE_SIZE = 5
+
+# Variables
+
+ACTIVITY_INTERVAL = 30
