@@ -14,6 +14,7 @@ from src.apps.view.models import ViewRecipes
 from .filters import FeedFilter
 from .pagination import FeedPagination
 from .serializers import FeedSerializer
+from django.utils.timezone import make_aware
 
 
 class FeedUserList(mixins.ListModelMixin, viewsets.GenericViewSet):
@@ -29,7 +30,9 @@ class FeedUserList(mixins.ListModelMixin, viewsets.GenericViewSet):
     filterset_class = FeedFilter
 
     def get_queryset(self):
-        last_month_start = datetime.now() - timedelta(days=ACTIVITY_INTERVAL)
+        last_month_start = make_aware(
+            datetime.now() - timedelta(days=ACTIVITY_INTERVAL)
+        )
         queryset = (
             Recipe.objects.all()
             .prefetch_related(
