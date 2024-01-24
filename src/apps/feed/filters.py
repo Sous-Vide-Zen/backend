@@ -8,6 +8,8 @@ class FeedFilter(filters.FilterSet):
     def filter_by_subscription(self, queryset, name, value):
         if value == "subscriptions":
             user = self.request.user
-            users_subscribed_to = user.follower.all().values_list("id", flat=True)
+            users_subscribed_to = user.follower.all().values_list(
+                "author_id", flat=True
+            )
             return queryset.filter(author__in=users_subscribed_to)
         return queryset
