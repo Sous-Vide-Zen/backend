@@ -1,4 +1,3 @@
-
 from src.apps.users.views import CustomUserViewSet, CustomUserMeViewSet
 from rest_framework.routers import DefaultRouter
 from django.urls import include, path
