@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 
-from django.db.models import Count, F, Prefetch, Subquery, OuterRef
+from django.db.models import Count, F, Prefetch, Subquery, OuterRef, Q
 from django.db.models.functions import Coalesce
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, viewsets, mixins
@@ -38,53 +38,32 @@ class FeedUserList(mixins.ListModelMixin, viewsets.GenericViewSet):
             .prefetch_related(
                 Prefetch(
                     "comments",
-                    queryset=Comment.objects.filter(pub_date__gte=last_month_start),
+                    queryset=Comment.objects.all(),
                 ),
                 Prefetch(
                     "views",
-                    queryset=ViewRecipes.objects.filter(
-                        created_at__gte=last_month_start
-                    ),
+                    queryset=ViewRecipes.objects.all(),
                 ),
                 Prefetch(
                     "reactions",
-                    queryset=Reaction.objects.filter(pub_date__gte=last_month_start),
+                    queryset=Reaction.objects.all(),
                 ),
             )
             .annotate(
-                comments_count=Coalesce(
-                    Subquery(
-                        Comment.objects.filter(
-                            recipe=OuterRef("pk"), pub_date__gte=last_month_start
-                        )
-                        .values("recipe")
-                        .annotate(count=Count("pk"))
-                        .values("count")
-                    ),
-                    0,
+                comments_count=Count(
+                    "comments", filter=Q(comments__pub_date__gte=last_month_start)
                 ),
-                views_count=Coalesce(
-                    Subquery(
-                        ViewRecipes.objects.filter(
-                            recipe=OuterRef("pk"), created_at__gte=last_month_start
-                        )
-                        .values("recipe")
-                        .annotate(count=Count("pk"))
-                        .values("count")
-                    ),
-                    0,
+                views_count=Count(
+                    "views",
+                    filter=Q(views__created_at__gte=last_month_start),
                 ),
-                reactions_count=Coalesce(
-                    Subquery(
-                        Reaction.objects.filter(
-                            object_id=OuterRef("pk"), pub_date__gte=last_month_start
-                        )
-                        .values("object_id")
-                        .annotate(count=Count("pk"))
-                        .values("count")
-                    ),
-                    0,
+                reactions_count=Count(
+                    "reactions",
+                    filter=Q(reactions__pub_date__gte=last_month_start),
                 ),
+                total_comments_count=Count("comments"),
+                total_views_count=Count("views"),
+                total_reactions_count=Count("reactions"),
                 activity_count=F("comments_count")
                 + F("views_count")
                 + F("reactions_count"),

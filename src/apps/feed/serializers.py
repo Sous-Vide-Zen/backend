@@ -19,8 +19,9 @@ class AuthorSerializer(serializers.ModelSerializer):
 
 
 class FeedSerializer(serializers.ModelSerializer):
-    comments_count = serializers.IntegerField()
-    views_count = serializers.IntegerField()
+    total_comments_count = serializers.IntegerField()
+    total_views_count = serializers.IntegerField()
+    total_reactions_count = serializers.IntegerField()
     reactions = ReactionSerializer(many=True, read_only=True)
     tag = TagListSerializerField()
     author = AuthorSerializer()
@@ -39,8 +40,9 @@ class FeedSerializer(serializers.ModelSerializer):
             "pub_date",
             "tag",
             "cooking_time",
-            "comments_count",
-            "views_count",
+            "total_comments_count",
+            "total_views_count",
+            "total_reactions_count",
             "reactions",
             "tag",
             "reactions",
