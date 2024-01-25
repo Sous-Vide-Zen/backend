@@ -4,4 +4,5 @@ urlpatterns = [
     path("", include("src.apps.users.routes.social_urls")),
     path("", include("src.apps.users.routes.django_urls")),
     path("", include("src.apps.swagger.routes")),
+    path("feed/", include("src.apps.feed.urls")),
 ]

@@ -27,6 +27,7 @@ INSTALLED_APPS = [
     "rest_framework_simplejwt",
     "drf_yasg",
     "social_django",
+    "django_filters",
     "taggit",
     "corsheaders",
     # apps
@@ -38,6 +39,7 @@ INSTALLED_APPS = [
     "src.apps.ingredients",
     "src.apps.view",
     "src.apps.follow",
+    "src.apps.feed",
 ]
 
 MIDDLEWARE = [
@@ -220,3 +222,11 @@ TAGGIT_STRIP_UNICODE_WHEN_SLUGIFYING = True
 
 # Settings for django-cors-headers
 CORS_ALLOW_ALL_ORIGINS = True
+
+
+# Pagination
+FEED_PAGE_SIZE = 5
+
+# Variables
+
+ACTIVITY_INTERVAL = 30

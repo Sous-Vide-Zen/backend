@@ -1,10 +1,14 @@
 from django.conf import settings
-from django.core.validators import MaxValueValidator
+from django.core.validators import FileExtensionValidator, MaxValueValidator
 from django.db import models
 from django.utils.text import slugify
 from taggit.managers import TaggableManager
 
-from src.base.services import shorten_text
+
+from src.base.services import recipe_preview_path, shorten_text, validate_avatar_size
+from django.utils.text import slugify
+from django.contrib.contenttypes.fields import GenericRelation
+from src.apps.reactions.models import Reaction
 
 
 class Recipe(models.Model):
@@ -17,10 +21,20 @@ class Recipe(models.Model):
     slug = models.SlugField(unique=True, blank=True)
     full_text = models.TextField()
     short_text = models.CharField(max_length=200)
+    preview_image = models.ImageField(
+        upload_to=recipe_preview_path,
+        blank=True,
+        null=True,
+        validators=[
+            validate_avatar_size,
+            FileExtensionValidator(allowed_extensions=["jpg", "jpeg", "png"]),
+        ],
+    )
     tag = TaggableManager()
     category = models.ManyToManyField("Category", related_name="recipes", blank=True)
     cooking_time = models.PositiveIntegerField(validators=[MaxValueValidator(60 * 24)])
     pub_date = models.DateTimeField(auto_now_add=True)
+    reactions = GenericRelation(Reaction, related_query_name="reactions")
 
     def __str__(self):
         return self.title
