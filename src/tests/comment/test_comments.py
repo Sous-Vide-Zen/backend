@@ -1,8 +1,10 @@
+import datetime
+
 import pytest
 from django.core.exceptions import ValidationError
 from django.utils import timezone
+
 from src.apps.comments.models import Comment
-import datetime
 
 
 @pytest.mark.django_db
