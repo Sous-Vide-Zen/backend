@@ -1,8 +1,8 @@
 from django.conf import settings
-
 from django.contrib.contenttypes.fields import GenericRelation
 from django.core.validators import MaxLengthValidator
 from django.db import models
+
 from src.apps.reactions.models import Reaction
 
 

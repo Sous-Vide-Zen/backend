@@ -1,14 +1,12 @@
 from django.conf import settings
+from django.contrib.contenttypes.fields import GenericRelation
 from django.core.validators import FileExtensionValidator, MaxValueValidator
 from django.db import models
 from django.utils.text import slugify
 from taggit.managers import TaggableManager
 
-
-from src.base.services import recipe_preview_path, shorten_text, validate_avatar_size
-from django.utils.text import slugify
-from django.contrib.contenttypes.fields import GenericRelation
 from src.apps.reactions.models import Reaction
+from src.base.services import recipe_preview_path, shorten_text, validate_avatar_size
 
 
 class Recipe(models.Model):

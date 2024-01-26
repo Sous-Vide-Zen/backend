@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 
-from django.db.models import Count, F, Prefetch, Subquery, OuterRef, Q
-from django.db.models.functions import Coalesce
+from django.db.models import Count, F, Prefetch, Q
+from django.utils.timezone import make_aware
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, viewsets, mixins
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -14,7 +14,6 @@ from src.apps.view.models import ViewRecipes
 from .filters import FeedFilter
 from .pagination import FeedPagination
 from .serializers import FeedSerializer
-from django.utils.timezone import make_aware
 
 
 class FeedUserList(mixins.ListModelMixin, viewsets.GenericViewSet):
