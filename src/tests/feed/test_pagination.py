@@ -7,11 +7,15 @@ from src.apps.recipes.models import Recipe
 @pytest.mark.api
 @pytest.mark.django_db
 class TestFeedPagination:
-    def test_feed_pagination(self, api_client, new_user):
-        page_size = settings.FEED_PAGE_SIZE
+    page_size = settings.FEED_PAGE_SIZE
+
+    @pytest.mark.parametrize(
+        "recipes_num",
+        list(range(settings.FEED_PAGE_SIZE, settings.FEED_PAGE_SIZE * 3, 3)),
+    )
+    def test_feed_pagination(self, api_client, new_user, recipes_num):
         title, full_text = "recipe_title", "recipe full text"
         # creating recipes
-        recipes_num = int(page_size * 3.5)
         for i in range(recipes_num):
             Recipe.objects.create(
                 author=new_user,
@@ -21,17 +25,22 @@ class TestFeedPagination:
             )
 
         # first page
-        url = "/api/v1/feed/"
-        response = api_client.get(url)
+        next_page_url = "/api/v1/feed/"
         recipes_seen, recipes_to_see = 0, recipes_num
         # next pages
-        while recipes_seen < page_size * (recipes_num // page_size):
-            num_recipes = len(response.data["results"])
-            assert num_recipes == page_size
-            next_page_url = response.data["next"]
+        while recipes_seen < TestFeedPagination.page_size * (
+            recipes_num // TestFeedPagination.page_size
+        ):
             response = api_client.get(next_page_url)
+            num_recipes = len(response.data["results"])
             recipes_seen += num_recipes
             recipes_to_see -= num_recipes
+            assert num_recipes == TestFeedPagination.page_size
+            next_page_url = response.data["next"]
+
         # last page
-        assert response.data["next"] is None
-        assert len(response.data["results"]) == recipes_to_see
+        if recipes_to_see:
+            response = api_client.get(next_page_url)
+            next_page_url = response.data["next"]
+            assert next_page_url is None
+            assert len(response.data["results"]) == recipes_to_see
