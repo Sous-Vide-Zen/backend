@@ -24,7 +24,7 @@ def create_token(api_client, django_user_model):
         username="test", password="changeme123", email="test@ya.ru"
     )
     response = api_client.post(
-        "/auth/jwt/create/",
+        "/api/v1/auth/jwt/create/",
         data={"password": "changeme123", "email": "test@ya.ru"},
         format="json",
     )
