@@ -21,18 +21,16 @@ class TestFeedCodes:
         """
         Should be 401, available only for authorized users
         """
-        client = APIClient()
         url = "/api/v1/feed/?filter=subscriptions"
-        response = client.get(url)
+        response = api_client.get(url)
         assert response.status_code == 401
 
     def test_feed_subscriptions_auth(self, api_client, create_token):
         """
         Should be 200 after getting token
         """
-        client = APIClient()
         # add token to request header
-        client.credentials(HTTP_AUTHORIZATION=create_token)
+        api_client.credentials(HTTP_AUTHORIZATION=create_token)
         url = "/api/v1/feed/?filter=subscriptions"
-        response = client.get(url)
+        response = api_client.get(url)
         assert response.status_code == 200
