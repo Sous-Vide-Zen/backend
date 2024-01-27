@@ -31,6 +31,7 @@ class TestFeedCodes:
         Should be 200 after getting token
         """
         client = APIClient()
+        # add token to request header
         client.credentials(HTTP_AUTHORIZATION=create_token)
         url = "/api/v1/feed/?filter=subscriptions"
         response = client.get(url)
