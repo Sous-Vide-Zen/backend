@@ -43,4 +43,20 @@ class TestFeedSorting:
         assert activity_count_list == expected_activity_count_list[::-1]
 
     def test_order_by_pub_date(self, api_client, new_user):
-        pass
+        title, full_text = "recipe_title", "recipe full text"
+        # creating recipes
+        for i in range(5):
+            new_recipe = Recipe.objects.create(
+                author=new_user,
+                title=f"{title}_{i}",
+                full_text=full_text,
+                cooking_time=10,
+            )
+            new_recipe.pub_date = datetime.now() - timedelta(days=i)
+            new_recipe.save()
+
+        url = "/api/v1/feed/"
+        response = api_client.get(url)
+        pub_date_list = [r["pub_date"] for r in response.data["results"]]
+        # check that dates are sorted from latest to earliest
+        assert pub_date_list == sorted(pub_date_list, reverse=True)
