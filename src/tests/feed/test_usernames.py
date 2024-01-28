@@ -8,8 +8,8 @@ from src.apps.follow.models import Follow
 @pytest.mark.feed
 @pytest.mark.api
 @pytest.mark.django_db
-class TestFeedSubscriptions:
-    def test_order_by_activity_count(
+class TestFeedUsernames:
+    def test_usernames(
         self,
         django_user_model,
         api_client,
@@ -17,6 +17,7 @@ class TestFeedSubscriptions:
         """
         Only posts of author subscribed to are returned
         """
+        # test subscriptions
         # create token
         new_user = django_user_model.objects.create_user(
             username="test", password="changeme123", email="test@ya.ru"
@@ -66,4 +67,11 @@ class TestFeedSubscriptions:
         response = api_client.get(url)
         assert [r["author"]["username"] for r in response.data["results"]] == [
             new_user1.username
+        ] * num_recipes
+
+        # test by username
+        url = f"/api/v1/feed/?username={new_user2.username}"
+        response = api_client.get(url)
+        assert [r["author"]["username"] for r in response.data["results"]] == [
+            new_user2.username
         ] * num_recipes
