@@ -2,6 +2,7 @@ from django.contrib.auth.models import AbstractUser, PermissionsMixin
 from django.core.validators import FileExtensionValidator
 from django.db import models
 from django.utils import timezone
+from phonenumber_field.modelfields import PhoneNumberField
 
 from src.base.services import validate_avatar_size, user_avatar_path
 
@@ -11,11 +12,12 @@ class CustomUser(AbstractUser, PermissionsMixin):
     REQUIRED_FIELDS = ["username"]
 
     email = models.EmailField(max_length=150, unique=True)
+    phone = PhoneNumberField(blank=True, null=True)
     join_date = models.DateTimeField(default=timezone.now)
     country = models.CharField(max_length=30, blank=True, null=True, default=None)
     city = models.CharField(max_length=30, blank=True, null=True, default=None)
     first_name = models.CharField(max_length=30, blank=True, null=True, default=None)
-    second_name = models.CharField(max_length=30, blank=True, null=True, default=None)
+    last_name = models.CharField(max_length=30, blank=True, null=True, default=None)
     bio = models.CharField(max_length=200, blank=True, null=True, default=None)
     avatar = models.ImageField(
         upload_to=user_avatar_path,

@@ -29,6 +29,7 @@ INSTALLED_APPS = [
     "social_django",
     "taggit",
     "corsheaders",
+    "phonenumber_field",
     # apps
     "src.apps.users",
     "src.apps.recipes",
