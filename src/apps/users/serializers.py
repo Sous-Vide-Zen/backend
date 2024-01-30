@@ -22,23 +22,6 @@ class CustomUserSerializer(serializers.ModelSerializer):
             "is_admin",
         ]
 
-    def validate_username(self, value):
-        """
-        Проверка уникальности username.
-        """
-        user_model = get_user_model()
-        username_exists = (
-            user_model.objects.filter(username=value)
-            .exclude(id=self.instance.id)
-            .exists()
-        )
-
-        if username_exists:
-            raise serializers.ValidationError(
-                "A user with that username already exists."
-            )
-        return value
-
 
 class CustomUserMeSerializer(serializers.ModelSerializer):
     class Meta:
