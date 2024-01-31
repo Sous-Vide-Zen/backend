@@ -3,6 +3,7 @@ from rest_framework.test import APIClient
 from src.apps.recipes.models import Recipe
 from datetime import datetime, timedelta
 from src.apps.comments.models import Comment
+import pytz
 
 
 @pytest.mark.feed
@@ -52,7 +53,7 @@ class TestFeedSorting:
                 full_text=full_text,
                 cooking_time=10,
             )
-            new_recipe.pub_date = datetime.now() - timedelta(days=i)
+            new_recipe.pub_date = datetime.now(tz=pytz.UTC) - timedelta(days=i)
             new_recipe.save()
 
         url = "/api/v1/feed/"
