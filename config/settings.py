@@ -30,6 +30,7 @@ INSTALLED_APPS = [
     "django_filters",
     "taggit",
     "corsheaders",
+    "phonenumber_field",
     # apps
     "src.apps.users",
     "src.apps.recipes",
@@ -107,8 +108,8 @@ DJOSER = {
         "user_delete": ["rest_framework.permissions.IsAdminUser"],
     },
     "SERIALIZERS": {
-        "current_user": "src.apps.users.serializers.CustomUserMeSerializer",  # Путь к вашему сериализатору
-        "user": "src.apps.users.serializers.CustomUserDetailsSerializer",  # Тот же сериализатор для текущего пользователя
+        "current_user": "src.apps.users.serializers.CustomUserMeSerializer",
+        "user": "src.apps.users.serializers.CustomUserSerializer",
     },
     "EMAIL": {
         "activation": "src.apps.users.emails.CustomActivationEmail",

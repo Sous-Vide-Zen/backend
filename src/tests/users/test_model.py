@@ -87,10 +87,10 @@ class TestCustomUserModel:
             "test@example.com",
             "password123",
             first_name="John",
-            second_name="Doe",
+            last_name="Doe",
         )
         assert user.first_name == "John"
-        assert user.second_name == "Doe"
+        assert user.last_name == "Doe"
 
     def test_string_representation(self, new_user):
         user = new_user
