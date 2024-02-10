@@ -8,8 +8,9 @@ class UserFollowerSerializer(serializers.ModelSerializer):
     bio = serializers.SerializerMethodField()
 
     def get_bio(self, obj):
-        bio = obj.bio[:50]
-        return f"{bio} ..." if bio[-1] == " " else f"{bio}..."
+        if obj.bio:
+            bio = obj.bio[:50]
+            return f"{bio} ..." if bio[-1] == " " else f"{bio}..."
 
     class Meta:
         model = CustomUser
@@ -23,5 +24,3 @@ class FollowListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Follow
         fields = ("user", "subscribers_count")
-
-
