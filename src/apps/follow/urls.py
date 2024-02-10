@@ -1,6 +1,7 @@
+from django.urls import path
 from rest_framework.routers import DefaultRouter
 
-from src.apps.follow.views import FollowViewSet, FollowerViewSet
+from src.apps.follow.views import FollowViewSet, FollowerViewSet, SubscribeViewSet
 
 router = DefaultRouter()
 router.register(
@@ -14,4 +15,10 @@ router.register(
     basename="subscriptions",
 )
 
-urlpatterns = router.urls
+urlpatterns = [
+    path(
+        "subscribe/", SubscribeViewSet.as_view({"post": "create", "delete": "destroy"})
+    ),
+]
+
+urlpatterns += router.urls
