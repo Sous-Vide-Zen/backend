@@ -29,7 +29,8 @@ class FollowViewSet(GenericViewSet, ListModelMixin):
         return (
             Follow.objects.filter(user__username=self.kwargs.get("username"))
             .prefetch_related("user")
-            .annotate(subscribers_count=Count("user")).order_by("-created_at")
+            .annotate(subscribers_count=Count("user"))
+            .order_by("-created_at")
         )
 
 
@@ -43,7 +44,8 @@ class FollowerViewSet(GenericViewSet, ListModelMixin):
         return (
             Follow.objects.filter(author__username=self.kwargs.get("username"))
             .prefetch_related("author")
-            .annotate(subscribers_count=Count("user")).order_by("-created_at")
+            .annotate(subscribers_count=Count("user"))
+            .order_by("-created_at")
         )
 
 
@@ -61,7 +63,7 @@ class SubscribeViewSet(ModelViewSet):
         super().create(request, *args, **kwargs)
         return Response(
             data={"message": "Вы успешно подписались на автора"},
-            status=HTTP_201_CREATED
+            status=HTTP_201_CREATED,
         )
 
     def destroy(self, request, *args, **kwargs):
