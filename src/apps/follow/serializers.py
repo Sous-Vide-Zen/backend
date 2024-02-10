@@ -18,6 +18,15 @@ class UserFollowerSerializer(serializers.ModelSerializer):
 
 
 class FollowListSerializer(serializers.ModelSerializer):
+    author = UserFollowerSerializer()
+    subscribers_count = serializers.IntegerField()
+
+    class Meta:
+        model = Follow
+        fields = ("author", "subscribers_count")
+
+
+class FollowerListSerializer(serializers.ModelSerializer):
     user = UserFollowerSerializer()
     subscribers_count = serializers.IntegerField()
 
