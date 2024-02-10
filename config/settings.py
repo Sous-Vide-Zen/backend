@@ -194,6 +194,7 @@ SWAGGER_SETTINGS = {
         }
     },
     "USE_SESSION_AUTH": False,
+    "DEFAULT_AUTO_SCHEMA_CLASS": "src.apps.swagger.auto_schema_tags.CustomAutoSchema",
 }
 
 
@@ -227,7 +228,12 @@ CORS_ALLOW_ALL_ORIGINS = True
 
 # Pagination
 FEED_PAGE_SIZE = 5
+FOLLOWER_PAGE_SIZE = 10
 
 # Variables
 
 ACTIVITY_INTERVAL = 30
+
+# Shorthand
+
+SHORT_BIO_SYMBOLS = 50
