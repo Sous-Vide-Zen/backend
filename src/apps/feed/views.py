@@ -11,8 +11,8 @@ from src.apps.comments.models import Comment
 from src.apps.reactions.models import Reaction
 from src.apps.recipes.models import Recipe
 from src.apps.view.models import ViewRecipes
+from src.base.paginators import FeedPagination
 from .filters import FeedFilter
-from .pagination import FeedPagination
 from .serializers import FeedSerializer
 
 
