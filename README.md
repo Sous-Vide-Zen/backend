@@ -66,6 +66,11 @@ python manage.py migrate
 python manage.py runserver
 ```
 
+Fill the database
+```shell
+python manage.py loaddata src/fixtures/*
+```
+
 ### Documentation url
 ```djangourlpath
 http://127.0.0.1:8000/api/v1/swagger/
