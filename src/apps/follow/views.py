@@ -16,6 +16,7 @@ from src.apps.follow.serializers import (
     FollowerListSerializer,
     FollowCreateSerializer,
 )
+from src.apps.users.models import CustomUser
 from src.base.paginators import FollowerPagination
 
 
@@ -62,6 +63,12 @@ class SubscribeViewSet(ModelViewSet):
         return Follow.objects.filter(user=self.request.user)
 
     def create(self, request, *args, **kwargs):
+
+        if not CustomUser.objects.filter(username=request.data.get("author")).exists():
+            return Response(
+                status=HTTP_404_NOT_FOUND, data={"message": "Автор не найден"}
+            )
+
         super().create(request, *args, **kwargs)
         return Response(
             data={"message": "Вы успешно подписались на автора"},
