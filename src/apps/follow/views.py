@@ -29,7 +29,7 @@ class FollowViewSet(GenericViewSet, ListModelMixin):
         return (
             Follow.objects.filter(user__username=self.kwargs.get("username"))
             .prefetch_related("user")
-            .annotate(subscribers_count=Count("user"))
+            .annotate(subscribers_count=Count("author"))
             .order_by("-created_at")
         )
 

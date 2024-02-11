@@ -54,9 +54,7 @@ def new_recipe(new_user):
 
 @pytest.fixture(scope="function")
 def new_ingredient():
-    # Создаем единицу измерения для ингредиента
     unit = Unit.objects.create(name="Штука")
-    # Создаем ингредиент и добавляем единицу измерения к нему
     ingredient = Ingredient.objects.create(name="Яйцо")
     ingredient.units.add(unit)
     return ingredient
