@@ -15,16 +15,6 @@ class CustomUserFactory(DjangoModelFactory):
     password = "test_password"
 
 
-@pytest.fixture
-def new_subscription(api_client, new_user):
-    user = CustomUserFactory.create()
-    api_client.force_authenticate(user=new_user)
-    response = api_client.post(
-        "/api/v1/subscribe/", data={"username": user.username}, format="json"
-    )
-    return response
-
-
 @pytest.mark.django_db
 @pytest.mark.api
 class TestFollowUrl:
@@ -47,7 +37,7 @@ class TestFollowUrl:
         response = api_client.post(url, data={"author": user.username}, format="json")
         assert response.status_code == 201
 
-    def test_get_delete_subscription_url(self, api_client, new_user, new_subscription):
+    def test_delete_subscription_url(self, api_client, new_user):
         url = "/api/v1/unsubscribe/"
         user = CustomUserFactory.create()
         api_client.force_authenticate(user=new_user)

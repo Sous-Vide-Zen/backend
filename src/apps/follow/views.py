@@ -26,10 +26,11 @@ class FollowViewSet(GenericViewSet, ListModelMixin):
     swagger_tags = ["subscriptions"]
 
     def get_queryset(self):
+        username = self.kwargs.get("username")
         return (
-            Follow.objects.filter(user__username=self.kwargs.get("username"))
-            .prefetch_related("user")
-            .annotate(subscribers_count=Count("author"))
+            Follow.objects.filter(user__username=username)
+            .select_related("author")
+            .annotate(subscribers_count=Count("author__following"))
             .order_by("-created_at")
         )
 
@@ -41,10 +42,11 @@ class FollowerViewSet(GenericViewSet, ListModelMixin):
     swagger_tags = ["subscriptions"]
 
     def get_queryset(self):
+        username = self.kwargs.get("username")
         return (
-            Follow.objects.filter(author__username=self.kwargs.get("username"))
-            .prefetch_related("author")
-            .annotate(subscribers_count=Count("user"))
+            Follow.objects.filter(author__username=username)
+            .select_related("user")
+            .annotate(subscribers_count=Count("user__following"))
             .order_by("-created_at")
         )
 

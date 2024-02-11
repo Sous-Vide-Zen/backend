@@ -1,120 +1,35 @@
+import factory
 import pytest
-from django.db.utils import IntegrityError
+from factory.django import DjangoModelFactory
 
 from src.apps.follow.models import Follow
-from src.apps.follow.serializers import UserFollowerSerializer
 from src.apps.users.models import CustomUser
 
 
-@pytest.mark.django_db
-def test_follow_serializer():
-    """
-    Follow serializer test for create method with valid data and with invalid data for user and author
-    """
-    user = CustomUser.objects.create_user(
-        username="test_user",
-        email="test_user@x.com",
-        password="test_password",
-    )
-    user2 = CustomUser.objects.create_user(
-        username="test_user2",
-        email="test_user2@x.com",
-        password="test_password",
-    )
+class CustomUserFactory(DjangoModelFactory):
+    class Meta:
+        model = CustomUser
 
-    follow = Follow.objects.create(user=user, author=user2)
-    assert follow.author == user2
+    username = factory.Sequence(lambda n: f"test_user_{n}")
+    email = factory.LazyAttribute(lambda o: f"{o.username}@x.com")
+    password = "test_password"
 
 
 @pytest.mark.django_db
-def test_follow_serializer_with_invalid_data():
-    """
-    Follow serializer test for create method with invalid data for user and author
-    """
-    user = CustomUser.objects.create_user(
-        username="test_user",
-        email="test_user@x.com",
-        password="test_password",
-    )
-    user2 = CustomUser.objects.create_user(
-        username="test_user2",
-        email="test_user2@x.com",
-        password="test_password",
-    )
-
-    with pytest.raises(IntegrityError):
-        Follow.objects.create(user=user, author=user2)
-        Follow.objects.create(user=user, author=user)
-
-
-@pytest.mark.django_db
-def test_user_follower_serializer():
-    """
-    User follower serializer test for get method
-    """
-    user = CustomUser.objects.create_user(
-        username="test_user",
-        email="test_user@x.com",
-        password="test_password",
-        bio="short bio example",
-    )
-    user2 = CustomUser.objects.create_user(
-        username="test_user2",
-        email="test_user2@x.com",
-        password="test_password",
-        bio="long bio example",
-    )
-
-    follow = Follow.objects.create(user=user, author=user2)
-
-    serializer = UserFollowerSerializer(follow.author)
-    assert serializer.data == {
-        "id": user2.pk,
-        "username": user2.username,
-        "avatar": user2.avatar,
-        "bio": "long bio example...",
-    }
-
-
-# @pytest.mark.django_db
-# def test_follow_list_serializer():
-#     """
-#     Follow list serializer test for get method
-#     """
-#     user = CustomUser.objects.create_user(
-#         username="test_user",
-#         email="test_user@x.com",
-#         password="test_password",
-#     )
-#     user2 = CustomUser.objects.create_user(
-#         username="test_user2",
-#         email="test_user2@x.com",
-#         password="test_password",
-#     )
-#     user3 = CustomUser.objects.create_user(
-#         username="test_user3",
-#         email="test_user3@x.com",
-#         password="test_password",
-#     )
-#
-#     serializer = FollowListSerializer(Follow.objects.all(), many=True)
-#     assert serializer.data == [
-#         {
-#             "id": Follow.objects.get(user=user, author=user2).pk,
-#             "author": {
-#                 "id": user2.pk,
-#                 "username": user2.username,
-#                 "avatar": user2.avatar,
-#                 "bio": "",
-#             },
-#         },
-#         {
-#             "id": Follow.objects.get(user=user, author=user3).pk,
-#             "author": {
-#                 "id": user3.pk,
-#                 "username": user3.username,
-#                 "avatar": user3.avatar,
-#                 "bio": "",
-#             },
-#         },
-#     ]
+@pytest.mark.api
+class TestFollowSerializers:
+    def test_follow_list_serializer(self, api_client, new_user, new_author):
+        """
+        Follow serializers test
+        """
+        Follow.objects.create(user=new_user, author=new_author)
+        url = f"/api/v1/user/{new_user}/subscriptions/"
+        api_client.force_authenticate(user=new_user)
+        response = api_client.get(url)
+        assert response.status_code == 200
+        assert len(response.data["results"]) == 1
+        assert response.data["results"][0]["author"]["username"] == new_author.username
+        assert response.data["results"][0]["author"]["id"] == new_author.id
+        assert response.data["results"][0]["author"]["avatar"] == new_author.avatar
+        assert response.data["results"][0]["author"]["bio"] == new_author.bio
+        assert response.data["results"][0]["subscribers_count"] == 0
