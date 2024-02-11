@@ -16,6 +16,7 @@ from src.apps.follow.serializers import (
     FollowerListSerializer,
     FollowCreateSerializer,
 )
+from src.apps.users.models import CustomUser
 from src.base.paginators import FollowerPagination
 
 
@@ -26,10 +27,11 @@ class FollowViewSet(GenericViewSet, ListModelMixin):
     swagger_tags = ["subscriptions"]
 
     def get_queryset(self):
+        username = self.kwargs.get("username")
         return (
-            Follow.objects.filter(user__username=self.kwargs.get("username"))
-            .prefetch_related("user")
-            .annotate(subscribers_count=Count("user"))
+            Follow.objects.filter(user__username=username)
+            .select_related("author")
+            .annotate(subscribers_count=Count("author__following"))
             .order_by("-created_at")
         )
 
@@ -41,10 +43,11 @@ class FollowerViewSet(GenericViewSet, ListModelMixin):
     swagger_tags = ["subscriptions"]
 
     def get_queryset(self):
+        username = self.kwargs.get("username")
         return (
-            Follow.objects.filter(author__username=self.kwargs.get("username"))
-            .prefetch_related("author")
-            .annotate(subscribers_count=Count("user"))
+            Follow.objects.filter(author__username=username)
+            .select_related("user")
+            .annotate(subscribers_count=Count("user__following"))
             .order_by("-created_at")
         )
 
@@ -60,6 +63,12 @@ class SubscribeViewSet(ModelViewSet):
         return Follow.objects.filter(user=self.request.user)
 
     def create(self, request, *args, **kwargs):
+
+        if not CustomUser.objects.filter(username=request.data.get("author")).exists():
+            return Response(
+                status=HTTP_404_NOT_FOUND, data={"message": "Автор не найден"}
+            )
+
         super().create(request, *args, **kwargs)
         return Response(
             data={"message": "Вы успешно подписались на автора"},

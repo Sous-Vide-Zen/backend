@@ -32,6 +32,13 @@ def create_token(api_client, django_user_model):
     return f'Bearer {response.data["access"]}'
 
 
+@pytest.fixture
+def new_author(django_user_model):
+    return django_user_model.objects.create_user(
+        username="test2", password="changeme123", email="test2@ya.ru"
+    )
+
+
 @pytest.fixture(scope="function")
 def new_user(django_user_model):
     return django_user_model.objects.create_user(
@@ -54,9 +61,7 @@ def new_recipe(new_user):
 
 @pytest.fixture(scope="function")
 def new_ingredient():
-    # Создаем единицу измерения для ингредиента
     unit = Unit.objects.create(name="Штука")
-    # Создаем ингредиент и добавляем единицу измерения к нему
     ingredient = Ingredient.objects.create(name="Яйцо")
     ingredient.units.add(unit)
     return ingredient
