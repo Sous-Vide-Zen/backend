@@ -12,12 +12,15 @@ router.register(
 router.register(
     r"user/(?P<username>[A-Za-z0-9]+)/subscribers",
     FollowerViewSet,
-    basename="subscriptions",
+    basename="subscribers",
 )
 
 urlpatterns = [
+    path("subscribe/", SubscribeViewSet.as_view({"post": "create"}), name="subscribe"),
     path(
-        "subscribe/", SubscribeViewSet.as_view({"post": "create", "delete": "destroy"})
+        "unsubscribe/",
+        SubscribeViewSet.as_view({"delete": "destroy"}),
+        name="unsubscribe",
     ),
 ]
 

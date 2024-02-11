@@ -1,28 +1,56 @@
+import factory
 import pytest
+from factory.django import DjangoModelFactory
 
 from src.apps.follow.models import Follow
 from src.apps.users.models import CustomUser
 
 
+class CustomUserFactory(DjangoModelFactory):
+    class Meta:
+        model = CustomUser
+
+    username = factory.Sequence(lambda n: f"test_user_{n}")
+    email = factory.LazyAttribute(lambda o: f"{o.username}@x.com")
+    password = "test_password"
+
+
+@pytest.fixture
+def new_subscription(api_client, new_user):
+    user = CustomUserFactory.create()
+    api_client.force_authenticate(user=new_user)
+    response = api_client.post(
+        "/api/v1/subscribe/", data={"username": user.username}, format="json"
+    )
+    return response
+
+
 @pytest.mark.django_db
-def test_follow_url(api_client):
-    """
-    Follow url test
-    """
-    user = CustomUser.objects.create_user(
-        username="test_user",
-        email="test_user@x.com",
-        password="test_password",
-    )
-    user2 = CustomUser.objects.create_user(
-        username="test_user2",
-        email="test_user2@x.com",
-        password="test_password",
-    )
+@pytest.mark.api
+class TestFollowUrl:
+    def test_get_subscriptions_url(self, api_client, new_user):
+        url = f"/api/v1/user/{new_user}/subscriptions/"
+        api_client.force_authenticate(user=new_user)
+        response = api_client.get(url)
+        assert response.status_code == 200
 
-    follow = Follow.objects.create(user=user, author=user2)
+    def test_get_followers_url(self, api_client, new_user):
+        url = f"/api/v1/user/{new_user}/subscribers/"
+        api_client.force_authenticate(user=new_user)
+        response = api_client.get(url)
+        assert response.status_code == 200
 
-    url = f"/api/v1/user/{user2}/subscriptions/"
-    print(url)
-    response = api_client.get(url)
-    assert response.status_code == 200
+    def test_get_create_subscription_url(self, api_client, new_user):
+        url = "/api/v1/subscribe/"
+        user = CustomUserFactory.create()
+        api_client.force_authenticate(user=new_user)
+        response = api_client.post(url, data={"author": user.username}, format="json")
+        assert response.status_code == 201
+
+    def test_get_delete_subscription_url(self, api_client, new_user, new_subscription):
+        url = "/api/v1/unsubscribe/"
+        user = CustomUserFactory.create()
+        api_client.force_authenticate(user=new_user)
+        Follow.objects.create(user=new_user, author=user)
+        response = api_client.delete(url, data={"author": user.username}, format="json")
+        assert response.status_code == 204
