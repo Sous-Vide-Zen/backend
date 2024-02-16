@@ -19,17 +19,17 @@ class CustomUserManager(BaseUserManager):
         if username is None:  # Если username не указан, установите его в None
             username = None
 
-
         user = self.model(email=email, username=username, **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
         return user
 
     def create_superuser(self, email, username=None, password=None, **extra_fields):
-        extra_fields.setdefault('is_staff', True)
-        extra_fields.setdefault('is_superuser', True)
+        extra_fields.setdefault("is_staff", True)
+        extra_fields.setdefault("is_superuser", True)
 
         return self.create_user(email, username, password, **extra_fields)
+
 
 class CustomUser(AbstractUser, PermissionsMixin):
 
@@ -61,14 +61,19 @@ class CustomUser(AbstractUser, PermissionsMixin):
     is_admin = models.BooleanField(default=False)
 
     def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)  # сначала сохраняем пользователя, чтобы получить id
+        super().save(
+            *args, **kwargs
+        )  # сначала сохраняем пользователя, чтобы получить id
         if not self.username:  # если username не задан
-            new_username = f'user{self.id}'  # устанавливаем username равным user+id
+            new_username = f"user{self.id}"  # устанавливаем username равным user+id
             while CustomUser.objects.filter(
-                    username=new_username).exists():  # проверяем, существует ли уже такой username
-                new_username += '1'  # если существует, добавляем к username дополнительные символы
+                username=new_username
+            ).exists():  # проверяем, существует ли уже такой username
+                new_username += (
+                    "1"  # если существует, добавляем к username дополнительные символы
+                )
             self.username = new_username
-            super().save(update_fields=['username'])
+            super().save(update_fields=["username"])
 
     class Meta:
         verbose_name = "user"
