@@ -122,7 +122,7 @@ SIMPLE_JWT = {
 }
 
 AUTHENTICATION_BACKENDS = (
-    "social_core.backends.vk.VKOAuth2",
+    "config.plugin_soc_auth.CustomVKOAuth2",
     "social_core.backends.yandex.YandexOAuth2",
     "django.contrib.auth.backends.ModelBackend",
 )
