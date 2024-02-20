@@ -7,6 +7,9 @@ from src.apps.users.models import CustomUser
 
 
 class ReactionSerializer(serializers.ModelSerializer):
+    # не используется в связи с тем, что в поле "reactions"
+    # указывается общее кол-во emoji по типам
+
     class Meta:
         model = Reaction
         fields = ["author", "pub_date", "emoji"]
@@ -22,10 +25,11 @@ class FeedSerializer(serializers.ModelSerializer):
     total_comments_count = serializers.IntegerField()
     total_views_count = serializers.IntegerField()
     total_reactions_count = serializers.IntegerField()
-    reactions = ReactionSerializer(many=True, read_only=True)
+    # reactions = ReactionSerializer(many=True, read_only=True)
     tag = TagListSerializerField()
     author = AuthorSerializer()
     activity_count = serializers.IntegerField()
+    reactions = serializers.SerializerMethodField()
 
     class Meta:
         model = Recipe
@@ -44,7 +48,12 @@ class FeedSerializer(serializers.ModelSerializer):
             "total_views_count",
             "total_reactions_count",
             "reactions",
-            "tag",
-            "reactions",
             "activity_count",
         ]
+
+    def get_reactions(self, obj):
+        reactions = obj.reactions.all()
+        emotions = dict()
+        for reaction in reactions:
+            emotions[reaction.emoji] = reactions.filter(emoji=reaction.emoji).count()
+        return emotions
