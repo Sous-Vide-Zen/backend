@@ -43,7 +43,9 @@ def bulk_get_or_create(
     Bulk get or create objects
     """
     match_values: List[Any] = [getattr(obj, match_field) for obj in objs]
-    existing_objs: List[Model] = model.objects.filter(**{f"{match_field}__in": match_values})
+    existing_objs: List[Model] = model.objects.filter(
+        **{f"{match_field}__in": match_values}
+    )
 
     existing_map: dict = {getattr(obj, match_field): obj for obj in existing_objs}
 
@@ -56,7 +58,9 @@ def bulk_get_or_create(
     return [existing_map[value] for value in match_values]
 
 
-def create_ingredients_in_recipe(recipe: Model, ingredients_data: List[dict]) -> List[Model]:
+def create_ingredients_in_recipe(
+    recipe: Model, ingredients_data: List[dict]
+) -> List[Model]:
     """
     Create ingredients in recipe
     """
@@ -72,7 +76,9 @@ def create_ingredients_in_recipe(recipe: Model, ingredients_data: List[dict]) ->
             {"errors": "В рецепте уже есть один или несколько добавляемых ингредиентов"}
         )
 
-    ingredient_objs: List[Ingredient] = [Ingredient(name=data["name"]) for data in ingredients_data]
+    ingredient_objs: List[Ingredient] = [
+        Ingredient(name=data["name"]) for data in ingredients_data
+    ]
     unit_names: Set[str] = {data["unit"] for data in ingredients_data}
     unit_objs: List[Unit] = [Unit(name=name) for name in unit_names]
 
