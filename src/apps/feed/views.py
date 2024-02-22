@@ -65,7 +65,7 @@ class FeedUserList(mixins.ListModelMixin, viewsets.GenericViewSet):
                 total_reactions_count=Count("reactions"),
                 activity_count=F("comments_count")
                 + F("views_count")
-                + F("total_reactions_count"),
+                + F("reactions_count"),
             )
         )
         return queryset
