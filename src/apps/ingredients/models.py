@@ -18,7 +18,6 @@ class Ingredient(models.Model):
     """
 
     name = models.CharField(max_length=100, unique=True)
-    units = models.ManyToManyField(Unit, related_name="ingredients")
 
     class Meta:
         ordering = ["name"]
@@ -32,15 +31,19 @@ class IngredientInRecipe(models.Model):
     IngredientInRecipe model
     """
 
-    ingredient = models.ForeignKey("Ingredient", null=True, on_delete=models.SET_NULL)
-    recipe = models.ForeignKey("recipes.Recipe", on_delete=models.CASCADE)
-    unit = models.ForeignKey(Unit, null=True, on_delete=models.SET_NULL)
+    ingredient = models.ForeignKey(
+        "Ingredient",
+        null=True,
+        on_delete=models.SET_NULL,
+        related_name="ingredientsinrecipe",
+    )
+    recipe = models.ForeignKey(
+        "recipes.Recipe", on_delete=models.CASCADE, related_name="ingredientsinrecipe"
+    )
+    unit = models.ForeignKey(
+        Unit, null=True, on_delete=models.SET_NULL, related_name="ingredientsinrecipe"
+    )
     amount = models.PositiveIntegerField()
-
-    def clean_unit(self):
-        if self.unit not in self.ingredient.units.all():
-            self.ingredient.units.add(self.unit)
-            self.ingredient.save()
 
     def __str__(self):
         return f"{self.recipe.title}_{self.ingredient.name}"
