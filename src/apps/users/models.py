@@ -12,7 +12,7 @@ class CustomUser(AbstractUser, PermissionsMixin):
     REQUIRED_FIELDS = ["username"]
 
     email = models.EmailField(max_length=150, unique=True)
-    display_name = ...
+    display_name = models.CharField(max_length=30, blank=True, null=True)
     phone = PhoneNumberField(blank=True, null=True)
     join_date = models.DateTimeField(default=timezone.now)
     country = models.CharField(max_length=30, blank=True, null=True, default=None)
