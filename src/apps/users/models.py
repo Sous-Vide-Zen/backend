@@ -44,7 +44,7 @@ class CustomUser(AbstractUser, PermissionsMixin):
         ]
 
     @property
-    def is_autenticated(self):
+    def is_authenticated(self):
         return True
 
     def __str__(self):
