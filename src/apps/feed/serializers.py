@@ -14,6 +14,10 @@ class AuthorSerializer(serializers.ModelSerializer):
 
 
 class FeedSerializer(serializers.ModelSerializer):
+    """
+    Reflection of Feed page with count of emojies by type in reactions field
+    """
+
     total_comments_count = serializers.IntegerField()
     total_views_count = serializers.IntegerField()
     total_reactions_count = serializers.IntegerField()
@@ -43,7 +47,9 @@ class FeedSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
-        reactions_queryset = instance.reactions.values("emoji").annotate(count=Count("emoji"))
+        reactions_queryset = instance.reactions.values("emoji").annotate(
+            count=Count("emoji")
+        )
         representation["reactions"] = {
             reaction["emoji"]: reaction["count"] for reaction in reactions_queryset
         }
