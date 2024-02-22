@@ -79,8 +79,6 @@ class RecipeViewSet(
         view_exists = ViewRecipes.objects.filter(
             user=user_id, recipe=recipe, created_at__gte=time_threshold
         ).exists()
-        print("view_exists=", view_exists)
 
         if not view_exists:
-            print("create view")
             ViewRecipes.objects.create(user=user_id, recipe=recipe)
