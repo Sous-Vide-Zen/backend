@@ -1,19 +1,22 @@
 from django.db import transaction
 from django.db.models import Count
-from django.utils.text import slugify
 from rest_framework.fields import CurrentUserDefault, HiddenField
 from rest_framework.serializers import (
     ModelSerializer,
-    ValidationError,
     IntegerField,
+    SlugField,
 )
 from taggit.serializers import TagListSerializerField, TagList
-from unidecode import unidecode
 
+from config.settings import SHORT_RECIPE_SYMBOLS
 from src.apps.ingredients.serializers import IngredientInRecipeSerializer
 from src.apps.recipes.models import Recipe, Category
 from src.apps.users.serializers import AuthorInRecipeSerializer
-from src.base.services import shorten_text, create_ingredients_in_recipe
+from src.base.services import (
+    shorten_text,
+    create_ingredients_in_recipe,
+    create_recipe_slug,
+)
 
 
 class CategorySerializer(ModelSerializer):
@@ -23,7 +26,11 @@ class CategorySerializer(ModelSerializer):
 
     class Meta:
         model = Category
-        fields = ["id", "name", "slug"]
+        fields = (
+            "id",
+            "name",
+            "slug",
+        )
 
 
 class TagSerializer(TagListSerializerField):
@@ -51,6 +58,46 @@ class TagSerializer(TagListSerializerField):
             value = TagList(value, pretty_print=self.pretty_print)
 
         return value
+
+
+class BaseRecipeSerializer(ModelSerializer):
+    """
+    Base recipe serializer
+    """
+
+    author = HiddenField(default=CurrentUserDefault())
+    ingredients = IngredientInRecipeSerializer(many=True)
+    tag = TagSerializer(required=False)
+
+    class Meta:
+        model = Recipe
+        fields = (
+            "id",
+            "author",
+            "title",
+            "slug",
+            "preview_image",
+            "ingredients",
+            "full_text",
+            "tag",
+            "category",
+            "cooking_time",
+            "pub_date",
+            "updated_at",
+        )
+
+    def validate(self, data):
+        """
+        Validate data
+        """
+
+        if "full_text" in data:
+            data["short_text"] = shorten_text(data["full_text"], SHORT_RECIPE_SYMBOLS)
+
+        if "title" in data:
+            data = create_recipe_slug(Recipe, data)
+
+        return data
 
 
 class RecipeRetriveSerializer(ModelSerializer):
@@ -86,6 +133,10 @@ class RecipeRetriveSerializer(ModelSerializer):
         )
 
     def to_representation(self, instance):
+        """
+        representation
+        """
+
         representation = super().to_representation(instance)
         reactions_queryset = instance.reactions.values("emoji").annotate(
             count=Count("emoji")
@@ -96,49 +147,13 @@ class RecipeRetriveSerializer(ModelSerializer):
         return representation
 
 
-class RecipeCreateSerializer(ModelSerializer):
+class RecipeCreateSerializer(BaseRecipeSerializer):
     """
     Create recipe serializer
     """
 
-    author = HiddenField(default=CurrentUserDefault())
-    ingredients = IngredientInRecipeSerializer(many=True)
-    tag = TagSerializer(required=False)
-
-    class Meta:
-        model = Recipe
-        fields = (
-            "id",
-            "author",
-            "title",
-            "slug",
-            "preview_image",
-            "ingredients",
-            "full_text",
-            "tag",
-            "category",
-            "cooking_time",
-            "pub_date",
-            "updated_at",
-        )
-
-    def validate(self, data):
-        """
-        Validate data
-        """
-        data["short_text"] = shorten_text(data["full_text"], 100)
-
-        with transaction.atomic():
-            same_recipes = Recipe.objects.filter(title=data["title"]).count()
-            slug_str = unidecode(
-                f"{data['title']}_{same_recipes + 1}" if same_recipes else data["title"]
-            )
-            data["slug"] = slugify(slug_str)
-
-            if Recipe.objects.filter(slug=data["slug"]).exists():
-                raise ValidationError("A recipe with this slug already exists.")
-
-        return data
+    class Meta(BaseRecipeSerializer.Meta):
+        fields = BaseRecipeSerializer.Meta.fields
 
     @transaction.atomic
     def create(self, validated_data):
@@ -160,3 +175,41 @@ class RecipeCreateSerializer(ModelSerializer):
         if ingredients_instance:
             recipe.ingredients.set(ingredients_instance)
         return recipe
+
+
+class RecipeUpdateSerializer(BaseRecipeSerializer):
+    """
+    Update recipe serializer
+    """
+
+    slug = SlugField(read_only=True)
+
+    class Meta(BaseRecipeSerializer.Meta):
+        fields = BaseRecipeSerializer.Meta.fields
+
+    def update(self, instance, validated_data):
+        """
+        Update recipe
+        """
+        tags_data = validated_data.pop("tag", [])
+        ingredients_data = (
+            self.initial_data["ingredients"]
+            if "ingredients" in self.initial_data
+            else None
+        )
+        validated_data.pop("ingredients", [])
+        category_data = validated_data.pop("category", [])
+
+        if tags_data:
+            instance.tag.set(tags_data)
+        if category_data:
+            instance.category.set(category_data)
+        if ingredients_data:
+            instance.ingredients.clear()
+            ingredients_instance = create_ingredients_in_recipe(
+                instance, ingredients_data
+            )
+        if ingredients_instance:
+            instance.ingredients.set(ingredients_instance)
+
+        return super().update(instance, validated_data)

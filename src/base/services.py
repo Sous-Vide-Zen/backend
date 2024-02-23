@@ -6,7 +6,9 @@ from django.db import transaction
 from django.db.models import Model
 from django.http import HttpRequest
 from django.utils import timezone
+from django.utils.text import slugify
 from django.utils.translation import gettext_lazy as _
+from unidecode import unidecode
 
 from config.settings import SHORT_RECIPE_SYMBOLS, TIME_FROM_VIEW_RECIPE
 from src.apps.ingredients.models import Ingredient, Unit, IngredientInRecipe
@@ -66,7 +68,7 @@ def create_ingredients_in_recipe(
     recipe: Model, ingredients_data: List[dict]
 ) -> List[Model]:
     """
-    Create ingredients in recipe
+    Create or update ingredients in recipe
     """
     ingredient_names: List[str] = [data["name"] for data in ingredients_data]
     if len(ingredient_names) != len(set(ingredient_names)):
@@ -75,15 +77,15 @@ def create_ingredients_in_recipe(
     existing_ingredients: List[str] = IngredientInRecipe.objects.filter(
         recipe=recipe, ingredient__name__in=ingredient_names
     ).values_list("ingredient__name", flat=True)
-    if existing_ingredients:
-        raise ValidationError(
-            {"errors": "В рецепте уже есть один или несколько добавляемых ингредиентов"}
-        )
+
+    new_ingredients: List[dict] = [
+        data for data in ingredients_data if data["name"] not in existing_ingredients
+    ]
 
     ingredient_objs: List[Ingredient] = [
-        Ingredient(name=data["name"]) for data in ingredients_data
+        Ingredient(name=data["name"]) for data in new_ingredients
     ]
-    unit_names: Set[str] = {data["unit"] for data in ingredients_data}
+    unit_names: Set[str] = {data["unit"] for data in new_ingredients}
     unit_objs: List[Unit] = [Unit(name=name) for name in unit_names]
 
     with transaction.atomic():
@@ -102,15 +104,16 @@ def create_ingredients_in_recipe(
             unit=units[ingredient_data["unit"]],
             amount=ingredient_data["amount"],
         )
-        for ingredient_data in ingredients_data
+        for ingredient_data in new_ingredients
     ]
     IngredientInRecipe.objects.bulk_create(ingredients_in_recipe_objs)
-    return ingredients_in_recipe_objs
+    return IngredientInRecipe.objects.filter(recipe=recipe)
 
 
 def increment_view_count(
     model: Type[Model], recipe: Model, request: HttpRequest
 ) -> None:
+    """Increment view count"""
     user_id: str = request.user if request.user.is_authenticated else "anonymous"
     time_threshold: timezone.datetime = timezone.now() - timedelta(
         minutes=TIME_FROM_VIEW_RECIPE
@@ -122,3 +125,18 @@ def increment_view_count(
 
     if not view_exists:
         model.objects.create(user=user_id, recipe=recipe)
+
+
+def create_recipe_slug(model: Type[Model], data: dict) -> dict:
+    """Create recipe slug"""
+    with transaction.atomic():
+        same_recipes: int = model.objects.filter(title=data["title"]).count()
+        slug_str: str = unidecode(
+            f"{data['title']}_{same_recipes + 1}" if same_recipes else data["title"]
+        )
+        data["slug"]: str = slugify(slug_str)
+
+        if model.objects.filter(slug=data["slug"]).exists():
+            raise ValidationError("A recipe with this slug already exists.")
+
+    return data
