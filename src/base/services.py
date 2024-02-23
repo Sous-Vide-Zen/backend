@@ -1,10 +1,14 @@
+from datetime import timedelta
+from typing import List, Type, Any, Set
+
 from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.db.models import Model
+from django.http import HttpRequest
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
-from typing import List, Type, Any, Set
 
-from config.settings import SHORT_RECIPE_SYMBOLS
+from config.settings import SHORT_RECIPE_SYMBOLS, TIME_FROM_VIEW_RECIPE
 from src.apps.ingredients.models import Ingredient, Unit, IngredientInRecipe
 
 
@@ -102,3 +106,19 @@ def create_ingredients_in_recipe(
     ]
     IngredientInRecipe.objects.bulk_create(ingredients_in_recipe_objs)
     return ingredients_in_recipe_objs
+
+
+def increment_view_count(
+    model: Type[Model], recipe: Model, request: HttpRequest
+) -> None:
+    user_id: str = request.user if request.user.is_authenticated else "anonymous"
+    time_threshold: timezone.datetime = timezone.now() - timedelta(
+        minutes=TIME_FROM_VIEW_RECIPE
+    )
+
+    view_exists: bool = model.objects.filter(
+        user=user_id, recipe=recipe, created_at__gte=time_threshold
+    ).exists()
+
+    if not view_exists:
+        model.objects.create(user=user_id, recipe=recipe)

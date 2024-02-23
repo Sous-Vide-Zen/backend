@@ -1,7 +1,4 @@
-from datetime import timedelta
-
 from django.db.models import Count
-from django.utils import timezone
 from rest_framework.filters import SearchFilter
 from rest_framework.mixins import (
     RetrieveModelMixin,
@@ -9,15 +6,19 @@ from rest_framework.mixins import (
     UpdateModelMixin,
     DestroyModelMixin,
 )
-from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
-from config.settings import TIME_FROM_VIEW_RECIPE
+from src.apps.view.models import ViewRecipes
 from src.base.permissions import IsOwnerOrAdminOrReadOnly
 from .models import Recipe
-from .serializers import RecipeRetriveSerializer, RecipeCreateSerializer
-from ..view.models import ViewRecipes
+from .serializers import (
+    RecipeRetriveSerializer,
+    RecipeCreateSerializer,
+    RecipeUpdateSerializer,
+)
+from ...base.services import increment_view_count
 
 
 class RecipeViewSet(
@@ -50,8 +51,6 @@ class RecipeViewSet(
         return queryset
 
     def get_permissions(self):
-        if self.request.method == "GET":
-            self.permission_classes = (AllowAny,)
         if self.request.method == "POST":
             self.permission_classes = (IsAuthenticated,)
         else:
@@ -63,22 +62,13 @@ class RecipeViewSet(
             self.serializer_class = RecipeRetriveSerializer
         if self.request.method == "POST":
             self.serializer_class = RecipeCreateSerializer
+        if self.request.method == "PATCH":
+            self.serializer_class = RecipeUpdateSerializer
         return super(RecipeViewSet, self).get_serializer_class()
 
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
-        self.increment_view_count(instance, request)
+        increment_view_count(ViewRecipes, instance, request)
 
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
-
-    def increment_view_count(self, recipe, request):
-        user_id = request.user.id if request.user.is_authenticated else "anonymous"
-        time_threshold = timezone.now() - timedelta(minutes=TIME_FROM_VIEW_RECIPE)
-
-        view_exists = ViewRecipes.objects.filter(
-            user=user_id, recipe=recipe, created_at__gte=time_threshold
-        ).exists()
-
-        if not view_exists:
-            ViewRecipes.objects.create(user=user_id, recipe=recipe)
