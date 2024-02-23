@@ -12,13 +12,13 @@ from rest_framework.viewsets import GenericViewSet
 
 from src.apps.view.models import ViewRecipes
 from src.base.permissions import IsOwnerOrAdminOrReadOnly
+from src.base.services import increment_view_count
 from .models import Recipe
 from .serializers import (
     RecipeRetriveSerializer,
     RecipeCreateSerializer,
     RecipeUpdateSerializer,
 )
-from ...base.services import increment_view_count
 
 
 class RecipeViewSet(
@@ -31,6 +31,7 @@ class RecipeViewSet(
     filter_backends = (SearchFilter,)
     search_fields = ("title",)
     lookup_field = "slug"
+    http_method_names = ["get", "post", "patch", "delete"]
 
     def get_queryset(self):
         slug = self.kwargs.get("slug")
