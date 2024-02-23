@@ -72,3 +72,8 @@ class RecipeViewSet(
 
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
+
+    def destroy(self, request, *args, **kwargs):
+        """Delete recipe"""
+        self.get_object().delete()
+        return Response({"message": "Рецепт успешно удален"}, status=204)
