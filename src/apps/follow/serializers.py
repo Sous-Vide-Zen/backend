@@ -69,10 +69,4 @@ class FollowCreateSerializer(serializers.ModelSerializer):
         if user == author:
             raise serializers.ValidationError("Нельзя подписаться на самого себя.")
 
-        queryset = Follow.objects.filter(user=user, author=author)
-        if queryset.count() > 0:
-            raise serializers.ValidationError(
-                {"message": "Вы уже подписаны на этого автора"}
-            )
-
         return data

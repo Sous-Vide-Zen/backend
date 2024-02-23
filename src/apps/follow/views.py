@@ -6,6 +6,7 @@ from rest_framework.response import Response
 from rest_framework.status import (
     HTTP_201_CREATED,
     HTTP_204_NO_CONTENT,
+    HTTP_400_BAD_REQUEST,
     HTTP_404_NOT_FOUND,
 )
 from rest_framework.viewsets import GenericViewSet, ModelViewSet
@@ -69,6 +70,17 @@ class SubscribeViewSet(ModelViewSet):
                 status=HTTP_404_NOT_FOUND, data={"message": "Автор не найден"}
             )
 
+        author = request.data.get("author")
+        subscription = Follow.objects.filter(
+            user=self.request.user, author__username=author
+        )
+
+        if subscription.exists():
+            return Response(
+                data={"message": "Вы уже подписаны на этого автора"},
+                status=HTTP_400_BAD_REQUEST,
+            )
+
         super().create(request, *args, **kwargs)
         return Response(
             data={"message": "Вы успешно подписались на автора"},
@@ -80,7 +92,12 @@ class SubscribeViewSet(ModelViewSet):
         queryset = Follow.objects.filter(
             user=self.request.user, author__username=author
         )
+
         if not queryset.exists():
             return Response(status=HTTP_404_NOT_FOUND)
+
         queryset.delete()
-        return Response(status=HTTP_204_NO_CONTENT)
+        return Response(
+            data={"message": "Вы успешно отписались от автора"},
+            status=HTTP_204_NO_CONTENT,
+        )
