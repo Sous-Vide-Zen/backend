@@ -14,4 +14,4 @@ class IsOwnerOrAdminOrReadOnly(BasePermission):
             return True
 
         # Разрешить доступ на изменение только владельцам объектов или администраторам
-        return obj == request.user or request.user.is_staff
+        return obj == request.user or request.user.is_admin

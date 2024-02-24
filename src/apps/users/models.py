@@ -1,3 +1,5 @@
+import random
+
 from django.contrib.auth.base_user import BaseUserManager
 from django.contrib.auth.models import AbstractUser, PermissionsMixin
 from django.core.exceptions import ValidationError
@@ -61,18 +63,12 @@ class CustomUser(AbstractUser, PermissionsMixin):
     is_admin = models.BooleanField(default=False)
 
     def save(self, *args, **kwargs):
-        super().save(
-            *args, **kwargs
-        )  # сначала сохраняем пользователя, чтобы получить id
-        if not self.username:  # если username не задан
-            new_username = f"user{self.id}"  # устанавливаем username равным user+id
-            while CustomUser.objects.filter(
-                username=new_username
-            ).exists():  # проверяем, существует ли уже такой username
-                new_username += (
-                    "1"  # если существует, добавляем к username дополнительные символы
-                )
-            self.username = new_username
+        creating = not self.pk
+        super().save(*args, **kwargs)
+        if creating and not self.username:
+            from .utils import generate_username  # Отложенный импорт
+
+            self.username = generate_username(self.id)
             super().save(update_fields=["username"])
 
     class Meta:

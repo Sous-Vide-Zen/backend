@@ -6,5 +6,7 @@ class CustomVKOAuth2(VKOAuth2):
         details = super().get_user_details(response)
         details[
             "username"
-        ] = None  # Устанавливаем username в None, чтобы избежать попыток создания пользователя с пустым username
+        ] = (
+            []
+        )  # Устанавливаем username в None, чтобы избежать попыток создания пользователя с пустым username
         return details
