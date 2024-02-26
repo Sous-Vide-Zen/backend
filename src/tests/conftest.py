@@ -3,8 +3,8 @@ from django.core.management import call_command
 from django.utils.text import slugify
 from rest_framework.test import APIClient
 
-from src.apps.ingredients.models import Ingredient, Unit
-from src.apps.recipes.models import Recipe
+from src.apps.ingredients.models import Ingredient, Unit, IngredientInRecipe
+from src.apps.recipes.models import Recipe, Category
 
 
 @pytest.fixture(scope="session")
@@ -40,8 +40,18 @@ def create_token(api_client, django_user_model):
         data={"password": "changeme123", "email": "test@ya.ru"},
         format="json",
     )
-    print(f'Bearer {response.data["access"]}')
     return f'Bearer {response.data["access"]}'
+
+
+@pytest.fixture(scope="function")
+def app_admin(django_user_model):
+    """
+    Create new user
+    """
+
+    return django_user_model.objects.create_user(
+        username="admin", password="changeme123", email="admin@ya.ru", is_staff=True
+    )
 
 
 @pytest.fixture
@@ -101,3 +111,45 @@ def new_unit():
 
     unit = Unit.objects.create(name="Штука")
     return unit
+
+
+@pytest.fixture(scope="function")
+def new_ingredient_in_recipe(new_recipe, new_ingredient, new_unit):
+    """
+    Create new ingredient in recipe
+    """
+
+    ingredient_in_recipe = IngredientInRecipe.objects.create(
+        recipe=new_recipe, ingredient=new_ingredient, unit=new_unit, amount=1
+    )
+    return ingredient_in_recipe
+
+
+@pytest.fixture(scope="function")
+def category_1():
+    """
+    Create new category
+    """
+
+    category = Category.objects.create(name="Рыба", slug="fish")
+    return category
+
+
+@pytest.fixture(scope="function")
+def category_2():
+    """
+    Create new category
+    """
+
+    category = Category.objects.create(name="Мясо", slug="meat")
+    return category
+
+
+@pytest.fixture(scope="function")
+def category_3():
+    """
+    Create new category
+    """
+
+    category = Category.objects.create(name="Овощи", slug="vegetables")
+    return category

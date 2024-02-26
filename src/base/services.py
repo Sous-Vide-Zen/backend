@@ -127,16 +127,17 @@ def increment_view_count(
         model.objects.create(user=user_id, recipe=recipe)
 
 
-def create_recipe_slug(model: Type[Model], data: dict) -> dict:
+def create_recipe_slug(model: Type[Model], data: dict, num: int = 1) -> dict:
     """Create recipe slug"""
     with transaction.atomic():
-        same_recipes: int = model.objects.filter(title=data["title"]).count()
+        same_recipes: int = model.objects.filter(title__startswith=data["title"]).count()
         slug_str: str = unidecode(
-            f"{data['title']}_{same_recipes + 1}" if same_recipes else data["title"]
+            f"{data['title']}_{same_recipes + num}" if same_recipes else data["title"]
         )
         data["slug"]: str = slugify(slug_str)
 
         if model.objects.filter(slug=data["slug"]).exists():
-            raise ValidationError("A recipe with this slug already exists.")
+            num += 1
+            create_recipe_slug(model, data, num)
 
     return data
