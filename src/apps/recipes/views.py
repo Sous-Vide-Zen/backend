@@ -11,7 +11,7 @@ from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
 from src.apps.view.models import ViewRecipes
-from src.base.permissions import IsOwnerOrAdminOrReadOnly
+from src.base.permissions import IsOwnerOrStaffOrReadOnly
 from src.base.services import increment_view_count
 from .models import Recipe
 from .serializers import (
@@ -55,7 +55,7 @@ class RecipeViewSet(
         if self.request.method == "POST":
             self.permission_classes = (IsAuthenticated,)
         else:
-            self.permission_classes = (IsOwnerOrAdminOrReadOnly,)
+            self.permission_classes = (IsOwnerOrStaffOrReadOnly,)
         return super(RecipeViewSet, self).get_permissions()
 
     def get_serializer_class(self):
