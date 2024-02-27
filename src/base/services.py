@@ -74,9 +74,20 @@ def create_ingredients_in_recipe(
     if len(ingredient_names) != len(set(ingredient_names)):
         raise ValidationError({"errors": "Нельзя добавить два одинаковых ингредиента"})
 
+    existing_ingredients: List[IngredientInRecipe] = IngredientInRecipe.objects.filter(
+        recipe=recipe
+    )
+    existing_ingredient_names: Set = set(
+        existing_ingredients.values_list("ingredient__name", flat=True)
+    )
+
+    ingredients_to_remove: Set = existing_ingredient_names - set(ingredient_names)
+    existing_ingredients.filter(ingredient__name__in=ingredients_to_remove).delete()
+
     existing_ingredients: List[str] = IngredientInRecipe.objects.filter(
         recipe=recipe, ingredient__name__in=ingredient_names
     ).values_list("ingredient__name", flat=True)
+    print("existing_ingredients=", existing_ingredients)
 
     new_ingredients: List[dict] = [
         data for data in ingredients_data if data["name"] not in existing_ingredients
@@ -130,7 +141,9 @@ def increment_view_count(
 def create_recipe_slug(model: Type[Model], data: dict, num: int = 1) -> dict:
     """Create recipe slug"""
     with transaction.atomic():
-        same_recipes: int = model.objects.filter(title__startswith=data["title"]).count()
+        same_recipes: int = model.objects.filter(
+            title__startswith=data["title"]
+        ).count()
         slug_str: str = unidecode(
             f"{data['title']}_{same_recipes + num}" if same_recipes else data["title"]
         )

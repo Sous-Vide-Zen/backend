@@ -210,6 +210,7 @@ class RecipeUpdateSerializer(BaseRecipeSerializer):
                 instance, ingredients_data
             )
         if ingredients_instance:
+            print("ingredients_instance=", ingredients_instance)
             instance.ingredients.set(ingredients_instance)
 
         return super().update(instance, validated_data)
