@@ -13,9 +13,6 @@ class ViewRecipes(models.Model):
     class Meta:
         verbose_name = "Просмотр рецепта"
         verbose_name_plural = "Просмотры рецептов"
-        constraints = [
-            models.UniqueConstraint(fields=["user", "recipe"], name="unique_view")
-        ]
         ordering = ["-created_at"]
 
     def __str__(self):
