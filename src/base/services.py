@@ -124,7 +124,12 @@ def increment_view_count(
     model: Type[Model], recipe: Model, request: HttpRequest
 ) -> None:
     """Increment view count"""
-    user_id: str = request.user if request.user.is_authenticated else "anonymous"
+
+    user_id: str = (
+        request.user
+        if request.user.is_authenticated
+        else f"Anonymous-{request.META.get('REMOTE_ADDR')}"
+    )
     time_threshold: timezone.datetime = timezone.now() - timedelta(
         minutes=TIME_FROM_VIEW_RECIPE
     )
