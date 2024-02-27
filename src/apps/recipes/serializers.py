@@ -1,5 +1,9 @@
+from datetime import timedelta
+
 from django.db import transaction
 from django.db.models import Count
+from django.utils import timezone
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.fields import CurrentUserDefault, HiddenField
 from rest_framework.serializers import (
     ModelSerializer,
@@ -191,6 +195,11 @@ class RecipeUpdateSerializer(BaseRecipeSerializer):
         """
         Update recipe
         """
+        if timezone.now() - instance.pub_date > timedelta(days=1):
+            raise PermissionDenied(
+                "Обновление рецепта возможно только в течение суток после создания."
+            )
+
         tags_data = validated_data.pop("tag", [])
         ingredients_data = (
             self.initial_data["ingredients"]
@@ -210,7 +219,6 @@ class RecipeUpdateSerializer(BaseRecipeSerializer):
                 instance, ingredients_data
             )
         if ingredients_instance:
-            print("ingredients_instance=", ingredients_instance)
             instance.ingredients.set(ingredients_instance)
 
         return super().update(instance, validated_data)

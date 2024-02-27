@@ -87,7 +87,6 @@ def create_ingredients_in_recipe(
     existing_ingredients: List[str] = IngredientInRecipe.objects.filter(
         recipe=recipe, ingredient__name__in=ingredient_names
     ).values_list("ingredient__name", flat=True)
-    print("existing_ingredients=", existing_ingredients)
 
     new_ingredients: List[dict] = [
         data for data in ingredients_data if data["name"] not in existing_ingredients
