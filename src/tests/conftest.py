@@ -1,5 +1,6 @@
 import pytest
 from django.core.management import call_command
+from django.utils import timezone
 from django.utils.text import slugify
 from rest_framework.test import APIClient
 
@@ -89,6 +90,8 @@ def new_recipe(new_author, new_ingredient, new_unit):
         full_text="This is a test recipe full text.",
         short_text="Test short text",
         cooking_time=30,
+        pub_date=timezone.now(),
+        updated_at=timezone.now(),
     )
     return recipe
 
@@ -153,3 +156,29 @@ def category_3():
 
     category = Category.objects.create(name="Овощи", slug="vegetables")
     return category
+
+
+@pytest.fixture(scope="function")
+def recipe_data(category_1, category_2, category_3):
+    """
+    Create recipe data
+    """
+
+    return {
+        "title": "Вареные яйца",
+        "ingredients": [
+            {"name": "Яйца", "unit": "Шт", "amount": 3},
+            {"name": "Волда", "unit": "литр", "amount": 1},
+        ],
+        "full_text": """Вареные яйца - это простое и полезное блюдо, которое можно приготовить за несколько минут. 
+                        Вот рецепт вареных яиц: \nНалейте в кастрюлю холодную воду и поставьте на сильный огонь. 
+                        \nОпустите в воду яйца и доведите до кипения.\nКак только вода закипит, уменьшите огонь и 
+                        варите яйца в зависимости от желаемой степени прожарки:\n3-4 минуты для яиц в мешочек 
+                        (мягких)\n5-6 минут для яиц всмятку (средних)\n7-8 минут для яиц вкрутую (твердых)\nСлейте 
+                        горячую воду и охладите яйца под холодной водой или в ледяной воде.\nОчистите яйца от 
+                        скорлупы и подавайте по вкусу: с солью, перцем, майонезом, сметаной, зеленью, хлебом и т.д.
+                        \nНадеюсь, вам понравится этот рецепт.""",
+        "tag": ["Яйца", "Вода", "Варка"],
+        "category": [category_1.id, category_2.id, category_3.id],
+        "cooking_time": 10,
+    }
