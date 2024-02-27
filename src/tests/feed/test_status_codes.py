@@ -35,10 +35,13 @@ class TestFeedCodes:
 
     def test_feed_subscriptions_auth(self, api_client, create_token):
         """
-        Should be 200 after getting token
+        Should be 401 for unauthorized user and 200 after getting token
         """
 
-        api_client.credentials(HTTP_AUTHORIZATION=create_token)
         url = "/api/v1/feed/?filter=subscriptions"
-        response = api_client.get(url)
-        assert response.status_code == 200
+        response_guest = api_client.get(url)
+        assert response_guest.status_code == 401
+
+        api_client.credentials(HTTP_AUTHORIZATION=create_token)
+        response_authorized = api_client.get(url)
+        assert response_authorized.status_code == 200
