@@ -51,7 +51,11 @@ def app_admin(django_user_model):
     """
 
     return django_user_model.objects.create_user(
-        username="admin", password="changeme123", email="admin@ya.ru", is_staff=True
+        username="admin",
+        password="changeme123",
+        email="admin@ya.ru",
+        is_staff=True,
+        is_admin=True,
     )
 
 
