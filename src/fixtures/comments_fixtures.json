@@ -1,1 +1,1 @@
-[]
+[{"model": "comments.comment", "pk": 1, "fields": {"author": 226, "recipe": 13, "text": "Привет", "pub_date": "2024-02-27T17:13:00.151Z", "parent": null}}]
