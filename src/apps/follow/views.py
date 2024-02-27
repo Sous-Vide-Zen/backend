@@ -6,7 +6,6 @@ from rest_framework.response import Response
 from rest_framework.status import (
     HTTP_201_CREATED,
     HTTP_204_NO_CONTENT,
-    HTTP_400_BAD_REQUEST,
     HTTP_404_NOT_FOUND,
 )
 from rest_framework.viewsets import GenericViewSet, ModelViewSet
@@ -36,6 +35,19 @@ class FollowViewSet(GenericViewSet, ListModelMixin):
             .order_by("-created_at")
         )
 
+    def list(self, request, username):
+        queryset = self.get_queryset()
+        username = self.kwargs.get("username")
+        if not CustomUser.objects.filter(username=username):
+            self.pagination_class = None
+            return Response(
+                status=HTTP_404_NOT_FOUND,
+                data={"detail": "Пользователь не существует."},
+            )
+        page = self.paginate_queryset(queryset)
+        serializer = FollowListSerializer(page, many=True)
+        return self.get_paginated_response(serializer.data)
+
 
 class FollowerViewSet(GenericViewSet, ListModelMixin):
     serializer_class = FollowerListSerializer
@@ -52,6 +64,19 @@ class FollowerViewSet(GenericViewSet, ListModelMixin):
             .order_by("-created_at")
         )
 
+    def list(self, request, username):
+        queryset = self.get_queryset()
+        username = self.kwargs.get("username")
+        if not CustomUser.objects.filter(username=username):
+            self.pagination_class = None
+            return Response(
+                status=HTTP_404_NOT_FOUND,
+                data={"detail": "Пользователь не существует."},
+            )
+        page = self.paginate_queryset(queryset)
+        serializer = FollowerListSerializer(page, many=True)
+        return self.get_paginated_response(serializer.data)
+
 
 class SubscribeViewSet(ModelViewSet):
     serializer_class = FollowCreateSerializer
@@ -64,21 +89,9 @@ class SubscribeViewSet(ModelViewSet):
         return Follow.objects.filter(user=self.request.user)
 
     def create(self, request, *args, **kwargs):
-
         if not CustomUser.objects.filter(username=request.data.get("author")).exists():
             return Response(
                 status=HTTP_404_NOT_FOUND, data={"message": "Автор не найден"}
-            )
-
-        author = request.data.get("author")
-        subscription = Follow.objects.filter(
-            user=self.request.user, author__username=author
-        )
-
-        if subscription.exists():
-            return Response(
-                data={"message": "Вы уже подписаны на этого автора"},
-                status=HTTP_400_BAD_REQUEST,
             )
 
         super().create(request, *args, **kwargs)
@@ -92,9 +105,17 @@ class SubscribeViewSet(ModelViewSet):
         queryset = Follow.objects.filter(
             user=self.request.user, author__username=author
         )
+        if not CustomUser.objects.filter(username=author).exists():
+            return Response(
+                status=HTTP_404_NOT_FOUND,
+                data={"detail": "Пользователь не является подписчиком."},
+            )
 
         if not queryset.exists():
-            return Response(status=HTTP_404_NOT_FOUND)
+            return Response(
+                data={"detail": "Вы не подписаны на этого пользователя."},
+                status=HTTP_404_NOT_FOUND,
+            )
 
         queryset.delete()
         return Response(
