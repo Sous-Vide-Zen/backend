@@ -2,11 +2,11 @@ from django.conf import settings
 from django.contrib.contenttypes.fields import GenericRelation
 from django.core.validators import FileExtensionValidator, MaxValueValidator
 from django.db import models
-from django.utils.text import slugify
 from taggit.managers import TaggableManager
 
+from src.apps.ingredients.models import IngredientInRecipe
 from src.apps.reactions.models import Reaction
-from src.base.services import recipe_preview_path, shorten_text, validate_avatar_size
+from src.base.services import recipe_preview_path, validate_avatar_size
 
 
 class Recipe(models.Model):
@@ -28,33 +28,42 @@ class Recipe(models.Model):
             FileExtensionValidator(allowed_extensions=["jpg", "jpeg", "png"]),
         ],
     )
-    tag = TaggableManager()
-    category = models.ManyToManyField("Category", related_name="recipes", blank=True)
-    cooking_time = models.PositiveIntegerField(validators=[MaxValueValidator(60 * 24)])
-    pub_date = models.DateTimeField(auto_now_add=True)
+    ingredients = models.ManyToManyField(
+        IngredientInRecipe, related_name="recipes", blank=True, db_index=True
+    )
+    tag = TaggableManager(blank=True)
+    category = models.ManyToManyField(
+        "Category", related_name="recipes", blank=True, db_index=True
+    )
+    cooking_time = models.PositiveIntegerField(
+        validators=[MaxValueValidator(60 * 24)], db_index=True
+    )
+    pub_date = models.DateTimeField(auto_now_add=True, db_index=True)
+    updated_at = models.DateTimeField(auto_now=True)
     reactions = GenericRelation(Reaction, related_query_name="reactions")
+    is_repost = models.BooleanField(default=False)
+
+    class Meta:
+        index_together = ["title", "slug"]
+        verbose_name = "Recipe"
+        verbose_name_plural = "Recipes"
 
     def __str__(self):
-        return self.title
-
-    def save(self, *args, **kwargs):
-        self.short_text = shorten_text(self.full_text, 100)
-        # check if recipe with such slug already exists
-
-        same_recipes = self.__class__.objects.filter(title=self.title).count()
-        slug_str = f"{self.title}_{same_recipes}" if same_recipes else self.title
-        self.slug = slugify(slug_str)
-        super().save(*args, **kwargs)
+        """
+        String representation
+        """
+        return f"{self.slug}"
 
 
 class Category(models.Model):
-    name = models.CharField(max_length=100)
-    slug = models.SlugField(unique=True)
+    """
+    Category model
+    """
 
-    def save(self, *args, **kwargs):
-        self.slug = slugify(self.name)
-        super().save(*args, **kwargs)
+    name = models.CharField(max_length=100, unique=True, blank=True)
+    slug = models.SlugField(unique=True, blank=True)
 
     class Meta:
+        index_together = ["name", "slug"]
         verbose_name = "Category"
-        verbose_name_plural = "Categories"  # name in admin
+        verbose_name_plural = "Categories"

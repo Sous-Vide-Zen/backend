@@ -6,4 +6,5 @@ urlpatterns = [
     path("", include("src.apps.swagger.routes")),
     path("", include("src.apps.feed.urls")),
     path("", include("src.apps.follow.urls")),
+    path("", include("src.apps.recipes.urls")),
 ]

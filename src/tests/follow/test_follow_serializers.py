@@ -7,6 +7,10 @@ from src.apps.users.models import CustomUser
 
 
 class CustomUserFactory(DjangoModelFactory):
+    """
+    Create CustomUsers
+    """
+
     class Meta:
         model = CustomUser
 
@@ -18,10 +22,15 @@ class CustomUserFactory(DjangoModelFactory):
 @pytest.mark.django_db
 @pytest.mark.api
 class TestFollowSerializers:
+    """
+    Test Follow Serializers
+    """
+
     def test_follow_list_serializer(self, api_client, new_user, new_author):
         """
         Follow serializers test
         """
+
         Follow.objects.create(user=new_user, author=new_author)
         url = f"/api/v1/user/{new_user}/subscriptions/"
         api_client.force_authenticate(user=new_user)
@@ -51,6 +60,7 @@ class TestFollowSerializers:
         """
         Follower serializers test
         """
+
         Follow.objects.create(user=new_user, author=new_author)
         url = f"/api/v1/user/{new_author}/subscribers/"
         api_client.force_authenticate(user=new_user)
@@ -80,6 +90,7 @@ class TestFollowSerializers:
         """
         Follow serializers test
         """
+
         url = "/api/v1/subscribe/"
         api_client.force_authenticate(user=new_user)
         response = api_client.post(
@@ -92,6 +103,7 @@ class TestFollowSerializers:
         """
         Follow serializers test non authenticated
         """
+
         url = "/api/v1/subscribe/"
         response = api_client.post(
             url, data={"author": new_author.username}, format="json"
@@ -105,6 +117,7 @@ class TestFollowSerializers:
         """
         Follow serializers test already followed
         """
+
         Follow.objects.create(user=new_user, author=new_author)
         url = "/api/v1/subscribe/"
         api_client.force_authenticate(user=new_user)
@@ -118,6 +131,7 @@ class TestFollowSerializers:
         """
         Follow serializers test not found
         """
+
         url = "/api/v1/subscribe/"
         api_client.force_authenticate(user=new_user)
         response = api_client.post(url, data={"author": "Python"}, format="json")
@@ -128,6 +142,7 @@ class TestFollowSerializers:
         """
         Follow serializers test
         """
+
         Follow.objects.create(user=new_user, author=new_author)
         url = "/api/v1/unsubscribe/"
         api_client.force_authenticate(user=new_user)
@@ -142,6 +157,7 @@ class TestFollowSerializers:
         """
         Follow serializers test non authenticated
         """
+
         Follow.objects.create(user=new_user, author=new_author)
         url = "/api/v1/unsubscribe/"
         response = api_client.delete(

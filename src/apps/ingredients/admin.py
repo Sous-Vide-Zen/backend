@@ -5,7 +5,7 @@ from .models import Ingredient, Unit, IngredientInRecipe
 
 @admin.register(Ingredient)
 class IngredientAdmin(admin.ModelAdmin):
-    pass
+    list_display = ["id", "name"]
 
 
 @admin.register(Unit)

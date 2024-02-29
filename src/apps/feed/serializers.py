@@ -4,13 +4,7 @@ from taggit.serializers import TagListSerializerField
 from django.db.models import Count
 
 from src.apps.recipes.models import Recipe
-from src.apps.users.models import CustomUser
-
-
-class AuthorSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = CustomUser
-        fields = ["id", "username", "avatar"]
+from src.apps.users.serializers import AuthorInRecipeSerializer
 
 
 class FeedSerializer(serializers.ModelSerializer):
@@ -22,7 +16,7 @@ class FeedSerializer(serializers.ModelSerializer):
     total_views_count = serializers.IntegerField()
     total_reactions_count = serializers.IntegerField()
     tag = TagListSerializerField()
-    author = AuthorSerializer()
+    author = AuthorInRecipeSerializer(read_only=True)
     activity_count = serializers.IntegerField()
 
     class Meta:

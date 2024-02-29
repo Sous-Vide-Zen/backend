@@ -1,5 +1,6 @@
-from django.conf import settings
 import pytest
+from django.conf import settings
+
 from src.apps.recipes.models import Recipe
 
 
@@ -7,6 +8,10 @@ from src.apps.recipes.models import Recipe
 @pytest.mark.api
 @pytest.mark.django_db
 class TestFeedPagination:
+    """
+    Test feed pagination
+    """
+
     page_size = settings.FEED_PAGE_SIZE
 
     @pytest.mark.parametrize(
@@ -14,20 +19,24 @@ class TestFeedPagination:
         list(range(settings.FEED_PAGE_SIZE, settings.FEED_PAGE_SIZE * 3, 3)),
     )
     def test_feed_pagination(self, api_client, new_user, recipes_num):
+        """
+        Feed pagination test
+        """
+
         title, full_text = "recipe_title", "recipe full text"
-        # creating recipes
+
         for i in range(recipes_num):
             Recipe.objects.create(
                 author=new_user,
                 title=f"{title}_{i}",
+                slug=f"{title}_{i}",
                 full_text=full_text,
                 cooking_time=10,
             )
 
-        # first page
         next_page_url = "/api/v1/feed/"
         recipes_seen, recipes_to_see = 0, recipes_num
-        # next pages
+
         while recipes_seen < TestFeedPagination.page_size * (
             recipes_num // TestFeedPagination.page_size
         ):
@@ -38,7 +47,6 @@ class TestFeedPagination:
             assert num_recipes == TestFeedPagination.page_size
             next_page_url = response.data["next"]
 
-        # last page
         if recipes_to_see:
             response = api_client.get(next_page_url)
             next_page_url = response.data["next"]
