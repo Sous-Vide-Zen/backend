@@ -180,13 +180,3 @@ class TestFollowSerializers:
         response = api_client.delete(url, data={"author": test_user}, format="json")
         assert response.status_code == 404
         assert response.data == {"detail": "Вы не подписаны на этого пользователя."}
-
-    def test_follow_delete_user_non_existing(self, api_client, new_user, new_author):
-        """
-        Follow serializers test
-        """
-        url = "/api/v1/unsubscribe/"
-        api_client.force_authenticate(user=new_user)
-        response = api_client.delete(url, data={"author": "Python"}, format="json")
-        assert response.status_code == 404
-        assert response.data == {"detail": "Пользователь не является подписчиком."}
