@@ -63,14 +63,13 @@ class FollowCreateSerializer(serializers.ModelSerializer):
         user = self.context["request"].user
         author = data.get("author")
 
-        if not author:
-            raise serializers.ValidationError({"message": "Отсутствует автор"})
+        if not CustomUser.objects.filter(username=author).exists():
+            raise serializers.ValidationError({"message": "Автор не найден"})
 
         if user == author:
             raise serializers.ValidationError("Нельзя подписаться на самого себя.")
 
-        queryset = Follow.objects.filter(user=user, author=author)
-        if queryset.count() > 0:
+        if Follow.objects.filter(user=user, author=author).exists():
             raise serializers.ValidationError(
                 {"message": "Вы уже подписаны на этого автора"}
             )
