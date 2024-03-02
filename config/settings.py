@@ -172,7 +172,7 @@ USE_TZ = True
 
 STATIC_URL = "src/static/"
 
-MEDIA_URL = "src/media/"
+MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "src/media"
 
 # User model
