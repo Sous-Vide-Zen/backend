@@ -1,8 +1,6 @@
-import random
-
+from src.apps.users.utils import generate_username
 from django.contrib.auth.base_user import BaseUserManager
 from django.contrib.auth.models import AbstractUser, PermissionsMixin
-from django.core.exceptions import ValidationError
 from django.core.validators import FileExtensionValidator
 from django.db import models
 from django.utils import timezone
@@ -63,12 +61,14 @@ class CustomUser(AbstractUser, PermissionsMixin):
     is_admin = models.BooleanField(default=False)
 
     def save(self, *args, **kwargs):
+        """
+        Сохраняет текущий экземпляр модели пользователя, автоматически генерируя уникальное
+        имя пользователя, если оно не было предоставлено.
+        """
         creating = not self.pk
         super().save(*args, **kwargs)
         if creating and not self.username:
-            from .utils import generate_username  # Отложенный импорт
-
-            self.username = generate_username(self.id)
+            self.username = generate_username(self.id, self.__class__)
             super().save(update_fields=["username"])
 
     class Meta:
