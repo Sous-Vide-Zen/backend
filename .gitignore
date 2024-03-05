@@ -163,3 +163,4 @@ cython_debug/
 # Sous vide zen
 static/
 
+/db.sqlite31

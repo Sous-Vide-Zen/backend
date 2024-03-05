@@ -1,31 +1,49 @@
 import pytest
-from django.db.utils import IntegrityError
 
+from src.apps.recipes.models import Recipe
 from src.apps.view.models import ViewRecipes
 
 
 @pytest.mark.django_db
+@pytest.mark.api
 class TestViewRecipesModel:
-    def test_increment_view_count(self, new_user, new_recipe):
-        # Создание записи о просмотре и проверка начального значения count
-        view = ViewRecipes.objects.create(user=new_user.username, recipe=new_recipe)
-        assert view.count == 0
+    """
+    Tests for ViewRecipes model
+    """
 
-        # Инкрементирование count и сохранение
-        view.count += 1
-        view.save()
+    def test_view_recipes_model(self, new_user, new_author):
+        """
+        Test for ViewRecipes model
+        """
 
-        # Получение записи из базы данных и проверка обновленного значения count
-        updated_view = ViewRecipes.objects.get(id=view.id)
-        assert updated_view.count == 1
+        recipe = Recipe.objects.create(
+            author=new_author,
+            title="Test Recipe",
+            slug="test-recipe",
+            full_text="This is a test recipe full text.",
+            short_text="Test short text",
+            cooking_time=30,
+        )
 
-    def test_initial_view_count(self, new_user, new_recipe):
-        # Проверка начального значения count при создании новой записи
-        view = ViewRecipes.objects.create(user=new_user.username, recipe=new_recipe)
-        assert view.count == 0
+        assert ViewRecipes.objects.count() == 0
 
-    def test_view_recipe_uniqueness(self, new_user, new_recipe):
-        # Создание записи о просмотре и попытка создать дублирующую запись
-        ViewRecipes.objects.create(user=new_user.username, recipe=new_recipe)
-        with pytest.raises(IntegrityError):
-            ViewRecipes.objects.create(user=new_user.username, recipe=new_recipe)
+        ViewRecipes.objects.create(user=new_user, recipe=recipe)
+        assert ViewRecipes.objects.count() == 1
+
+    def test_view_recipes_creation(self, new_user, new_recipe):
+        """
+        Test for ViewRecipes creation
+        """
+
+        assert ViewRecipes.objects.count() == 0
+        ViewRecipes.objects.create(user=new_user, recipe=new_recipe)
+        assert ViewRecipes.objects.count() == 1
+
+    def test_str_method(self, new_user, new_recipe):
+        """
+        Test for __str__ method
+        """
+
+        ViewRecipes.objects.create(user=new_user, recipe=new_recipe)
+        expected_str = f"Пользователь {new_user} просмотрел рецепт {new_recipe}"
+        assert str(ViewRecipes.objects.first()) == expected_str

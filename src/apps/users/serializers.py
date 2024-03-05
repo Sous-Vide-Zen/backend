@@ -74,3 +74,13 @@ class CustomUserMeSerializer(serializers.ModelSerializer):
             "is_staff",
             "is_admin",
         )
+
+
+class AuthorInRecipeSerializer(serializers.ModelSerializer):
+    """
+    Author in recipe serializer
+    """
+
+    class Meta:
+        model = CustomUser
+        fields = ("id", "username", "display_name", "avatar")

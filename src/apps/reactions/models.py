@@ -25,7 +25,10 @@ class Reaction(models.Model):
         app_label="comments", model="comment"
     )
     content_type = models.ForeignKey(
-        ContentType, limit_choices_to=limit_models, on_delete=models.CASCADE
+        ContentType,
+        null=True,
+        limit_choices_to=limit_models,
+        on_delete=models.SET_NULL,
     )
     object_id = models.PositiveIntegerField()
     reaction_object = GenericForeignKey("content_type", "object_id")
