@@ -9,15 +9,22 @@ class CustomUserSerializer(serializers.ModelSerializer):
     Serializer for CustomUser model
     """
 
+    username = serializers.CharField(required=False, read_only=True)
+    email = serializers.EmailField(required=False, read_only=True)
+    is_active = serializers.BooleanField(required=False, read_only=True)
+    is_staff = serializers.BooleanField(required=False, read_only=True)
+    is_admin = serializers.BooleanField(required=False, read_only=True)
+
     class Meta:
         model = get_user_model()
         fields = [
             "id",
             "username",
+            "display_name",
             "email",
             "avatar",
             "phone",
-            "join_date",
+            "date_joined",
             "country",
             "city",
             "first_name",
@@ -43,6 +50,7 @@ class UserListSerializer(serializers.ModelSerializer):
         fields = (
             "id",
             "username",
+            "display_name",
             "avatar",
             "recipes_count",
             "is_follow",
@@ -57,4 +65,12 @@ class CustomUserMeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CustomUser
-        fields = ("id", "username", "avatar", "is_active", "is_staff", "is_admin")
+        fields = (
+            "id",
+            "username",
+            "display_name",
+            "avatar",
+            "is_active",
+            "is_staff",
+            "is_admin",
+        )

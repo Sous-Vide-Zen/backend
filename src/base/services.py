@@ -42,7 +42,8 @@ def generate_username(user_id: int, model: Type[Model]) -> str:
         str: A unique username for the user.
     """
 
-    base_username = f"user{user_id}"
+    base_username: str = f"user{user_id}"
+
     if not model.objects.filter(username=base_username).exists():
         return base_username
     else:

@@ -11,6 +11,7 @@ from rest_framework.viewsets import GenericViewSet
 
 from src.apps.follow.models import Follow
 from src.base.paginators import UserListPagination
+from src.base.permissions import IsOwnerOrAdminOrReadOnly
 from .models import CustomUser
 from .serializers import (
     CustomUserSerializer,
@@ -76,7 +77,15 @@ class CustomUserViewSet(
     ViewSet for get, update and delete user
     """
 
+    permission_classes = (IsOwnerOrAdminOrReadOnly,)
     swagger_tags = ["CustomUser"]
     lookup_field = "username"
     serializer_class = CustomUserSerializer
     http_method_names = ["get", "patch", "delete"]
+
+    def get_queryset(self):
+        """
+        Queryset for get, update and delete user
+        """
+
+        return CustomUser.objects.filter(username=self.kwargs.get("username"))

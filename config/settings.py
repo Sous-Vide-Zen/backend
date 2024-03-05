@@ -224,3 +224,7 @@ CORS_ALLOW_ALL_ORIGINS = True
 
 
 USER_LIST_PAGE_SIZE = 10
+
+# Regex for custom user
+
+REGEX = r"^[a-zA-Zа-яА-Я\s\-\‘\u00C0-\u017F]+$"
