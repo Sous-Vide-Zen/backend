@@ -27,6 +27,7 @@ INSTALLED_APPS = [
     "rest_framework_simplejwt",
     "drf_yasg",
     "social_django",
+    "django_filters",
     "taggit",
     "corsheaders",
     "phonenumber_field",
@@ -39,6 +40,7 @@ INSTALLED_APPS = [
     "src.apps.ingredients",
     "src.apps.view",
     "src.apps.follow",
+    "src.apps.feed",
 ]
 
 MIDDLEWARE = [
@@ -170,7 +172,7 @@ USE_TZ = True
 
 STATIC_URL = "src/static/"
 
-MEDIA_URL = "src/media/"
+MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "src/media"
 
 # User model
@@ -192,6 +194,7 @@ SWAGGER_SETTINGS = {
         }
     },
     "USE_SESSION_AUTH": False,
+    "DEFAULT_AUTO_SCHEMA_CLASS": "src.apps.swagger.auto_schema_tags.CustomAutoSchema",
 }
 
 
@@ -221,3 +224,21 @@ TAGGIT_STRIP_UNICODE_WHEN_SLUGIFYING = True
 
 # Settings for django-cors-headers
 CORS_ALLOW_ALL_ORIGINS = True
+
+
+# Pagination
+FEED_PAGE_SIZE = 5
+FOLLOWER_PAGE_SIZE = 10
+
+# Variables
+
+ACTIVITY_INTERVAL = 30
+
+# Shorthand
+
+SHORT_RECIPE_SYMBOLS = 100
+SHORT_BIO_SYMBOLS = 50
+
+# TIME
+
+TIME_FROM_VIEW_RECIPE = 20
