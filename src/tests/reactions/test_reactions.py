@@ -29,7 +29,7 @@ class TestReactionsModel:
             emoji=EmojyChoice.LIKE,
         )
 
-        assert str(reaction) == "Like reaction by test"
+        assert str(reaction) == "Like reaction by user1"
         assert reaction.emoji == EmojyChoice.LIKE.value
 
     def test_reaction_fields_comment(self, new_user):
@@ -59,5 +59,5 @@ class TestReactionsModel:
             emoji=EmojyChoice.DISLIKE,
         )
 
-        assert str(reaction) == f"Dislike reaction by test"
+        assert str(reaction) == f"Dislike reaction by user1"
         assert reaction.emoji == EmojyChoice.DISLIKE.value

@@ -30,7 +30,7 @@ class TestRecipeSerialisers:
             "author": OrderedDict(
                 [
                     ("id", 1),
-                    ("username", "test2"),
+                    ("username", "user1"),
                     ("display_name", None),
                     ("avatar", None),
                 ]
