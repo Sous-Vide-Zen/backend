@@ -86,6 +86,10 @@ class CustomUser(AbstractUser, PermissionsMixin):
             super().save(update_fields=["username"])
 
     class Meta:
+        """
+        Meta class for CustomUser model
+        """
+
         verbose_name = "user"
         verbose_name_plural = "users"
         ordering = ["-join_date"]
