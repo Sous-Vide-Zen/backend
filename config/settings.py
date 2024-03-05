@@ -221,3 +221,6 @@ TAGGIT_STRIP_UNICODE_WHEN_SLUGIFYING = True
 
 # Settings for django-cors-headers
 CORS_ALLOW_ALL_ORIGINS = True
+
+
+USER_LIST_PAGE_SIZE = 10

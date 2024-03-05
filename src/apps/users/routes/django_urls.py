@@ -1,27 +1,19 @@
-from src.apps.users.views import CustomUserViewSet, CustomUserMeViewSet
+from django.urls import include, path
 from rest_framework.routers import DefaultRouter
-from django.urls import include, path, re_path
+
+from src.apps.users.views import (
+    ListUsersViewSet,
+    CustomUserMeViewSet,
+    CustomUserViewSet,
+)
 
 router = DefaultRouter()
 router.register(r"auth/users", CustomUserMeViewSet, basename="me")
-# router.register(r"users", CustomUserViewSet, basename="user")
+router.register("users", ListUsersViewSet, basename="users")
+router.register("user", CustomUserViewSet, basename="user")
 
-
-# Экземпляры представлений для CustomUserViewSet
-user_list_view = CustomUserViewSet.as_view(
-    {
-        "get": "list",  # GET запросы для списка пользователей
-    }
-)
-
-user_detail_view = CustomUserViewSet.as_view(
-    {"get": "retrieve", "put": "update", "patch": "partial_update", "delete": "destroy"}
-)
 
 urlpatterns = [
-    path("users/", user_list_view, name="users-list"),
-    re_path(r"^user/(?P<username>[^/.]+)/$", user_detail_view, name="user-detail"),
-    path("", include(router.urls)),  # Используйте router без CustomUserViewSetername}/'
-    path("auth/", include("djoser.urls")),
+    path("", include(router.urls)),
     path("auth/", include("djoser.urls.jwt")),
 ]

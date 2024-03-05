@@ -1,4 +1,8 @@
+from random import sample
+from typing import Type
+
 from django.core.exceptions import ValidationError
+from django.db.models import Model
 from django.utils.translation import gettext_lazy as _
 
 
@@ -24,3 +28,29 @@ def shorten_text(full_text, n) -> str:
     if len(full_text) > n and full_text[n] != "":
         short_text = short_text[: short_text.rfind(" ")]
     return short_text
+
+
+def generate_username(user_id: int, model: Type[Model]) -> str:
+    """
+    Generate a unique username for a user.
+
+    Args:
+        user_id (int): The ID of the user.
+        model (Type[CustomUser]): The CustomUser model class.
+
+    Returns:
+        str: A unique username for the user.
+    """
+
+    base_username = f"user{user_id}"
+    if not model.objects.filter(username=base_username).exists():
+        return base_username
+    else:
+
+        random_numbers = sample(range(100000, 1000000), 100)
+        for random_number in random_numbers:
+            new_username = f"user{random_number}"
+            if not model.objects.filter(username=new_username).exists():
+                return new_username
+
+        return generate_username(user_id, model)
