@@ -8,7 +8,7 @@ from src.apps.users.validators import CustomPasswordValidator
     "password",
     [
         "short",
-        "NOLOWERCASE123!a",
+        "NOLOWERCASE123!",
         "nouppercase123!",
         "NoSpecial123",
         "NoNumbers!!",
