@@ -145,7 +145,7 @@ DATABASES = {
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'src.apps.users.validators.CustomPasswordValidator',
+        "NAME": "src.apps.users.validators.CustomPasswordValidator",
     },
     {
         "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
