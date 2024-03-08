@@ -84,7 +84,7 @@ class TestFollowSerializers:
         )
         assert response.status_code == 401
         assert response.data == {
-            "detail": "Authentication credentials were not provided."
+            "detail": "Учетные данные не были предоставлены."
         }
 
     def test_follow_create_already_followed(self, api_client, new_user, new_author):
@@ -137,7 +137,7 @@ class TestFollowSerializers:
         )
         assert response.status_code == 401
         assert response.data == {
-            "detail": "Authentication credentials were not provided."
+            "detail": "Учетные данные не были предоставлены."
         }
 
     def test_follow_delete_user_is_not_follower(self, api_client, new_user, new_author):

@@ -24,7 +24,7 @@ class TestRecipeUrls:
         """
 
         assert client.get("/api/v1/recipe/not-found/").status_code == 404
-        assert client.get("/api/v1/recipe/not-found/").data == {"detail": "Not found."}
+        assert client.get("/api/v1/recipe/not-found/").data == {"detail": "Страница не найдена."}
 
     def test_create_recipe(self, api_client, new_author, recipe_data):
         """
@@ -49,7 +49,7 @@ class TestRecipeUrls:
 
         assert response.status_code == 401
         assert response.data == {
-            "detail": "Authentication credentials were not provided."
+            "detail": "Учетные данные не были предоставлены."
         }
 
     def test_update_recipe(self, api_client, new_author, new_recipe, recipe_data):
@@ -94,7 +94,7 @@ class TestRecipeUrls:
 
         assert response.status_code == 401
         assert response.data == {
-            "detail": "Authentication credentials were not provided."
+            "detail": "Учетные данные не были предоставлены."
         }
 
     def test_update_recipe_not_owner(
@@ -113,7 +113,7 @@ class TestRecipeUrls:
 
         assert response.status_code == 403
         assert response.data == {
-            "detail": "You do not have permission to perform this action."
+            "detail": "У вас недостаточно прав для выполнения данного действия."
         }
 
     def test_delete_recipe(self, api_client, new_author, new_recipe):
@@ -141,7 +141,7 @@ class TestRecipeUrls:
 
         assert response.status_code == 403
         assert response.data == {
-            "detail": "You do not have permission to perform this action."
+            "detail": "У вас недостаточно прав для выполнения данного действия."
         }
 
     def test_delete_recipe_by_admin(self, api_client, app_admin, new_recipe):
