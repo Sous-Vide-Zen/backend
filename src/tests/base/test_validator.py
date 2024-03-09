@@ -1,7 +1,7 @@
 import pytest
 from django.core.exceptions import ValidationError
 
-from src.apps.users.validators import CustomPasswordValidator
+from src.base.validators import CustomPasswordValidator
 
 
 @pytest.mark.parametrize(
