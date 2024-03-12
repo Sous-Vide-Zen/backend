@@ -1,6 +1,9 @@
 from datetime import timedelta
 from typing import List, Type, Any, Set
 
+from random import sample
+from typing import Type
+
 from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.db.models import Model
@@ -16,6 +19,7 @@ from src.apps.ingredients.models import Ingredient, Unit, IngredientInRecipe
 
 def validate_avatar_size(value: Any) -> None:
     """Validate avatar size"""
+
     if value.size > 5 * 1024 * 1024:  # 5 МБ в байтах
         raise ValidationError(
             _("Размер файла слишком большой. Максимальный размер - 5 МБ.")
@@ -24,11 +28,13 @@ def validate_avatar_size(value: Any) -> None:
 
 def user_avatar_path(instance: Model, filename: str) -> str:
     """Generate filepath for user avatar"""
+
     return f"avatar/user_{instance.id}/{filename}"
 
 
 def recipe_preview_path(instance: Model, filename: str) -> str:
     """Generate filepath for recipe preview"""
+
     return f"preview/recipe_{instance.slug}/{filename}"
 
 
@@ -36,6 +42,7 @@ def shorten_text(full_text: str, n: int) -> str:
     """
     Shorten text to n characters with rounding by last word
     """
+
     short_text = full_text[:SHORT_RECIPE_SYMBOLS]
     if len(full_text) > n and full_text[n] != "":
         short_text = short_text[: short_text.rfind(" ")]
@@ -48,6 +55,7 @@ def bulk_get_or_create(
     """
     Bulk get or create objects
     """
+
     match_values: List[Any] = [getattr(obj, match_field) for obj in objs]
     existing_objs: List[Model] = model.objects.filter(
         **{f"{match_field}__in": match_values}
@@ -70,6 +78,7 @@ def create_ingredients_in_recipe(
     """
     Create or update ingredients in recipe
     """
+
     ingredient_names: List[str] = [data["name"] for data in ingredients_data]
     if len(ingredient_names) != len(set(ingredient_names)):
         raise ValidationError({"errors": "Нельзя добавить два одинаковых ингредиента"})
@@ -144,6 +153,7 @@ def increment_view_count(
 
 def create_recipe_slug(model: Type[Model], data: dict, num: int = 1) -> dict:
     """Create recipe slug"""
+
     with transaction.atomic():
         same_recipes: int = model.objects.filter(
             title__startswith=data["title"]
@@ -158,3 +168,30 @@ def create_recipe_slug(model: Type[Model], data: dict, num: int = 1) -> dict:
             create_recipe_slug(model, data, num)
 
     return data
+
+
+def generate_username(user_id: int, model: Type[Model]) -> str:
+    """
+    Generate a unique username for a user.
+
+    Args:
+        user_id (int): The ID of the user.
+        model (Type[CustomUser]): The CustomUser model class.
+
+    Returns:
+        str: A unique username for the user.
+    """
+
+    base_username: str = f"user{user_id}"
+
+    if not model.objects.filter(username=base_username).exists():
+        return base_username
+    else:
+
+        random_numbers = sample(range(100000, 1000000), 100)
+        for random_number in random_numbers:
+            new_username = f"user{random_number}"
+            if not model.objects.filter(username=new_username).exists():
+                return new_username
+
+        return generate_username(user_id, model)

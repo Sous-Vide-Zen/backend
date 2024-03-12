@@ -1,7 +1,3 @@
-"""
-TODO: change test_get_users_by_anonymous url to '/api/v1/users/'
-    response.status_code == 401
-"""
 import pytest
 
 
@@ -14,11 +10,11 @@ class TestIsOwnerOrAdminOrReadOnly:
     def test_get_users_by_anonymous(self, api_client):
         """
         Test get users by anonymous
-        [GET] http://127.0.0.1:8000/api/v1/user/
+        [GET] http://127.0.0.1:8000/api/v1/users/
         """
 
-        response = api_client.get("/api/v1/user/")
-        assert response.status_code == 200
+        response = api_client.get("/api/v1/users/")
+        assert response.status_code == 401
 
     def test_get_user_by_anonymous(self, api_client, new_user):
         """
@@ -37,7 +33,7 @@ class TestIsOwnerOrAdminOrReadOnly:
 
         api_client.force_authenticate(user=new_user)
         response = api_client.patch(
-            "/api/v1/user/test/", {"first_name": "test"}, format="json"
+            "/api/v1/user/user1/", {"first_name": "test"}, format="json"
         )
         assert response.status_code == 200
 

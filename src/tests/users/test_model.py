@@ -12,7 +12,7 @@ class TestCustomUserModel:
     def test_user_creation(self, new_user):
         user = new_user
         assert user.email == "test@ya.ru"
-        assert user.username == "test"
+        assert user.username == "user1"
         assert user.check_password("changeme123")
         assert user.is_authenticated
 
@@ -78,8 +78,8 @@ class TestCustomUserModel:
     def test_join_date(self, new_user):
         user = new_user
         now = timezone.now()
-        assert user.join_date <= now
-        assert user.join_date is not None
+        assert user.date_joined <= now
+        assert user.date_joined is not None
 
     def test_name_fields(self, new_user):
         user = CustomUser.objects.create_user(
@@ -94,4 +94,4 @@ class TestCustomUserModel:
 
     def test_string_representation(self, new_user):
         user = new_user
-        assert str(user) == "test"
+        assert str(user) == "user1"

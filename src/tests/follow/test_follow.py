@@ -9,7 +9,7 @@ from src.apps.users.models import CustomUser
 @pytest.mark.models
 class TestFollowModel:
     def test_follow_fields(self, django_user_model):
-        usernames = ["u1", "u2"]
+        usernames = ["user1", "user2"]
         users_list = []
         for u in usernames:
             user = django_user_model.objects.create_user(
@@ -17,7 +17,7 @@ class TestFollowModel:
             )
             users_list.append(user)
         new_follow = Follow.objects.create(user=users_list[0], author=users_list[1])
-        # test str
+
         assert str(new_follow) == f"{usernames[0]} подписан на {usernames[1]}"
 
     def test_follow_twice(self, django_user_model):

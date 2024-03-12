@@ -1,38 +1,91 @@
-from rest_framework.exceptions import NotFound
-from src.base.permissions import IsOwnerOrAdminOrReadOnly
-from rest_framework import viewsets, status
-from rest_framework.decorators import action
-
-from .models import CustomUser
-from .serializers import CustomUserSerializer
-from drf_yasg.utils import swagger_auto_schema
-
-
+from django.db.models import Count, Exists, OuterRef
 from djoser.views import UserViewSet
+from rest_framework.mixins import (
+    ListModelMixin,
+    RetrieveModelMixin,
+    UpdateModelMixin,
+    DestroyModelMixin,
+)
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.viewsets import GenericViewSet
+
+from src.apps.follow.models import Follow
+from src.base.paginators import UserListPagination
+from src.base.permissions import IsOwnerOrAdminOrReadOnly
+from .models import CustomUser
+from .serializers import (
+    CustomUserSerializer,
+    CustomUserMeSerializer,
+    UserListSerializer,
+)
 
 
 class CustomUserMeViewSet(UserViewSet):
-    @swagger_auto_schema(exclude=["update", "partial_update", "destroy"])
-    @action(["get"], detail=False)
-    def me(self, request, *args, **kwargs):
-        self.get_object = self.get_instance
-        return self.retrieve(request, *args, **kwargs)
+    """
+    ViewSet for action 'me'
+    """
 
-    def list(self, request, *args, **kwargs):
-        raise NotFound("Endpoint is disabled.")
+    swagger_tags = ["CustomUser"]
+    http_method_names = ["get", "post"]
 
-    def update(self, request, *args, **kwargs):
-        raise NotFound("Endpoint is disabled.")
+    def get_serializer_class(self):
+        """
+        Get serializer class for action 'me'
+        """
 
-    def partial_update(self, request, *args, **kwargs):
-        raise NotFound("Endpoint is disabled.")
+        if self.action == "me":
+            return CustomUserMeSerializer
 
-    def destroy(self, request, *args, **kwargs):
-        raise NotFound("Endpoint is disabled.")
+        return super().get_serializer_class()
 
 
-class CustomUserViewSet(viewsets.ModelViewSet):
-    queryset = CustomUser.objects.all()
-    serializer_class = CustomUserSerializer
-    permission_classes = [IsOwnerOrAdminOrReadOnly]
+class ListUsersViewSet(GenericViewSet, ListModelMixin):
+    """
+    ViewSet for get all users
+    """
+
+    swagger_tags = ["CustomUser"]
+    serializer_class = UserListSerializer
+    permission_classes = [
+        IsAuthenticated,
+    ]
+    pagination_class = UserListPagination
     lookup_field = "username"
+
+    def get_queryset(self):
+        """
+        Get all users with recipes_count, is_follow, and is_follower fields.
+        """
+
+        user = self.request.user
+        queryset = CustomUser.objects.all().annotate(
+            recipes_count=Count("recipe"),
+        )
+
+        queryset = queryset.annotate(
+            is_follow=Exists(Follow.objects.filter(user=user, author=OuterRef("pk"))),
+            is_follower=Exists(Follow.objects.filter(author=user, user=OuterRef("pk"))),
+        )
+
+        return queryset.order_by("-recipes_count")
+
+
+class CustomUserViewSet(
+    GenericViewSet, RetrieveModelMixin, UpdateModelMixin, DestroyModelMixin
+):
+    """
+    ViewSet for get, update and delete user
+    """
+
+    permission_classes = (IsOwnerOrAdminOrReadOnly,)
+    swagger_tags = ["CustomUser"]
+    lookup_field = "username"
+    serializer_class = CustomUserSerializer
+    http_method_names = ["get", "patch", "delete"]
+
+    def get_queryset(self):
+        """
+        Queryset for get, update and delete user
+        """
+
+        return CustomUser.objects.filter(username=self.kwargs.get("username"))

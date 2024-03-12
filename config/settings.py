@@ -126,7 +126,7 @@ SIMPLE_JWT = {
 }
 
 AUTHENTICATION_BACKENDS = (
-    "social_core.backends.vk.VKOAuth2",
+    "config.plugin_soc_auth.CustomVKOAuth2",
     "social_core.backends.yandex.YandexOAuth2",
     "django.contrib.auth.backends.ModelBackend",
 )
@@ -147,22 +147,16 @@ DATABASES = {
 
 AUTH_PASSWORD_VALIDATORS = [
     {
+        "NAME": "src.base.validators.CustomPasswordValidator",
+    },
+    {
         "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
 ]
 
 # Internationalization
 
-LANGUAGE_CODE = "en-us"
+LANGUAGE_CODE = "ru"
 
 TIME_ZONE = "UTC"
 
@@ -174,7 +168,7 @@ USE_TZ = True
 
 STATIC_URL = "src/static/"
 
-MEDIA_URL = "src/media/"
+MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "src/media"
 
 # User model
@@ -231,6 +225,7 @@ CORS_ALLOW_ALL_ORIGINS = True
 # Pagination
 FEED_PAGE_SIZE = 5
 FOLLOWER_PAGE_SIZE = 10
+USER_LIST_PAGE_SIZE = 10
 
 # Variables
 
@@ -244,3 +239,7 @@ SHORT_BIO_SYMBOLS = 50
 # TIME
 
 TIME_FROM_VIEW_RECIPE = 20
+
+# Regex for custom user
+
+REGEX = r"^[a-zA-Zа-яА-Я\s\-\‘\u00C0-\u017F]+$"
