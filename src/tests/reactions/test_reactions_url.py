@@ -40,7 +40,7 @@ class TestRecipeReactionsUrl:
         response = api_client.post(url, data={"emoji": "Like"}, format="json")
         assert response.status_code == 401
         assert response.data == {
-            "detail": "Authentication credentials were not provided."
+            "detail": "Учетные данные не были предоставлены."
         }
 
     def test_recipe_reaction_create_recipe_not_found(
@@ -53,7 +53,7 @@ class TestRecipeReactionsUrl:
         api_client.force_authenticate(user=new_user)
         response = api_client.post(url, data={"emoji": "Like"}, format="json")
         assert response.status_code == 404
-        assert response.data == {"detail": "Not found."}
+        assert response.data == {"detail": "Страница не найдена."}
 
     def test_recipe_reaction_delete_url(self, api_client, new_user, new_recipe):
         """
@@ -75,18 +75,18 @@ class TestRecipeReactionsUrl:
         response_non_authorized = api_client.delete(url)
         assert response_non_authorized.status_code == 401
         assert response_non_authorized.data == {
-            "detail": "Authentication credentials were not provided."
+            "detail": "Учетные данные не были предоставлены."
         }
 
         api_client.force_authenticate(user=new_user)
 
         response_not_found_reaction = api_client.delete(url_reaction_not_found)
         assert response_not_found_reaction.status_code == 404
-        assert response_not_found_reaction.data == {"detail": "Not found."}
+        assert response_not_found_reaction.data == {"detail": "Страница не найдена."}
 
         response_not_found_recipe = api_client.delete(url_recipe_not_found)
         assert response_not_found_recipe.status_code == 404
-        assert response_not_found_recipe.data == {"detail": "Not found."}
+        assert response_not_found_recipe.data == {"detail": "Страница не найдена."}
 
         response = api_client.delete(url)
         assert response.status_code == 204
