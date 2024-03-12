@@ -39,9 +39,7 @@ class TestRecipeReactionsUrl:
         url = f"/api/v1/recipe/{slug}/reactions/"
         response = api_client.post(url, data={"emoji": "Like"}, format="json")
         assert response.status_code == 401
-        assert response.data == {
-            "detail": "Учетные данные не были предоставлены."
-        }
+        assert response.data == {"detail": "Учетные данные не были предоставлены."}
 
     def test_recipe_reaction_create_recipe_not_found(
         self, api_client, new_user, new_recipe
@@ -121,7 +119,7 @@ class TestRecipeReactionsUrl:
         """
         response = api_client.get(f"/api/v1/recipe/non-existing-recipe/reactions/")
         assert response.status_code == 404
-        assert response.data == {"detail": "Not found."}
+        assert response.data == {"detail": "Страница не найдена."}
         slug = new_recipe.slug
         response = api_client.get(f"/api/v1/recipe/{slug}/reactions/")
         assert response.status_code == 200
