@@ -3,7 +3,7 @@ from django.contrib.contenttypes.models import ContentType
 
 from src.apps.reactions.choices import EmojyChoice
 from src.apps.reactions.models import Reaction
-from src.apps.recipes.serializers import (
+from src.apps.reactions.serializers import (
     RecipeReactionRetriveSerializer,
     RecipeReactionCreateSerializer,
 )

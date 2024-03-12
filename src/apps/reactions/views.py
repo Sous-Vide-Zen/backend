@@ -8,7 +8,7 @@ from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.viewsets import ModelViewSet
 
 from src.apps.reactions.models import Reaction
-from src.apps.recipes.serializers import (
+from src.apps.reactions.serializers import (
     RecipeReactionRetriveSerializer,
     RecipeReactionCreateSerializer,
 )
@@ -40,7 +40,6 @@ class RecipeReactionViewSet(ModelViewSet):
         content_type = ContentType.objects.get_for_model(recipe)
         serializer = RecipeReactionCreateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-
         reaction, created = Reaction.objects.get_or_create(
             emoji=serializer.data["emoji"],
             author=request.user,

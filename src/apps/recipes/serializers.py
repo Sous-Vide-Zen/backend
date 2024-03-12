@@ -142,8 +142,10 @@ class RecipeRetriveSerializer(ModelSerializer):
         """
 
         representation = super().to_representation(instance)
-        reactions_queryset = instance.reactions.values("emoji").annotate(
-            count=Count("emoji")
+        reactions_queryset = (
+            instance.reactions.values("emoji")
+            .filter(is_deleted=False)
+            .annotate(count=Count("emoji"))
         )
         representation["reactions"] = {
             reaction["emoji"]: reaction["count"] for reaction in reactions_queryset
