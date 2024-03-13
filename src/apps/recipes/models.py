@@ -40,7 +40,7 @@ class Recipe(models.Model):
     )
     pub_date = models.DateTimeField(auto_now_add=True, db_index=True)
     updated_at = models.DateTimeField(auto_now=True)
-    reactions = GenericRelation(Reaction, related_query_name="reactions")
+    reactions = GenericRelation(Reaction, related_query_name="recipe_reactions")
     is_repost = models.BooleanField(default=False)
 
     class Meta:

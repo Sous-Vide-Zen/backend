@@ -109,7 +109,7 @@ class TestRecipeReactionsUrl:
 
         assert response.status_code == 403
         assert response.data == {
-            "detail": "You do not have permission to perform this action."
+            "detail": "У вас нет разрешения на совершение этого действия."
         }
 
     def test_recipe_reaction_retrieve_url(self, api_client, new_user, new_recipe):
