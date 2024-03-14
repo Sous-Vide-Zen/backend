@@ -6,7 +6,7 @@ from typing import Type
 
 from django.core.exceptions import ValidationError
 from django.db import transaction
-from django.db.models import Model
+from django.db.models import Count, Model
 from django.http import HttpRequest
 from django.utils import timezone
 from django.utils.text import slugify
@@ -195,3 +195,12 @@ def generate_username(user_id: int, model: Type[Model]) -> str:
                 return new_username
 
         return generate_username(user_id, model)
+
+
+def count_reactions_on_objects(instance: Model) -> dict:
+    reactions_queryset = (
+        instance.reactions.values("emoji")
+        .filter(is_deleted=False)
+        .annotate(count=Count("emoji"))
+    )
+    return {reaction["emoji"]: reaction["count"] for reaction in reactions_queryset}

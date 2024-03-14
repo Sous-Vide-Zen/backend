@@ -20,6 +20,7 @@ from src.base.services import (
     shorten_text,
     create_ingredients_in_recipe,
     create_recipe_slug,
+    count_reactions_on_objects,
 )
 
 
@@ -140,16 +141,8 @@ class RecipeRetriveSerializer(ModelSerializer):
         """
         representation
         """
-
         representation = super().to_representation(instance)
-        reactions_queryset = (
-            instance.reactions.values("emoji")
-            .filter(is_deleted=False)
-            .annotate(count=Count("emoji"))
-        )
-        representation["reactions"] = {
-            reaction["emoji"]: reaction["count"] for reaction in reactions_queryset
-        }
+        representation["reactions"] = count_reactions_on_objects(instance)
         return representation
 
 
