@@ -1,6 +1,10 @@
 from django.conf import settings
 from django.contrib.contenttypes.fields import GenericRelation
-from django.core.validators import FileExtensionValidator, MaxValueValidator
+from django.core.validators import (
+    FileExtensionValidator,
+    MaxValueValidator,
+    MinValueValidator,
+)
 from django.db import models
 from taggit.managers import TaggableManager
 
@@ -36,7 +40,11 @@ class Recipe(models.Model):
         "Category", related_name="recipes", blank=True, db_index=True
     )
     cooking_time = models.PositiveIntegerField(
-        validators=[MaxValueValidator(60 * 24)], db_index=True
+        validators=[
+            MinValueValidator(10),
+            MaxValueValidator(60 * 24),
+        ],
+        db_index=True,
     )
     pub_date = models.DateTimeField(auto_now_add=True, db_index=True)
     updated_at = models.DateTimeField(auto_now=True)
