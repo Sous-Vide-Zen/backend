@@ -9,7 +9,7 @@ class IngredientInRecipeSerializer(ModelSerializer):
     Ingredients in recipe serializer
     """
 
-    name = CharField(source="ingredient.name")
+    name = CharField(source="ingredient.name", max_length=100)
     unit = CharField(source="unit.name")
 
     class Meta:
