@@ -13,6 +13,8 @@ DEBUG = config("DEBUG", default=False, cast=bool)
 
 ALLOWED_HOSTS = ["*"]
 
+INTERNAL_IPS = ["127.0.0.1"]
+
 INSTALLED_APPS = [
     # django
     "django.contrib.admin",
@@ -31,6 +33,7 @@ INSTALLED_APPS = [
     "taggit",
     "corsheaders",
     "phonenumber_field",
+    "debug_toolbar",
     # apps
     "src.apps.users",
     "src.apps.recipes",
@@ -52,6 +55,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "debug_toolbar.middleware.DebugToolbarMiddleware",
 ]
 
 ROOT_URLCONF = "config.urls"
@@ -102,7 +106,7 @@ DJOSER = {
     "PASSWORD_RESET_CONFIRM_URL": "api/v1/auth/users/password/reset/confirm/{uid}/{token}",
     "USERNAME_RESET_CONFIRM_URL": "#/username/reset/confirm/{uid}/{token}",
     "ACTIVATION_URL": "api/v1/auth/activate/{uid}/{token}",
-    "SEND_ACTIVATION_EMAIL": True,
+    "SEND_ACTIVATION_EMAIL": False,
     "SERIALIZERS": {},
     "LOGIN_FIELD": "email",
     "HIDE_USERS": False,

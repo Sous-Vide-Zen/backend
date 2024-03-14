@@ -4,7 +4,7 @@ from typing import List, Type, Any, Set
 from random import sample
 from typing import Type
 
-from django.core.exceptions import ValidationError
+from rest_framework.exceptions import ValidationError
 from django.db import transaction
 from django.db.models import Count, Model
 from django.http import HttpRequest
