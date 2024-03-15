@@ -13,6 +13,7 @@ from rest_framework.response import Response
 from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.viewsets import GenericViewSet
 
+from src.base.throttling import ScopedOnePerThreeSecsThrottle
 from src.apps.reactions.models import Reaction
 from src.apps.reactions.serializers import (
     RecipeReactionsListSerializer,
@@ -30,7 +31,7 @@ class ReactionViewSet(
     """Base class for getting, creating and deleting reactions."""
 
     permission_classes = [IsAuthenticatedOrReadOnly]
-    throttle_classes = [ScopedRateThrottle]
+    throttle_classes = [ScopedOnePerThreeSecsThrottle]
     throttle_scope = "reactions"
     swagger_tags = ["Reactions"]
 

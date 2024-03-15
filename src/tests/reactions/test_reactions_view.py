@@ -1,6 +1,7 @@
 import pytest
 from django.contrib.contenttypes.models import ContentType
 
+from src.base import throttling
 from src.apps.reactions.choices import EmojyChoice
 from src.apps.reactions.models import Reaction
 
@@ -73,7 +74,6 @@ class TestCommentReactionsView:
         )
         url = f"/api/v1/comment/{id}/reactions/{reaction_default.id}/"
         api_client.force_authenticate(user=new_user)
-
         response = api_client.delete(url)
 
         assert response.status_code == 204
