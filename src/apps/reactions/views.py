@@ -96,7 +96,7 @@ class ReactionViewSet(
 
 
 class RecipeReactionViewSet(ReactionViewSet):
-    """Subclass for getting, creating and deleting reactions on recipes"""
+    """Subclass for creating and deleting reactions on recipes"""
 
     def create(self, request, *args, **kwargs):
         """Create a reaction on recipe"""
@@ -113,7 +113,10 @@ class RecipeReactionViewSet(ReactionViewSet):
 
     def destroy(self, request, *args, **kwargs):
         reaction = get_object_or_404(
-            Reaction, id=kwargs.get("pk"), recipe_reactions__slug=kwargs.get("slug")
+            Reaction,
+            id=kwargs.get("pk"),
+            recipe_reactions__slug=kwargs.get("slug"),
+            author=request.user,
         )
 
         if request.user != reaction.author:
@@ -129,7 +132,7 @@ class RecipeReactionViewSet(ReactionViewSet):
 
 
 class CommentReactionViewSet(ReactionViewSet):
-    """Subclass for getting, creating and deleting reactions on comment"""
+    """Subclass creating and deleting reactions on comment"""
 
     def create(self, request, *args, **kwargs):
         response = super().create(self, request, *args, **kwargs)
@@ -145,7 +148,10 @@ class CommentReactionViewSet(ReactionViewSet):
 
     def destroy(self, request, *args, **kwargs):
         reaction = get_object_or_404(
-            Reaction, id=kwargs.get("pk"), comment_reactions__id=kwargs.get("id")
+            Reaction,
+            id=kwargs.get("pk"),
+            comment_reactions__id=kwargs.get("id"),
+            author=request.user,
         )
         if request.user != reaction.author:
             return Response(

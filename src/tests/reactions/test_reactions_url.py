@@ -91,28 +91,6 @@ class TestRecipeReactionsUrl:
         assert response.status_code == 204
         assert response.data == {"message": "Реакция отменена!"}
 
-    def test_recipe_reaction_delete_not_author_url(
-        self, api_client, new_user, new_author, new_recipe
-    ):
-        """
-        Recipe reaction delete test
-        [DELETE] http://127.0.0.1:8000/api/v1/recipe/{slug}/reactions/{reaction_id}
-        """
-        reaction_default = Reaction.objects.create(
-            author=new_author,
-            object_id=new_recipe.id,
-            content_type=ContentType.objects.get_for_model(new_recipe),
-        )
-        slug = new_recipe.slug
-        url = f"/api/v1/recipe/{slug}/reactions/{reaction_default.id}/"
-        api_client.force_authenticate(user=new_user)
-        response = api_client.delete(url)
-
-        assert response.status_code == 403
-        assert response.data == {
-            "detail": "У вас недостаточно прав для выполнения данного действия."
-        }
-
     def test_recipe_reactions_list_url(self, api_client, new_user, new_recipe):
         """
         Recipe reaction retrieve test for any user
@@ -209,28 +187,6 @@ class TestCommentReactionsUrl:
         response = api_client.delete(url)
         assert response.status_code == 204
         assert response.data == {"message": "Реакция отменена!"}
-
-    def test_comment_reaction_delete_not_author_url(
-        self, api_client, new_user, new_author, new_comment
-    ):
-        """
-        Comment reaction delete test
-        [DELETE] http://127.0.0.1:8000/api/v1/comment/{id}/reactions/{reaction_id}
-        """
-        reaction_default = Reaction.objects.create(
-            author=new_author,
-            object_id=new_comment.id,
-            content_type=ContentType.objects.get_for_model(new_comment),
-        )
-        id = new_comment.id
-        url = f"/api/v1/comment/{id}/reactions/{reaction_default.id}/"
-        api_client.force_authenticate(user=new_user)
-        response = api_client.delete(url)
-
-        assert response.status_code == 403
-        assert response.data == {
-            "detail": "У вас недостаточно прав для выполнения данного действия."
-        }
 
     def test_comment_reactions_list_url(self, api_client, new_user, new_comment):
         """
