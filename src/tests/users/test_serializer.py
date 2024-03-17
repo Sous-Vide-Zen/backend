@@ -1,95 +1,99 @@
 import pytest
-from django.contrib.auth import get_user_model
-from django.utils import timezone
 
-from src.apps.users.serializers import (
-    UserListSerializer,
-    CustomUserSerializer,
-    CustomUserMeSerializer,
-    AuthorInRecipeSerializer,
-)
-
-
-@pytest.fixture
-def user(db):
-    User = get_user_model()
-    user = User.objects.create_user(
-        username="testuser",
-        display_name="Test User",
-        email="test@example.com",
-        avatar="path/to/avatar.png",
-        phone="1234567890",
-        password="123xXXXXXXXXX!",
-        date_joined=timezone.now(),
-        country="Testland",
-        city="Testville",
-        first_name="Test",
-        last_name="User",
-        bio="This is a test user.",
-        is_active=True,
-        is_staff=False,
-        is_admin=False,
-    )
-    return user
+BASE_URL = "http://127.0.0.1:8000/api/v1"
 
 
 @pytest.mark.django_db
 class TestUserSerializer:
-    @pytest.mark.api
-    def test_user_list_serializer(self, user):
-        user.is_follow = False
-        user.is_follower = True
-        user.recipes_count = 5
+    """
+    Test User Serializers:
+    Test UserListSerializer
+    Test CustomUserMeSerializer
+    Test CustomUserSerializer
+    """
 
-        serializer = UserListSerializer(instance=user)
-        data = serializer.data
+    def test_user_list_serializer(self, api_client, create_token):
+        """
+        User Serializers Test
+        http://127.0.0.1:8000/api/v1/users/
+        """
 
-        assert data["username"] == user.username
-        assert data["display_name"] == user.display_name
-        assert data["avatar"] == user.avatar.url
-        assert data["is_follow"] == user.is_follow
-        assert data["is_follower"] == user.is_follower
-        assert data["recipes_count"] == 5
+        access_token = create_token
+        api_client.credentials(HTTP_AUTHORIZATION=access_token)
+        response = api_client.get(f"{BASE_URL}/users/")
+        assert response.status_code == 200
+        assert "count" in response.json()
+        assert "results" in response.data
+        results = response.data["results"]
+        assert len(results) > 0
+        user = results[0]
+        assert "id" in user
+        assert "username" in user
+        assert "display_name" in user
+        assert "avatar" in user
+        assert "recipes_count" in user
+        assert "is_follow" in user
+        assert "is_follower" in user
+        assert user["username"] == "user1"
+        assert user["recipes_count"] == 0
+        assert user["is_follow"] is False
+        assert user["is_follower"] is False
 
-    @pytest.mark.api
-    def test_custom_user_serializer(self, user):
-        serializer = CustomUserSerializer(instance=user)
-        data = serializer.data
+    def test_custom_user_me_serializer(
+        self,
+        api_client,
+        create_token,
+    ):
+        """
+        User Serializers Test
+        http://127.0.0.1:8000/api/v1/auth/users/me/
+        """
 
-        assert data["username"] == user.username
-        assert data["display_name"] == user.display_name
-        assert data["email"] == user.email
-        assert data["avatar"] == user.avatar.url
-        assert data["phone"] == user.phone
-        assert data["date_joined"] == user.date_joined.isoformat().replace(
-            "+00:00", "Z"
-        )
-        assert data["country"] == user.country
-        assert data["city"] == user.city
-        assert data["first_name"] == user.first_name
-        assert data["last_name"] == user.last_name
-        assert data["bio"] == user.bio
-        assert data["is_active"] == user.is_active
-        assert data["is_staff"] == user.is_staff
-        assert data["is_admin"] == user.is_admin
+        access_token = create_token
+        api_client.credentials(HTTP_AUTHORIZATION=access_token)
+        response = api_client.get(f"{BASE_URL}/auth/users/me/")
+        assert response.status_code == 200
+        user_data = response.json()
+        assert "id" in user_data
+        assert "username" in user_data
+        assert "display_name" in user_data
+        assert "avatar" in user_data
+        assert "is_active" in user_data
+        assert "is_staff" in user_data
+        assert "is_admin" in user_data
+        assert user_data["username"] == "user1"
+        assert user_data["is_active"] is True
+        assert user_data["is_staff"] is False
+        assert user_data["is_admin"] is False
 
-    @pytest.mark.api
-    def test_custom_user_me_serializer(self, user):
-        serializer = CustomUserMeSerializer(instance=user)
-        data = serializer.data
+    def test_custom_user_serializer(self, api_client, create_token, new_author):
+        """
+        User Serializers Test
+        http://127.0.0.1:8000/api/v1/user/{username}/
+        """
 
-        assert data["username"] == user.username
-        assert data["display_name"] == user.display_name
-        assert data["avatar"] == user.avatar.url
-        assert data["is_active"] == user.is_active
-        assert data["is_staff"] == user.is_staff
-        assert data["is_admin"] == user.is_admin
-
-    @pytest.mark.api
-    def test_author_in_recipe_serializer(self, user):
-        serializer = AuthorInRecipeSerializer(instance=user)
-        data = serializer.data
-
-        assert data["username"] == user.username
-        assert data["display_name"] == user.display_name
-        assert data["avatar"] == user.avatar.url
+        username = "user2"
+        access_token = create_token
+        api_client.credentials(HTTP_AUTHORIZATION=access_token)
+        response = api_client.get(f"{BASE_URL}/user/{username}/")
+        assert response.status_code == 200
+        user_data = response.json()
+        assert "id" in user_data
+        assert "username" in user_data
+        assert "display_name" in user_data
+        assert "email" in user_data
+        assert "avatar" in user_data
+        assert "phone" in user_data
+        assert "date_joined" in user_data
+        assert "country" in user_data
+        assert "city" in user_data
+        assert "first_name" in user_data
+        assert "last_name" in user_data
+        assert "bio" in user_data
+        assert "is_active" in user_data
+        assert "is_staff" in user_data
+        assert "is_admin" in user_data
+        assert user_data["username"] == "user2"
+        assert user_data["is_active"] is True
+        assert user_data["is_staff"] is False
+        assert user_data["is_admin"] is False
