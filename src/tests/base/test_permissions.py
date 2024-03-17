@@ -25,6 +25,16 @@ class TestIsOwnerOrAdminOrReadOnly:
         response = api_client.get(f"/api/v1/user/{new_user.username}/")
         assert response.status_code == 200
 
+    def test_get_user_by_user(self, api_client, new_user, new_author):
+        """
+        Test get user by user
+        [GET] http://127.0.0.1:8000/api/v1/user/{username}/
+        """
+
+        api_client.force_authenticate(user=new_author)
+        response = api_client.get(f"/api/v1/user/{new_user.username}/")
+        assert response.status_code == 200
+
     def test_modify_users_by_owner(self, api_client, new_user):
         """
         Test modify users by user
@@ -36,6 +46,29 @@ class TestIsOwnerOrAdminOrReadOnly:
             "/api/v1/user/user1/", {"first_name": "test"}, format="json"
         )
         assert response.status_code == 200
+
+    def test_modify_users_by_admin(self, api_client, app_admin):
+        """
+        Test modify users by admin
+        [PATCH] http://127.0.0.1:8000/api/v1/user/{username}/
+        """
+
+        api_client.force_authenticate(user=app_admin)
+        response = api_client.patch(
+            "/api/v1/user/user1/", {"first_name": "test"}, format="json"
+        )
+        assert response.status_code == 200
+
+    def test_modify_users_by_anonymous(self, api_client, new_user):
+        """
+        Test modify users by staff
+        [PATCH] http://127.0.0.1:8000/api/v1/user/{username}/
+        """
+
+        response = api_client.patch(
+            "/api/v1/user/user1/", {"first_name": "test"}, format="json"
+        )
+        assert response.status_code == 401
 
 
 @pytest.mark.django_db
