@@ -7,5 +7,4 @@ urlpatterns = [
     path("", include("src.apps.feed.urls")),
     path("", include("src.apps.follow.urls")),
     path("", include("src.apps.recipes.urls")),
-    path("__debug__/", include("debug_toolbar.urls")),
 ]
