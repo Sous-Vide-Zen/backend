@@ -118,12 +118,6 @@ class RecipeReactionViewSet(ReactionViewSet):
             recipe_reactions__slug=kwargs.get("slug"),
             author=request.user,
         )
-
-        if request.user != reaction.author:
-            return Response(
-                {"detail": "У вас недостаточно прав для выполнения данного действия."},
-                status=status.HTTP_403_FORBIDDEN,
-            )
         reaction.is_deleted = True
         reaction.save()
         return Response(
@@ -153,11 +147,6 @@ class CommentReactionViewSet(ReactionViewSet):
             comment_reactions__id=kwargs.get("id"),
             author=request.user,
         )
-        if request.user != reaction.author:
-            return Response(
-                {"detail": "У вас недостаточно прав для выполнения данного действия."},
-                status=status.HTTP_403_FORBIDDEN,
-            )
         reaction.is_deleted = True
         reaction.save()
         return Response(
