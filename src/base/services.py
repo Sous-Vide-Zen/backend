@@ -4,6 +4,7 @@ from typing import List, Type, Any, Set
 from random import sample
 from typing import Type
 
+from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.db.models import Count, Model
@@ -204,3 +205,19 @@ def count_reactions_on_objects(instance: Model) -> dict:
         .annotate(count=Count("emoji"))
     )
     return {reaction["emoji"]: reaction["count"] for reaction in reactions_queryset}
+
+
+def show_user_reactions(user: Model, instance: Model) -> dict:
+    user_reactions = list()
+    if user.is_authenticated:
+        user_reactions_query = instance.reactions.filter(
+            content_type=ContentType.objects.get_for_model(instance),
+            object_id=instance.id,
+            author=user,
+        ).only("emoji", "id")
+
+        user_reactions = [
+        {"type": reaction.emoji, "id": reaction.id}
+        for reaction in user_reactions_query
+        ]
+    return user_reactions
