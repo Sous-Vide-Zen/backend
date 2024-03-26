@@ -39,6 +39,59 @@ class TestRecipeUrls:
             == 201
         )
 
+    def test_create_recipe_with_name_ingredient_more_than_100_characters(self, api_client, new_author, recipe_data):
+        """
+        Test for create recipe
+        [POST] http://127.0.0.1:8000/api/v1/recipe/
+        """
+
+        api_client.force_authenticate(user=new_author)
+        recipe_data["ingredients"] = ["a" * 101]
+        assert (
+            api_client.post("/api/v1/recipe/", recipe_data, format="json").status_code
+            == 400
+        )
+
+    def test_create_recipe_with_value_ingredients_less_than_or_equal_to_zero(self, api_client, new_author, recipe_data):
+        """
+        Test for create recipe
+        [POST] http://127.0.0.1:8000/api/v1/recipe/
+        """
+
+        api_client.force_authenticate(user=new_author)
+        recipe_data["ingredients"] = [0]
+        assert (
+            api_client.post("/api/v1/recipe/", recipe_data, format="json").status_code
+            == 400
+        )
+
+    def test_create_recipe_with_cooking_time_less_than_ten_minutes(self, api_client, new_author, recipe_data):
+        """
+        Test for create recipe
+        [POST] http://127.0.0.1:8000/api/v1/recipe/
+        """
+
+        api_client.force_authenticate(user=new_author)
+        recipe_data["cooking_time"] = 9
+        assert (
+            api_client.post("/api/v1/recipe/", recipe_data, format="json").status_code
+            == 400
+        )
+
+    def test_create_recipe_with_tags_name_more_than_100_characters(self, api_client, new_author, recipe_data):
+        """
+        Test for create recipe
+        [POST] http://127.0.0.1:8000/api/v1/recipe/
+        """
+
+        api_client.force_authenticate(user=new_author)
+        recipe_data["tag"] = ["a" * 101]
+        print(recipe_data)
+        assert (
+            api_client.post("/api/v1/recipe/", recipe_data, format="json").status_code
+            == 400
+        )
+
     def test_create_recipe_not_authenticated(self, api_client, recipe_data):
         """
         Test for create recipe not authenticated
