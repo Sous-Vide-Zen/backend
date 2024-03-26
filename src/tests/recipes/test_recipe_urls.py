@@ -39,7 +39,9 @@ class TestRecipeUrls:
             == 201
         )
 
-    def test_create_recipe_with_name_ingredient_more_than_100_characters(self, api_client, new_author, recipe_data):
+    def test_create_recipe_with_name_ingredient_more_than_100_characters(
+        self, api_client, new_author, recipe_data
+    ):
         """
         Test for create recipe
         [POST] http://127.0.0.1:8000/api/v1/recipe/
@@ -52,7 +54,9 @@ class TestRecipeUrls:
             == 400
         )
 
-    def test_create_recipe_with_value_ingredients_less_than_or_equal_to_zero(self, api_client, new_author, recipe_data):
+    def test_create_recipe_with_value_ingredients_less_than_or_equal_to_zero(
+        self, api_client, new_author, recipe_data
+    ):
         """
         Test for create recipe
         [POST] http://127.0.0.1:8000/api/v1/recipe/
@@ -65,7 +69,9 @@ class TestRecipeUrls:
             == 400
         )
 
-    def test_create_recipe_with_cooking_time_less_than_ten_minutes(self, api_client, new_author, recipe_data):
+    def test_create_recipe_with_cooking_time_less_than_ten_minutes(
+        self, api_client, new_author, recipe_data
+    ):
         """
         Test for create recipe
         [POST] http://127.0.0.1:8000/api/v1/recipe/
@@ -78,7 +84,9 @@ class TestRecipeUrls:
             == 400
         )
 
-    def test_create_recipe_with_tags_name_more_than_100_characters(self, api_client, new_author, recipe_data):
+    def test_create_recipe_with_tags_name_more_than_100_characters(
+        self, api_client, new_author, recipe_data
+    ):
         """
         Test for create recipe
         [POST] http://127.0.0.1:8000/api/v1/recipe/
