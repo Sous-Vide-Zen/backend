@@ -66,10 +66,14 @@ class TestFeedResponseFields:
         """
 
         ReactionFactory.create_batch(self.NUM_NEW_ACTIVITY, object_id=new_recipe.id)
-        old_reaction = ReactionFactory.create_batch(self.NUM_OLD_ACTIVITY, object_id=new_recipe.id)
+        old_reaction = ReactionFactory.create_batch(
+            self.NUM_OLD_ACTIVITY, object_id=new_recipe.id
+        )
 
         for reaction in old_reaction:
-            reaction.pub_date = make_aware(datetime.now() - timedelta(days=ACTIVITY_INTERVAL + 1))
+            reaction.pub_date = make_aware(
+                datetime.now() - timedelta(days=ACTIVITY_INTERVAL + 1)
+            )
 
         Reaction.objects.bulk_update(old_reaction, ["pub_date"], batch_size=100)
 
@@ -84,7 +88,9 @@ class TestFeedResponseFields:
         old_view = ViewFactory.create_batch(self.NUM_OLD_ACTIVITY, recipe=new_recipe)
 
         for view in old_view:
-            view.created_at = make_aware(datetime.now() - timedelta(days=ACTIVITY_INTERVAL + 1))
+            view.created_at = make_aware(
+                datetime.now() - timedelta(days=ACTIVITY_INTERVAL + 1)
+            )
 
         ViewRecipes.objects.bulk_update(old_view, ["created_at"], batch_size=100)
 
@@ -94,10 +100,16 @@ class TestFeedResponseFields:
         assert response.data["results"][0]["activity_count"] == 40
 
         CommentFactory.create_batch(self.NUM_NEW_ACTIVITY, recipe=new_recipe)
-        old_comment = CommentFactory.create_batch(self.NUM_OLD_ACTIVITY, recipe=new_recipe, pub_date=make_aware(datetime.now() - timedelta(days=ACTIVITY_INTERVAL + 1)))
+        old_comment = CommentFactory.create_batch(
+            self.NUM_OLD_ACTIVITY,
+            recipe=new_recipe,
+            pub_date=make_aware(datetime.now() - timedelta(days=ACTIVITY_INTERVAL + 1)),
+        )
 
         for comment in old_comment:
-            comment.pub_date = make_aware(datetime.now() - timedelta(days=ACTIVITY_INTERVAL + 1))
+            comment.pub_date = make_aware(
+                datetime.now() - timedelta(days=ACTIVITY_INTERVAL + 1)
+            )
 
         Comment.objects.bulk_update(old_comment, ["pub_date"], batch_size=100)
 
