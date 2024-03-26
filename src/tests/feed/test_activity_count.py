@@ -1,14 +1,52 @@
-import pytest
 from datetime import datetime, timedelta
+
+import pytest
 from django.contrib.contenttypes.models import ContentType
+from django.utils.timezone import make_aware
+from factory import Faker, LazyAttribute, Sequence, SubFactory, SelfAttribute
+from factory.django import DjangoModelFactory
+
+from config.settings import ACTIVITY_INTERVAL
+from src.apps.comments.models import Comment
 from src.apps.reactions.choices import EmojyChoice
 from src.apps.reactions.models import Reaction
 from src.apps.recipes.models import Recipe
-from src.apps.comments.models import Comment
 from src.apps.view.models import ViewRecipes
-import random
-from config.settings import ACTIVITY_INTERVAL
-from django.utils.timezone import make_aware
+
+
+class UserFactory(DjangoModelFactory):
+    class Meta:
+        model = "users.CustomUser"
+
+    email = Faker("email")
+    username = Faker("user_name")
+    password = Faker("password")
+
+
+class ReactionFactory(DjangoModelFactory):
+    class Meta:
+        model = "reactions.Reaction"
+
+    author = SubFactory(UserFactory)
+    object_id = SelfAttribute("recipe.id")
+    content_type = LazyAttribute(lambda _: ContentType.objects.get_for_model(Recipe))
+    emoji = Faker("random_element", elements=EmojyChoice)
+
+
+class ViewFactory(DjangoModelFactory):
+    class Meta:
+        model = "view.ViewRecipes"
+
+    user = Sequence(lambda n: f"test_user_{n}")
+    recipe = SelfAttribute("recipe.id")
+
+
+class CommentFactory(DjangoModelFactory):
+    class Meta:
+        model = "comments.Comment"
+
+    author = SubFactory(UserFactory)
+    recipe = SelfAttribute("recipe.id")
 
 
 @pytest.mark.feed
@@ -19,65 +57,51 @@ class TestFeedResponseFields:
     Test activity count in one month
     """
 
-    def test_activity_count_calculation(self, new_user, api_client, django_user_model):
+    NUM_NEW_ACTIVITY = 20
+    NUM_OLD_ACTIVITY = 10
+
+    def test_activity_count_calculation(self, new_recipe, api_client):
         """
         Count of reactions, views, and comments are correctly calculated in activity_count
         """
 
-        title, full_text = "recipe", "recipe full text"
-        last_month_start = make_aware(
-            datetime.now() - timedelta(days=ACTIVITY_INTERVAL)
-        )
+        ReactionFactory.create_batch(self.NUM_NEW_ACTIVITY, object_id=new_recipe.id)
+        old_reaction = ReactionFactory.create_batch(self.NUM_OLD_ACTIVITY, object_id=new_recipe.id)
 
-        new_recipe = Recipe.objects.create(
-            author=new_user,
-            title=title,
-            full_text=full_text,
-            cooking_time=10,
-            slug=f"recipe",
-        )
-        users = [
-            django_user_model.objects.create_user(
-                username=f"user{i}", email=f"testemail{i}@gmail.com", password="test"
-            )
-            for i in range(random.randint(10, 20))
-        ]
+        for reaction in old_reaction:
+            reaction.pub_date = make_aware(datetime.now() - timedelta(days=ACTIVITY_INTERVAL + 1))
 
-        content_type = ContentType.objects.get_for_model(Recipe)
-        for user in users:
-            for choice in EmojyChoice:
-                Reaction.objects.create(
-                    author=user,
-                    object_id=new_recipe.id,
-                    content_type=content_type,
-                    emoji=choice,
-                )
-
-        for _ in range(random.randint(10, 100)):
-            Comment.objects.create(
-                author=new_user,
-                recipe=new_recipe,
-                text="Test Comment",
-                pub_date=last_month_start,
-            )
-
-        for _ in range(random.randint(10, 100)):
-            ViewRecipes.objects.create(
-                recipe=new_recipe,
-                user=new_user,
-                created_at=last_month_start,
-            )
+        Reaction.objects.bulk_update(old_reaction, ["pub_date"], batch_size=100)
 
         url = "/api/v1/feed/?ordering=-activity_count"
+
         response = api_client.get(url)
 
-        assert response.status_code == 200
+        assert response.data["results"][0]["total_reactions_count"] == 30
+        assert response.data["results"][0]["activity_count"] == 20
 
-        for result in response.data["results"]:
+        ViewFactory.create_batch(self.NUM_NEW_ACTIVITY, recipe=new_recipe)
+        old_view = ViewFactory.create_batch(self.NUM_OLD_ACTIVITY, recipe=new_recipe)
 
-            activity_count = (
-                result["total_comments_count"]
-                + result["total_views_count"]
-                + result["total_reactions_count"]
-            )
-            assert result["activity_count"] == activity_count
+        for view in old_view:
+            view.created_at = make_aware(datetime.now() - timedelta(days=ACTIVITY_INTERVAL + 1))
+
+        ViewRecipes.objects.bulk_update(old_view, ["created_at"], batch_size=100)
+
+        response = api_client.get(url)
+
+        assert response.data["results"][0]["total_views_count"] == 30
+        assert response.data["results"][0]["activity_count"] == 40
+
+        CommentFactory.create_batch(self.NUM_NEW_ACTIVITY, recipe=new_recipe)
+        old_comment = CommentFactory.create_batch(self.NUM_OLD_ACTIVITY, recipe=new_recipe, pub_date=make_aware(datetime.now() - timedelta(days=ACTIVITY_INTERVAL + 1)))
+
+        for comment in old_comment:
+            comment.pub_date = make_aware(datetime.now() - timedelta(days=ACTIVITY_INTERVAL + 1))
+
+        Comment.objects.bulk_update(old_comment, ["pub_date"], batch_size=100)
+
+        response = api_client.get(url)
+
+        assert response.data["results"][0]["total_comments_count"] == 30
+        assert response.data["results"][0]["activity_count"] == 60
