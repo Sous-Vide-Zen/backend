@@ -14,6 +14,7 @@ class CustomUserSerializer(serializers.ModelSerializer):
     is_active = serializers.BooleanField(required=False, read_only=True)
     is_staff = serializers.BooleanField(required=False, read_only=True)
     is_admin = serializers.BooleanField(required=False, read_only=True)
+    date_joined = serializers.DateTimeField(read_only=True)
 
     class Meta:
         model = get_user_model()
