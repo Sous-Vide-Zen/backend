@@ -217,7 +217,7 @@ def show_user_reactions(user: Model, instance: Model) -> dict:
         ).only("emoji", "id")
 
         user_reactions = [
-        {"type": reaction.emoji, "id": reaction.id}
-        for reaction in user_reactions_query
+            {"type": reaction.emoji, "id": reaction.id}
+            for reaction in user_reactions_query
         ]
     return user_reactions

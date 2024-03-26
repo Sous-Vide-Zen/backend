@@ -10,7 +10,6 @@ from rest_framework.mixins import (
 )
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
-from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.viewsets import GenericViewSet
 
 from src.base.throttling import ScopedOnePerThreeSecsThrottle
@@ -62,9 +61,9 @@ class ReactionViewSet(
         return super().get_serializer_class()
 
     def list(self, request, *args, **kwargs):
-        instanse = self.get_object()
+        instance = self.get_object()
         serializer = self.get_serializer_class()
-        serializer = serializer(instanse)
+        serializer = serializer(instance, context={"request": request})
         return Response(serializer.data)
 
     @transaction.atomic

@@ -102,7 +102,7 @@ class TestRecipeReactionsUrl:
         slug = new_recipe.slug
         response = api_client.get(f"/api/v1/recipe/{slug}/reactions/")
         assert response.status_code == 200
-        assert response.data == {"reactions": {}}
+        assert response.data == {"reactions": {}, "user_reactions": []}
 
 
 @pytest.mark.reactions
@@ -199,4 +199,4 @@ class TestCommentReactionsUrl:
         id = new_comment.id
         response = api_client.get(f"/api/v1/comment/{id}/reactions/")
         assert response.status_code == 200
-        assert response.data == {"reactions": {}}
+        assert response.data == {"reactions": {}, "user_reactions": []}

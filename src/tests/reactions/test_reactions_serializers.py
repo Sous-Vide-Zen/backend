@@ -28,20 +28,32 @@ class TestRecipeReactionsSerializer:
         serializer = ReactionCreateSerializer(reaction)
         assert serializer.data == example_data
 
-    def test_recipe_reactions_list_serializer(self, new_user, new_recipe):
+    def test_recipe_reactions_list_serializer(self, request, new_user, new_recipe):
         """
         Recipe reaction retrieve serializer test
         [GET] http://127.0.0.1:8000/api/v1/recipe/{slug}/reactions/
         """
+        reactions = []
         for emoji in EmojyChoice:
-            Reaction.objects.create(
-                emoji=emoji.value,
-                object_id=new_recipe.id,
-                author=new_user,
-                content_type=ContentType.objects.get_for_model(new_recipe),
+            reactions.append(
+                Reaction.objects.create(
+                    emoji=emoji.value,
+                    object_id=new_recipe.id,
+                    author=new_user,
+                    content_type=ContentType.objects.get_for_model(new_recipe),
+                )
             )
-        reactions_data = dict({"reactions": dict.fromkeys(EmojyChoice.values, 1)})
-        serializer = RecipeReactionsListSerializer(new_recipe)
+        user_reactions = [
+            {"id": reaction.id, "type": reaction.emoji} for reaction in reactions
+        ]
+        reactions_data = {
+            "reactions": dict.fromkeys(EmojyChoice.values, 1),
+            "user_reactions": sorted(user_reactions, key=lambda d: d["type"]),
+        }
+        request.user = new_user
+        serializer = RecipeReactionsListSerializer(
+            new_recipe, context={"request": request}
+        )
         serializer_data = serializer.data.copy()
 
         assert serializer_data == reactions_data
@@ -65,20 +77,32 @@ class TestCommentReactionsSerializer:
         serializer = ReactionCreateSerializer(reaction)
         assert serializer.data == example_data
 
-    def test_comment_reactions_list_serializer(self, new_user, new_comment):
+    def test_comment_reactions_list_serializer(self, request, new_user, new_comment):
         """
         Comment reaction retrieve serializer test
         [GET] http://127.0.0.1:8000/api/v1/comment/{id}/reactions/
         """
+        reactions = []
         for emoji in EmojyChoice:
-            Reaction.objects.create(
-                emoji=emoji.value,
-                object_id=new_comment.id,
-                author=new_user,
-                content_type=ContentType.objects.get_for_model(new_comment),
+            reactions.append(
+                Reaction.objects.create(
+                    emoji=emoji.value,
+                    object_id=new_comment.id,
+                    author=new_user,
+                    content_type=ContentType.objects.get_for_model(new_comment),
+                )
             )
-        reactions_data = dict({"reactions": dict.fromkeys(EmojyChoice.values, 1)})
-        serializer = CommentReactionsListSerializer(new_comment)
+        user_reactions = [
+            {"id": reaction.id, "type": reaction.emoji} for reaction in reactions
+        ]
+        reactions_data = {
+            "reactions": dict.fromkeys(EmojyChoice.values, 1),
+            "user_reactions": sorted(user_reactions, key=lambda d: d["type"]),
+        }
+        request.user = new_user
+        serializer = CommentReactionsListSerializer(
+            new_comment, context={"request": request}
+        )
         serializer_data = serializer.data.copy()
 
         assert serializer_data == reactions_data

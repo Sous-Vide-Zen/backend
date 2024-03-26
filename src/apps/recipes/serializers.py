@@ -1,7 +1,6 @@
 from datetime import timedelta
 
 from django.db import transaction
-from django.db.models import Count
 from django.utils import timezone
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.fields import CurrentUserDefault, HiddenField
@@ -20,7 +19,6 @@ from src.base.services import (
     shorten_text,
     create_ingredients_in_recipe,
     create_recipe_slug,
-    count_reactions_on_objects,
 )
 
 
@@ -127,7 +125,6 @@ class RecipeRetriveSerializer(ModelSerializer):
             "preview_image",
             "ingredients",
             "full_text",
-            "reactions",
             "tag",
             "reactions_count",
             "views_count",
@@ -136,14 +133,6 @@ class RecipeRetriveSerializer(ModelSerializer):
             "pub_date",
             "updated_at",
         )
-
-    def to_representation(self, instance):
-        """
-        representation
-        """
-        representation = super().to_representation(instance)
-        representation["reactions"] = count_reactions_on_objects(instance)
-        return representation
 
 
 class RecipeCreateSerializer(BaseRecipeSerializer):

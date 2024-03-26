@@ -15,7 +15,7 @@ class TestFeedResponseFields:
         api_client,
     ):
         """
-        Count of emojies by type are reflected in reactions field
+        Count of emojies are reflected in reactions_count field
         """
 
         title = "Recipe 1"
@@ -37,11 +37,6 @@ class TestFeedResponseFields:
             )
         url = "/api/v1/feed/?ordering=-activity_count"
         response = api_client.get(url)
-
-        assert response.data["results"][0]["reactions"] == {
-            "Like": 1,
-            "Dislike": 1,
-            "Angry_Face": 1,
-            "Heart": 1,
-            "Fire": 1,
-        }
+        assert response.data["results"][0]["total_reactions_count"] == len(
+            EmojyChoice.values
+        )
