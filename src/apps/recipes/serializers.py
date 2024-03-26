@@ -3,6 +3,7 @@ from datetime import timedelta
 from django.db import transaction
 from django.db.models import Count
 from django.utils import timezone
+from rest_framework import serializers
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.fields import CurrentUserDefault, HiddenField
 from rest_framework.serializers import (
@@ -41,6 +42,19 @@ class TagSerializer(TagListSerializerField):
     """
     Tag serializer
     """
+
+    def to_internal_value(self, data):
+        # Вызов родительского метода для получения списка тегов
+        tag_list = super().to_internal_value(data)
+
+        # Проверка длины каждого тега
+        for tag_name in tag_list:
+            if len(tag_name) > 100:
+                raise serializers.ValidationError(
+                    "Максимальная длина тега - 100 символов."
+                )
+
+        return tag_list
 
     def to_representation(self, value):
         """
