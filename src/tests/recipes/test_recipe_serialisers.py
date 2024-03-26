@@ -38,7 +38,6 @@ class TestRecipeSerialisers:
             "preview_image": None,
             "ingredients": [],
             "full_text": "This is a test recipe full text.",
-            "reactions": {},
             "tag": [],
             "category": [],
             "cooking_time": 30,

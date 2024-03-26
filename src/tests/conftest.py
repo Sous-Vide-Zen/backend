@@ -4,6 +4,7 @@ from django.utils import timezone
 from django.utils.text import slugify
 from rest_framework.test import APIClient
 
+from src.apps.comments.models import Comment
 from src.apps.ingredients.models import Ingredient, Unit, IngredientInRecipe
 from src.apps.recipes.models import Recipe, Category
 
@@ -186,3 +187,13 @@ def recipe_data(category_1, category_2, category_3):
         "category": [category_1.id, category_2.id, category_3.id],
         "cooking_time": 10,
     }
+
+
+@pytest.fixture(scope="function")
+def new_comment(new_user, new_recipe):
+    """
+    Create new comment to recipe
+    """
+    return Comment.objects.create(
+        recipe=new_recipe, text="Test_comment_on_recipe", author=new_user
+    )

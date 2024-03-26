@@ -4,9 +4,10 @@ from typing import List, Type, Any, Set
 from random import sample
 from typing import Type
 
+from django.contrib.contenttypes.models import ContentType
 from rest_framework.exceptions import ValidationError
 from django.db import transaction
-from django.db.models import Model
+from django.db.models import Count, Model
 from django.http import HttpRequest
 from django.utils import timezone
 from django.utils.text import slugify
@@ -195,3 +196,28 @@ def generate_username(user_id: int, model: Type[Model]) -> str:
                 return new_username
 
         return generate_username(user_id, model)
+
+
+def count_reactions_on_objects(instance: Model) -> dict:
+    reactions_queryset = (
+        instance.reactions.values("emoji")
+        .filter(is_deleted=False)
+        .annotate(count=Count("emoji"))
+    )
+    return {reaction["emoji"]: reaction["count"] for reaction in reactions_queryset}
+
+
+def show_user_reactions(user: Model, instance: Model) -> dict:
+    user_reactions = list()
+    if user.is_authenticated:
+        user_reactions_query = instance.reactions.filter(
+            content_type=ContentType.objects.get_for_model(instance),
+            object_id=instance.id,
+            author=user,
+        ).only("emoji", "id")
+
+        user_reactions = [
+            {"type": reaction.emoji, "id": reaction.id}
+            for reaction in user_reactions_query
+        ]
+    return user_reactions
