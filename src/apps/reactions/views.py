@@ -29,19 +29,20 @@ class ReactionViewSet(
 ):
     """Base class for getting, creating and deleting reactions."""
 
+    serializer_class = RecipeReactionsListSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
     throttle_classes = [ScopedOnePerThreeSecsThrottle]
     throttle_scope = "reactions"
     swagger_tags = ["Reactions"]
 
     def get_queryset(self):
-        if "recipe" in self.request.path:
-            queryset = Recipe.objects.filter(slug=self.kwargs.get("slug"))
-
-        if "comment" in self.request.path:
-            queryset = Comment.objects.filter(id=self.kwargs.get("id"))
-
-        return queryset
+        path = self.request.path
+        if "recipe" in path:
+            return Recipe.objects.filter(slug=self.kwargs.get("slug"))
+        elif "comment" in path:
+            return Comment.objects.filter(id=self.kwargs.get("id"))
+        else:
+            return Response(status=status.HTTP_404_NOT_FOUND)
 
     def get_object(self):
         queryset = self.get_queryset()
