@@ -68,7 +68,11 @@ class TestFeedUsernames:
         for i in range(num_recipes):
             for user in [new_user, new_user1, new_user2]:
                 RecipeFactory(
-                    author=user, title=title, full_text=full_text, cooking_time=10
+                    author=user,
+                    title=title,
+                    full_text=full_text,
+                    cooking_time=10,
+                    published=True,
                 )
 
         FollowFactory(user=new_user, author=new_user1)

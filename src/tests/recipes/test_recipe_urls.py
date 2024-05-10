@@ -1,5 +1,6 @@
 import pytest
 from collections import OrderedDict
+from src.apps.recipes.models import Recipe
 
 
 @pytest.mark.django_db
@@ -56,18 +57,16 @@ class TestRecipeUrls:
             "detail": "Страница не найдена."
         }
 
-    def test_create_recipe(self, api_client, new_author, recipe_data):
+    def test_create_recipe(self, api_client, new_author):
         """
-        Test for create recipe
+        Test for create draft recipe
         [POST] http://127.0.0.1:8000/api/v1/recipe/
         """
 
         api_client.force_authenticate(user=new_author)
 
-        assert (
-            api_client.post("/api/v1/recipe/", recipe_data, format="json").status_code
-            == 201
-        )
+        assert api_client.post("/api/v1/recipe/", format="json").status_code == 201
+        assert Recipe.objects.all()[0].published == False
 
     def test_create_recipe_with_name_ingredient_more_than_100_characters(
         self, api_client, new_author, recipe_data
@@ -158,10 +157,9 @@ class TestRecipeUrls:
 
         api_client.force_authenticate(user=new_author)
         recipe_data["cooking_time"] = 9
-        assert (
-            api_client.post("/api/v1/recipe/", recipe_data, format="json").status_code
-            == 400
-        )
+        response = api_client.post("/api/v1/recipe/", recipe_data, format="json")
+
+        assert response.status_code == 400
 
     def test_create_recipe_with_tags_name_more_than_100_characters(
         self, api_client, new_author, recipe_data
@@ -189,7 +187,9 @@ class TestRecipeUrls:
         assert response.status_code == 401
         assert response.data == {"detail": "Учетные данные не были предоставлены."}
 
-    def test_update_recipe(self, api_client, new_author, new_recipe, recipe_data):
+    def test_update_and_publish_recipe(
+        self, api_client, new_author, new_recipe, recipe_data
+    ):
         """
         Test for update recipe
         [PATCH] http://127.0.0.1:8000/api/v1/recipe/{slug}/
@@ -202,6 +202,7 @@ class TestRecipeUrls:
         )
 
         assert response.status_code == 200
+        assert new_recipe.published == True
 
     def test_update_recipe_by_admin(
         self, api_client, app_admin, new_recipe, recipe_data
@@ -262,7 +263,7 @@ class TestRecipeUrls:
         response = api_client.delete(f"/api/v1/recipe/{new_recipe.slug}/")
 
         assert response.status_code == 204
-        assert response.data == {"message": "Рецепт успешно удален"}
+        assert response.data == {"message": "Рецепт успешно удален."}
 
     def test_delete_recipe_not_owner(self, api_client, new_user, new_recipe):
         """
@@ -290,4 +291,4 @@ class TestRecipeUrls:
         response = api_client.delete(f"/api/v1/recipe/{new_recipe.slug}/")
 
         assert response.status_code == 204
-        assert response.data == {"message": "Рецепт успешно удален"}
+        assert response.data == {"message": "Рецепт успешно удален."}

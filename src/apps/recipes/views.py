@@ -62,6 +62,7 @@ class RecipeViewSet(
                 views_count=Count("views", distinct=True),
             )
         )
+
         return queryset
 
     def get_permissions(self):
@@ -69,6 +70,7 @@ class RecipeViewSet(
             self.permission_classes = (IsAuthenticated,)
         else:
             self.permission_classes = (IsOwnerOrStaffOrReadOnly,)
+
         return super(RecipeViewSet, self).get_permissions()
 
     def get_serializer_class(self):
@@ -86,13 +88,15 @@ class RecipeViewSet(
         increment_view_count(ViewRecipes, instance, request)
 
         serializer = self.get_serializer(instance)
+
         return Response(serializer.data)
 
     def destroy(self, request, *args, **kwargs):
         """Delete recipe"""
         self.get_object().delete()
+
         return Response(
-            {"message": "Рецепт успешно удален"}, status=status.HTTP_204_NO_CONTENT
+            {"message": "Рецепт успешно удален."}, status=status.HTTP_204_NO_CONTENT
         )
 
     @action(
@@ -116,6 +120,7 @@ class RecipeViewSet(
         return self.get_paginated_response(serializer.data)
 
     def add_to_favorites(self, request, slug):
+        """Adding a recipe to a list of user's favorites."""
         recipe = get_object_or_404(Recipe, slug=slug)
         favorite_recipe, created = Favorite.objects.get_or_create(
             author=request.user, recipe=recipe
@@ -125,11 +130,13 @@ class RecipeViewSet(
                 {"detail": "Рецепт уже находится в избранном."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+
         return Response(
             {"detail": "Рецепт добавлен в избранное."}, status=status.HTTP_201_CREATED
         )
 
     def remove_from_favorites(self, request, slug):
+        """Removing a recipe from a list of user's favorites."""
         if not request.user.is_authenticated:
             return Response(
                 data={"detail": "Учетные данные не были предоставлены."},
@@ -145,7 +152,15 @@ class RecipeViewSet(
             )
 
         favorite_recipe.delete()
+
         return Response(
             status=status.HTTP_204_NO_CONTENT,
             data={"detail": "Рецепт удален из избранного."},
         )
+
+    def list_draft_recipes(self, request):
+        """Getting a list of user's draft recipes."""
+        queryset = Recipe.objects.filter(author=request.user, published=False)
+        serializer = RecipeCreateSerializer(queryset, many=True)
+
+        return Response(serializer.data)

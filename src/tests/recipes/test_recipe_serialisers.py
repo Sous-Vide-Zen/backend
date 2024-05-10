@@ -66,6 +66,7 @@ class TestRecipeSerialisers:
             "tag": ["Горячий", "вода", "сахар"],
             "cooking_time": 30,
             "category": [2],
+            "published": False,
         }
 
         example_response = {
@@ -85,6 +86,7 @@ class TestRecipeSerialisers:
             ],
             "category": [2],
             "cooking_time": 30,
+            "published": False,
         }
 
         api_client.force_authenticate(user=new_author)

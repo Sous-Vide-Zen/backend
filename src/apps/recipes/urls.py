@@ -14,5 +14,10 @@ urlpatterns = [
         ),
         name="favorite-recipe",
     ),
+    path(
+        "recipe/drafts/",
+        RecipeViewSet.as_view({"get": "list_draft_recipes"}),
+        name="drafts",
+    ),
     path("", include(router.urls)),
 ]

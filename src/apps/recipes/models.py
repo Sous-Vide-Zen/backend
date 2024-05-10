@@ -32,6 +32,7 @@ class Recipe(models.Model):
     • updated_at (DateTimeField): recipe updated date.
     • reactions (GenericRelation): reactions on a recipe.
     • is_repost (BooleanField): indicates whether recipe was reposted. Default False.
+    • published (BooleanField): indicates whether recipe was published or it's a draft (if False).
 
     """
 
@@ -67,6 +68,7 @@ class Recipe(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     reactions = GenericRelation(Reaction, related_query_name="recipe_reactions")
     is_repost = models.BooleanField(default=False)
+    published = models.BooleanField(default=False)
 
     class Meta:
         index_together = ["title", "slug"]

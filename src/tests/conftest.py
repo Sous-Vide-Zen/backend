@@ -85,7 +85,7 @@ def new_user(django_user_model):
 @pytest.fixture(scope="function")
 def new_recipe(new_author, new_ingredient, new_unit):
     """
-    Create new recipe
+    Create new published recipe
     """
 
     recipe = Recipe.objects.create(
@@ -97,6 +97,7 @@ def new_recipe(new_author, new_ingredient, new_unit):
         cooking_time=30,
         pub_date=timezone.now(),
         updated_at=timezone.now(),
+        published=True,
     )
     return recipe
 
@@ -186,6 +187,7 @@ def recipe_data(category_1, category_2, category_3):
         "tag": ["Яйца", "Вода", "Варка"],
         "category": [category_1.id, category_2.id, category_3.id],
         "cooking_time": 10,
+        "published": False,
     }
 
 

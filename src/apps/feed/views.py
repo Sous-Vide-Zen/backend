@@ -36,7 +36,7 @@ class FeedUserList(mixins.ListModelMixin, viewsets.GenericViewSet):
         )
 
         queryset = (
-            Recipe.objects.all()
+            Recipe.objects.filter(published=True)
             .only(
                 "id",
                 "title",

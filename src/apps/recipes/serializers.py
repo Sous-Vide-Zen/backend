@@ -104,9 +104,12 @@ class BaseRecipeSerializer(ModelSerializer):
         """
         Validate data
         """
-
         if "full_text" in data:
             data["short_text"] = shorten_text(data["full_text"], SHORT_RECIPE_SYMBOLS)
+
+        if "title" not in data and self.context.get("request").method == "POST":
+            data["title"] = "Draft_recipe"
+            data = create_recipe_slug(Recipe, data)
 
         if "title" in data:
             data = create_recipe_slug(Recipe, data)
@@ -163,17 +166,33 @@ class RecipeRetriveSerializer(BaseRecipeSerializer):
 
 class RecipeCreateSerializer(BaseRecipeSerializer):
     """
-    Create recipe serializer
+    Create draft recipe serializer
     """
 
+    title = serializers.CharField(max_length=150, default="Draft_recipe")
+    ingredients = IngredientInRecipeSerializer(many=True, default=None)
+    full_text = serializers.CharField(default="Draft_recipe")
+    cooking_time = serializers.IntegerField(max_value=60 * 24, min_value=10, default=10)
+
     class Meta(BaseRecipeSerializer.Meta):
-        fields = BaseRecipeSerializer.Meta.fields
+        fields = BaseRecipeSerializer.Meta.fields + ("published",)
 
     @transaction.atomic
     def create(self, validated_data):
-        """Create recipe"""
+        """Create draft recipe"""
+        user_drafts = Recipe.objects.filter(
+            author=self.context.get("request").user, published=False
+        )
+        if len(user_drafts) >= 3:
+            raise serializers.ValidationError(
+                "Вы можете сохранить не более 3-х черновиков. Удалите ненужный черновик."
+            )
         tags_data = validated_data.pop("tag", [])
-        ingredients_data = self.initial_data["ingredients"]
+        ingredients_data = (
+            self.initial_data["ingredients"]
+            if "ingredients" in self.initial_data
+            else None
+        )
         validated_data.pop("ingredients", [])
         category_data = validated_data.pop("category", [])
 
@@ -183,10 +202,10 @@ class RecipeCreateSerializer(BaseRecipeSerializer):
             recipe.tag.set(tags_data)
         if category_data:
             recipe.category.set(category_data)
-
-        ingredients_instance = create_ingredients_in_recipe(recipe, ingredients_data)
-
-        if ingredients_instance:
+        if ingredients_data:
+            ingredients_instance = create_ingredients_in_recipe(
+                recipe, ingredients_data
+            )
             recipe.ingredients.set(ingredients_instance)
         return recipe
 
@@ -205,11 +224,16 @@ class RecipeUpdateSerializer(BaseRecipeSerializer):
         """
         Update recipe
         """
-        if timezone.now() - instance.pub_date > timedelta(days=1):
+        if instance.published and timezone.now() - instance.pub_date > timedelta(
+            days=1
+        ):
             raise PermissionDenied(
                 "Обновление рецепта возможно только в течение суток после создания."
             )
-
+        if "title" not in self.initial_data and "draft" in instance.title.lower():
+            raise serializers.ValidationError(
+                "Введите название рецепта перед публикацией."
+            )
         tags_data = validated_data.pop("tag", [])
         ingredients_data = (
             self.initial_data["ingredients"]
@@ -230,5 +254,9 @@ class RecipeUpdateSerializer(BaseRecipeSerializer):
             )
             if ingredients_instance:
                 instance.ingredients.set(ingredients_instance)
+
+        if not instance.published:
+            instance.published = True
+            instance.pub_date = timezone.now()
 
         return super().update(instance, validated_data)
