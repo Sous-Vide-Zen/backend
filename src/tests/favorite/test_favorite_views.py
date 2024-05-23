@@ -1,6 +1,15 @@
 from collections import OrderedDict
 import pytest
 
+from src.base.code_text import (
+    LIST_OF_FAVORITES_IS_EMPTY,
+    CREDENTIALS_WERE_NOT_PROVIDED,
+    SUCCESSFUL_ADDED_TO_FAVORITES,
+    RECIPE_ALREADY_IN_FAVORITES,
+    PAGE_NOT_FOUND,
+    RECIPE_REMOVED_FROM_FAVORITES,
+    THE_RECIPE_IS_NOT_IN_FAVORITES,
+)
 from src.apps.favorite.models import Favorite
 from src.apps.recipes.serializers import BaseRecipeListSerializer
 
@@ -76,7 +85,7 @@ class TestFavoriteRecipesListPage:
         url = f"/api/v1/recipe/favorites/"
         response = api_client.get(url)
 
-        assert response.data == {"detail": "Учетные данные не были предоставлены."}
+        assert response.data == CREDENTIALS_WERE_NOT_PROVIDED
         assert response.status_code == 401
 
     def test_favorite_recipes_empty_page(self, api_client, new_user, new_recipe):
@@ -87,7 +96,7 @@ class TestFavoriteRecipesListPage:
         url = f"/api/v1/recipe/favorites/"
         api_client.force_authenticate(user=new_user)
         response = api_client.get(url)
-        assert response.data == {"detail": "Список избранных рецептов пуст."}
+        assert response.data == LIST_OF_FAVORITES_IS_EMPTY
         assert response.status_code == 200
 
 
@@ -101,17 +110,17 @@ class TestFavoriteRecipeCreationDeletionView:
         url = f"http://127.0.0.1:8000/api/v1/recipe/{slug}/favorite/"
 
         response = api_client.post(url)
-        assert response.data == {"detail": "Учетные данные не были предоставлены."}
+        assert response.data == CREDENTIALS_WERE_NOT_PROVIDED
         assert response.status_code == 401
 
         api_client.force_authenticate(user=new_user)
         response = api_client.post(url)
 
         assert Favorite.objects.filter(recipe=new_recipe, author=new_user).exists()
-        assert response.data == {"detail": "Рецепт добавлен в избранное."}
+        assert response.data == SUCCESSFUL_ADDED_TO_FAVORITES
         assert response.status_code == 201
 
-    def test_already_favorited_add_to_favorites(self, api_client, new_user, new_recipe):
+    def test_already_favorites_add_to_favorites(self, api_client, new_user, new_recipe):
         """
         Adding already favorited recipe to favorites test
         [POST] http://127.0.0.1:8000/api/v1/recipe/{slug}/favorite/
@@ -123,7 +132,7 @@ class TestFavoriteRecipeCreationDeletionView:
         api_client.force_authenticate(user=new_user)
         response = api_client.post(url)
 
-        assert response.data == {"detail": "Рецепт уже находится в избранном."}
+        assert response.data == RECIPE_ALREADY_IN_FAVORITES
         assert response.status_code == 400
 
     def test_non_existing_recipe_add_to_favorites(
@@ -137,7 +146,7 @@ class TestFavoriteRecipeCreationDeletionView:
         api_client.force_authenticate(user=new_user)
         response = api_client.post(url)
 
-        assert response.data == {"detail": "Страница не найдена."}
+        assert response.data == PAGE_NOT_FOUND
         assert response.status_code == 404
 
     def test_recipe_remove_from_favorites(self, api_client, new_user, new_recipe):
@@ -151,7 +160,7 @@ class TestFavoriteRecipeCreationDeletionView:
         Favorite.objects.create(recipe=new_recipe, author=new_user)
 
         response = api_client.delete(url)
-        assert response.data == {"detail": "Учетные данные не были предоставлены."}
+        assert response.data == CREDENTIALS_WERE_NOT_PROVIDED
         assert response.status_code == 401
 
         api_client.force_authenticate(user=new_user)
@@ -159,7 +168,7 @@ class TestFavoriteRecipeCreationDeletionView:
         assert not (
             Favorite.objects.filter(recipe=new_recipe, author=new_user).exists()
         )
-        assert response.data == {"detail": "Рецепт удален из избранного."}
+        assert response.data == RECIPE_REMOVED_FROM_FAVORITES
         assert response.status_code == 204
 
     def test_non_existing_recipe_remove_from_favorites(
@@ -173,10 +182,10 @@ class TestFavoriteRecipeCreationDeletionView:
         api_client.force_authenticate(user=new_user)
         response = api_client.delete(url)
 
-        assert response.data == {"detail": "Страница не найдена."}
+        assert response.data == PAGE_NOT_FOUND
         assert response.status_code == 404
 
-    def test_not_favorited_recipe_remove_from_favorites(
+    def test_not_favorites_recipe_remove_from_favorites(
         self, api_client, new_user, new_recipe
     ):
         """
@@ -189,5 +198,5 @@ class TestFavoriteRecipeCreationDeletionView:
 
         api_client.force_authenticate(user=new_user)
         response = api_client.delete(url)
-        assert response.data == {"detail": "Рецепт не находится в избранном."}
+        assert response.data == THE_RECIPE_IS_NOT_IN_FAVORITES
         assert response.status_code == 400

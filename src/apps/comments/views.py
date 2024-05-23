@@ -18,6 +18,12 @@ from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
+from src.base.code_text import (
+    INVALID_ID_FORMAT,
+    COMMENT_NOT_FOUND,
+    COMMENT_SUCCESSFULLY_DELETE,
+    CANT_EDIT_COMMENT,
+)
 from src.apps.comments.models import Comment
 from src.base.paginators import CommentPagination
 from src.base.permissions import (
@@ -78,8 +84,8 @@ class CommentViewSet(
             try:
                 int(self.kwargs.get("pk"))
             except ValueError:
-                raise ValidationError({"detail": "Неверный формат id"})
-            raise NotFound({"detail": "Комментарий не найден."})
+                raise ValidationError(INVALID_ID_FORMAT, code="invalid_id")
+            raise NotFound(COMMENT_NOT_FOUND, code="comment_not_found")
 
     def get_serializer_class(self):
         if self.request.method == "GET":
@@ -93,7 +99,8 @@ class CommentViewSet(
         """Creating a comment.
         Comment can be posted on a recipe (indicated by slug in url).
 
-        Comment can be posted on another comment (if "parent" indicated in the serializer).
+        Comment can be posted on another comment (if "parent" indicated in
+        the serializer).
         """
 
         recipe = get_object_or_404(Recipe, slug=kwargs.get("slug"))
@@ -115,12 +122,9 @@ class CommentViewSet(
         """
         Updating a comment
         """
-
         comment = self.get_object()
         if timezone.now() - comment.pub_date > timedelta(days=1):
-            raise PermissionDenied(
-                "Обновление комментария возможно только в течение суток после создания."
-            )
+            raise PermissionDenied(CANT_EDIT_COMMENT, code="permission_denied")
 
         super().update(request, *args, **kwargs)
         comment.refresh_from_db()
@@ -133,6 +137,4 @@ class CommentViewSet(
         """
 
         self.get_object().delete()
-        return Response(
-            {"message": "Комментарий удален!"}, status=status.HTTP_204_NO_CONTENT
-        )
+        return Response(COMMENT_SUCCESSFULLY_DELETE, status=status.HTTP_204_NO_CONTENT)

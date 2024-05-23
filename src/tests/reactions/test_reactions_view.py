@@ -1,6 +1,11 @@
 import pytest
 from django.contrib.contenttypes.models import ContentType
 
+from src.base.code_text import (
+    SUCCESSFUL_APPRECIATED_COMMENT,
+    REACTION_CANCELLED,
+    SUCCESSFUL_APPRECIATED_RECIPE,
+)
 from src.apps.reactions.choices import EmojyChoice
 from src.apps.reactions.models import Reaction
 
@@ -39,7 +44,7 @@ class TestRecipeReactionsView:
         reaction_default.refresh_from_db()
         assert reaction_default.is_deleted == False
         assert response.status_code == 201
-        assert response.data == {"message": "Вы оценили рецепт!"}
+        assert response.data == SUCCESSFUL_APPRECIATED_RECIPE
 
     def test_recipe_reaction_delete_view(self, api_client, new_user, new_recipe):
         """
@@ -60,7 +65,7 @@ class TestRecipeReactionsView:
 
         assert reaction_default.is_deleted == True
         assert response.status_code == 204
-        assert response.data == {"message": "Реакция отменена!"}
+        assert response.data == REACTION_CANCELLED
 
 
 @pytest.mark.reactions
@@ -97,7 +102,7 @@ class TestCommentReactionsView:
 
         assert reaction_default.is_deleted == False
         assert response.status_code == 201
-        assert response.data == {"message": "Вы оценили комментарий!"}
+        assert response.data == SUCCESSFUL_APPRECIATED_COMMENT
 
     def test_comment_reaction_delete_view(self, api_client, new_user, new_comment):
         """
@@ -117,4 +122,4 @@ class TestCommentReactionsView:
 
         assert reaction_default.is_deleted == True
         assert response.status_code == 204
-        assert response.data == {"message": "Реакция отменена!"}
+        assert response.data == REACTION_CANCELLED

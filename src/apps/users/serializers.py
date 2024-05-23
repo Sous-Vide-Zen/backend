@@ -4,11 +4,13 @@ from djoser.serializers import UserCreateSerializer
 from django.contrib.auth.password_validation import validate_password
 
 from .models import CustomUser
+from src.base.code_text import PASSWORDS_ARE_NOT_SIMILAR
 
 
 class CustomUserCreateSerializer(UserCreateSerializer):
     """
-    Serializer for CustomUser model for create endpoint with email and two passwords
+    Serializer for CustomUser model for create endpoint with email and two
+    passwords
     """
 
     password2 = serializers.CharField(
@@ -22,7 +24,9 @@ class CustomUserCreateSerializer(UserCreateSerializer):
     def validate(self, attrs):
         validate_password(attrs["password"])
         if attrs["password"] != attrs["password2"]:
-            raise serializers.ValidationError({"password": "Пароли не совпадают!"})
+            raise serializers.ValidationError(
+                PASSWORDS_ARE_NOT_SIMILAR, code="passwords_are_not_similar"
+            )
         del attrs["password2"]
 
         return attrs

@@ -4,20 +4,23 @@ from datetime import timedelta
 import pytest
 from django.utils import timezone
 
+from src.base.code_text import (
+    RECIPE_CAN_BE_EDIT_WITHIN_FIRST_DAY,
+)
 from src.apps.recipes.serializers import RecipeRetriveSerializer
 
 
 @pytest.mark.django_db
 @pytest.mark.api
-class TestRecipeSerialisers:
+class TestRecipeSerializers:
     """
-    Test Recipe Serializers:
-    RecipeRetriveSerializer
+    TestRecipeSerializers:
+    RecipeRetrieveSerializer
     RecipeCreateSerializer
     RecipeUpdateSerializer
     """
 
-    def test_retrive_recipe_serializer(self, request, new_recipe, new_user):
+    def test_retrieve_recipe_serializer(self, request, new_recipe, new_user):
         """
         Test for retrive recipe
         [GET] http://127.0.0.1:8000/api/v1/recipe/{slug}/
@@ -62,7 +65,15 @@ class TestRecipeSerialisers:
                 {"name": "Water", "unit": "литр", "amount": 1},
                 {"name": "Сахар", "unit": "грамм", "amount": 500},
             ],
-            "full_text": "Heat the oven to 180°C fan/gas 6. Separate the leaves from the cauliflower and cut the florets into 3-4cm chunks, spreading them out on a baking tray as you work. Chop the central stalk into similar sized chunks and add to the tray too. Strip the leaves from their stems (reserving the leaves), halve the stems and add them to the tray. Season, drizzle with half the oil, then roast for 25 minutes.",
+            "full_text": "Heat the oven to 180°C fan/gas 6. Separate the "
+            "leaves from the cauliflower and cut the florets "
+            "into 3-4cm chunks, spreading them out on a baking "
+            "tray as you work. Chop the central stalk into "
+            "similar sized chunks and add to the tray too. Strip "
+            "the leaves from their stems (reserving the leaves), "
+            "halve the stems and add them to the tray. Season, "
+            "drizzle with half the oil, then roast for 25 "
+            "minutes.",
             "tag": ["Горячий", "вода", "сахар"],
             "cooking_time": 30,
             "category": [2],
@@ -78,7 +89,15 @@ class TestRecipeSerialisers:
                 {"name": "Water", "unit": "литр", "amount": 1},
                 {"name": "Сахар", "unit": "грамм", "amount": 500},
             ],
-            "full_text": "Heat the oven to 180°C fan/gas 6. Separate the leaves from the cauliflower and cut the florets into 3-4cm chunks, spreading them out on a baking tray as you work. Chop the central stalk into similar sized chunks and add to the tray too. Strip the leaves from their stems (reserving the leaves), halve the stems and add them to the tray. Season, drizzle with half the oil, then roast for 25 minutes.",
+            "full_text": "Heat the oven to 180°C fan/gas 6. Separate the "
+            "leaves from the cauliflower and cut the florets "
+            "into 3-4cm chunks, spreading them out on a baking "
+            "tray as you work. Chop the central stalk into "
+            "similar sized chunks and add to the tray too. Strip "
+            "the leaves from their stems (reserving the leaves), "
+            "halve the stems and add them to the tray. Season, "
+            "drizzle with half the oil, then roast for 25 "
+            "minutes.",
             "tag": [
                 {"name": "Горячий", "slug": "goriachii"},
                 {"name": "вода", "slug": "voda"},
@@ -194,6 +213,4 @@ class TestRecipeSerialisers:
 
         response = api_client.patch(url, data=update_data, format="json")
         assert response.status_code == 403
-        assert response.data == {
-            "detail": "Обновление рецепта возможно только в течение суток после создания."
-        }
+        assert response.data == RECIPE_CAN_BE_EDIT_WITHIN_FIRST_DAY

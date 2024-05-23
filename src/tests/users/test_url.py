@@ -1,5 +1,10 @@
 import pytest
 
+from src.base.code_text import (
+    CREDENTIALS_WERE_NOT_PROVIDED,
+    DONT_HAVE_PERMISSIONS,
+)
+
 BASE_URL = "http://127.0.0.1:8000/api/v1"
 
 
@@ -41,7 +46,7 @@ class TestUserAPI:
 
         response = api_client.get(f"{BASE_URL}/auth/users/me/")
         assert response.status_code == 401
-        assert response.json()["detail"] == "Учетные данные не были предоставлены."
+        assert response.json() == CREDENTIALS_WERE_NOT_PROVIDED
 
     def test_get_user(self, api_client, create_token, new_author):
         """
@@ -92,10 +97,7 @@ class TestUserAPI:
         data = {"display_name": "new Display Name"}
         response = api_client.patch(f"{BASE_URL}/user/{username}/", data=data)
         assert response.status_code == 403
-        assert (
-            response.json()["detail"]
-            == "У вас недостаточно прав для выполнения данного действия."
-        )
+        assert response.data == DONT_HAVE_PERMISSIONS
 
     def test_update_user_unauthorized(self, api_client, new_user):
         """
@@ -106,7 +108,7 @@ class TestUserAPI:
         data = {"display_name": "new Display Name"}
         response = api_client.patch(f"{BASE_URL}/user/{new_user.username}/", data=data)
         assert response.status_code == 401
-        assert response.json()["detail"] == "Учетные данные не были предоставлены."
+        assert response.data == CREDENTIALS_WERE_NOT_PROVIDED
 
     def test_get_users(self, api_client, create_token):
         """
@@ -130,7 +132,7 @@ class TestUserAPI:
 
         response = api_client.get(f"{BASE_URL}/users/")
         assert response.status_code == 401
-        assert response.json()["detail"] == "Учетные данные не были предоставлены."
+        assert response.data == CREDENTIALS_WERE_NOT_PROVIDED
 
     def test_delete_other_user(self, api_client, create_token, new_author):
         """
@@ -143,10 +145,7 @@ class TestUserAPI:
         api_client.credentials(HTTP_AUTHORIZATION=access_token)
         response = api_client.delete(f"{BASE_URL}/user/{username}/")
         assert response.status_code == 403
-        assert (
-            response.json()["detail"]
-            == "У вас недостаточно прав для выполнения данного действия."
-        )
+        assert response.data == DONT_HAVE_PERMISSIONS
 
     def test_delete_user(self, api_client, create_token):
         """
@@ -168,7 +167,7 @@ class TestUserAPI:
 
         response = api_client.delete(f"{BASE_URL}/user/{new_user.username}/")
         assert response.status_code == 401
-        assert response.json()["detail"] == "Учетные данные не были предоставлены."
+        assert response.data == CREDENTIALS_WERE_NOT_PROVIDED
 
 
 @pytest.mark.django_db

@@ -16,6 +16,7 @@ from unidecode import unidecode
 
 from config.settings import SHORT_RECIPE_SYMBOLS, TIME_FROM_VIEW_RECIPE
 from src.apps.ingredients.models import Ingredient, Unit, IngredientInRecipe
+from src.base.code_text import CANT_ADD_TWO_SIMILAR_INGREDIENT
 
 
 def validate_avatar_size(value: Any) -> None:
@@ -82,7 +83,7 @@ def create_ingredients_in_recipe(
 
     ingredient_names: List[str] = [data["name"] for data in ingredients_data]
     if len(ingredient_names) != len(set(ingredient_names)):
-        raise ValidationError({"errors": "Нельзя добавить два одинаковых ингредиента"})
+        raise ValidationError(CANT_ADD_TWO_SIMILAR_INGREDIENT, code="unique_ingredient")
 
     existing_ingredients: List[IngredientInRecipe] = IngredientInRecipe.objects.filter(
         recipe=recipe

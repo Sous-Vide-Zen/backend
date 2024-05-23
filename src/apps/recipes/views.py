@@ -13,6 +13,15 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
+from src.base.code_text import (
+    RECIPE_SUCCESSFUL_DELETE,
+    RECIPE_ALREADY_IN_FAVORITES,
+    SUCCESSFUL_ADDED_TO_FAVORITES,
+    CREDENTIALS_WERE_NOT_PROVIDED,
+    THE_RECIPE_IS_NOT_IN_FAVORITES,
+    RECIPE_REMOVED_FROM_FAVORITES,
+    LIST_OF_FAVORITES_IS_EMPTY,
+)
 from src.apps.favorite.models import Favorite
 from src.apps.view.models import ViewRecipes
 from src.base.paginators import FeedPagination
@@ -94,10 +103,7 @@ class RecipeViewSet(
     def destroy(self, request, *args, **kwargs):
         """Delete recipe"""
         self.get_object().delete()
-
-        return Response(
-            {"message": "Рецепт успешно удален."}, status=status.HTTP_204_NO_CONTENT
-        )
+        return Response(RECIPE_SUCCESSFUL_DELETE, status=status.HTTP_204_NO_CONTENT)
 
     @action(
         detail=False,
@@ -111,7 +117,7 @@ class RecipeViewSet(
 
         queryset = self.get_queryset()
         if not queryset:
-            return Response({"detail": "Список избранных рецептов пуст."})
+            return Response(LIST_OF_FAVORITES_IS_EMPTY)
 
         serializer = BaseRecipeListSerializer
         page = self.paginate_queryset(queryset)
@@ -127,19 +133,16 @@ class RecipeViewSet(
         )
         if not created:
             return Response(
-                {"detail": "Рецепт уже находится в избранном."},
+                RECIPE_ALREADY_IN_FAVORITES,
                 status=status.HTTP_400_BAD_REQUEST,
             )
-
-        return Response(
-            {"detail": "Рецепт добавлен в избранное."}, status=status.HTTP_201_CREATED
-        )
+        return Response(SUCCESSFUL_ADDED_TO_FAVORITES, status=status.HTTP_201_CREATED)
 
     def remove_from_favorites(self, request, slug):
         """Removing a recipe from a list of user's favorites."""
         if not request.user.is_authenticated:
             return Response(
-                data={"detail": "Учетные данные не были предоставлены."},
+                data=CREDENTIALS_WERE_NOT_PROVIDED,
                 status=status.HTTP_401_UNAUTHORIZED,
             )
         recipe = get_object_or_404(Recipe, slug=slug)
@@ -147,7 +150,7 @@ class RecipeViewSet(
 
         if not favorite_recipe.exists():
             return Response(
-                data={"detail": "Рецепт не находится в избранном."},
+                data=THE_RECIPE_IS_NOT_IN_FAVORITES,
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -155,7 +158,7 @@ class RecipeViewSet(
 
         return Response(
             status=status.HTTP_204_NO_CONTENT,
-            data={"detail": "Рецепт удален из избранного."},
+            data=RECIPE_REMOVED_FROM_FAVORITES,
         )
 
     def list_draft_recipes(self, request):

@@ -11,6 +11,14 @@ from rest_framework.status import (
 )
 from rest_framework.viewsets import GenericViewSet, ModelViewSet
 
+from src.base.code_text import (
+    USER_DOES_NOT_EXIST,
+    AUTHOR_IS_MISSING,
+    AUTHOR_NOT_FOUND,
+    SUCCESSFUL_ATTEMPT_ON_AUTHOR,
+    NOT_FOLLOWING_THIS_USER,
+    SUCCESSFUL_UNSUBSCRIBE_FROM_THE_AUTHOR,
+)
 from src.apps.follow.models import Follow
 from src.apps.follow.serializers import (
     FollowListSerializer,
@@ -40,7 +48,7 @@ class FollowViewSet(GenericViewSet, ListModelMixin):
         username = kwargs.get("username")
         if not CustomUser.objects.filter(username=username).exists():
             return Response(
-                data={"detail": "Пользователь не существует."},
+                data=USER_DOES_NOT_EXIST,
                 status=HTTP_404_NOT_FOUND,
             )
         queryset = self.get_queryset()
@@ -68,7 +76,7 @@ class FollowerViewSet(GenericViewSet, ListModelMixin):
         username = kwargs.get("username")
         if not CustomUser.objects.filter(username=username).exists():
             return Response(
-                data={"detail": "Пользователь не существует."},
+                data=USER_DOES_NOT_EXIST,
                 status=HTTP_404_NOT_FOUND,
             )
         queryset = self.get_queryset()
@@ -90,18 +98,14 @@ class SubscribeViewSet(ModelViewSet):
     def create(self, request, *args, **kwargs):
         author = request.data.get("author")
         if not author:
-            return Response(
-                data={"message": "Отсутствует автор"}, status=HTTP_400_BAD_REQUEST
-            )
+            return Response(data=AUTHOR_IS_MISSING, status=HTTP_400_BAD_REQUEST)
 
         if not CustomUser.objects.filter(username=request.data.get("author")).exists():
-            return Response(
-                data={"message": "Автор не найден"}, status=HTTP_404_NOT_FOUND
-            )
+            return Response(data=AUTHOR_NOT_FOUND, status=HTTP_404_NOT_FOUND)
         super().create(request, *args, **kwargs)
 
         return Response(
-            data={"message": "Вы успешно подписались на автора"},
+            data=SUCCESSFUL_ATTEMPT_ON_AUTHOR,
             status=HTTP_201_CREATED,
         )
 
@@ -113,12 +117,12 @@ class SubscribeViewSet(ModelViewSet):
 
         if not queryset.exists():
             return Response(
-                data={"detail": "Вы не подписаны на этого пользователя."},
+                data=NOT_FOLLOWING_THIS_USER,
                 status=HTTP_404_NOT_FOUND,
             )
 
         queryset.delete()
         return Response(
-            data={"message": "Вы успешно отписались от автора"},
+            data=SUCCESSFUL_UNSUBSCRIBE_FROM_THE_AUTHOR,
             status=HTTP_204_NO_CONTENT,
         )

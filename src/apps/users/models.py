@@ -15,7 +15,11 @@ from django.db.models import (
 from django.db.transaction import atomic
 from phonenumber_field.modelfields import PhoneNumberField
 
-from src.base.services import validate_avatar_size, user_avatar_path, generate_username
+from src.base.services import (
+    validate_avatar_size,
+    user_avatar_path,
+    generate_username,
+)
 
 
 class CustomUserManager(BaseUserManager):

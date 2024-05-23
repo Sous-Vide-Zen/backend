@@ -2,6 +2,14 @@ import factory
 import pytest
 from factory.django import DjangoModelFactory
 
+from src.base.code_text import (
+    USER_DOES_NOT_EXIST,
+    CREDENTIALS_WERE_NOT_PROVIDED,
+    ALREADY_SUBSCRIBED_TO_THIS_AUTHOR,
+    AUTHOR_NOT_FOUND,
+    SUCCESSFUL_UNSUBSCRIBE_FROM_THE_AUTHOR,
+    NOT_FOLLOWING_THIS_USER,
+)
 from src.apps.follow.models import Follow
 from src.apps.users.models import CustomUser
 
@@ -54,7 +62,7 @@ class TestFollowSerializers:
         api_client.force_authenticate(user=new_user)
         response = api_client.get(url)
         assert response.status_code == 404
-        assert response.data == {"detail": "Пользователь не существует."}
+        assert response.data == USER_DOES_NOT_EXIST
 
     def test_follower_list_serializer(self, api_client, new_user, new_author):
         """
@@ -84,7 +92,7 @@ class TestFollowSerializers:
         api_client.force_authenticate(user=new_user)
         response = api_client.get(url)
         assert response.status_code == 404
-        assert response.data == {"detail": "Пользователь не существует."}
+        assert response.data == USER_DOES_NOT_EXIST
 
     def test_follow_create_serializer(self, api_client, new_user, new_author):
         """
@@ -109,7 +117,7 @@ class TestFollowSerializers:
             url, data={"author": new_author.username}, format="json"
         )
         assert response.status_code == 401
-        assert response.data == {"detail": "Учетные данные не были предоставлены."}
+        assert response.data == CREDENTIALS_WERE_NOT_PROVIDED
 
     def test_follow_create_already_followed(self, api_client, new_user, new_author):
         """
@@ -123,7 +131,7 @@ class TestFollowSerializers:
             url, data={"author": new_author.username}, format="json"
         )
         assert response.status_code == 400
-        assert response.data == {"message": ["Вы уже подписаны на этого автора"]}
+        assert response.data == ALREADY_SUBSCRIBED_TO_THIS_AUTHOR
 
     def test_follow_create_not_found(self, api_client, new_user, new_author):
         """
@@ -134,7 +142,7 @@ class TestFollowSerializers:
         api_client.force_authenticate(user=new_user)
         response = api_client.post(url, data={"author": "Python"}, format="json")
         assert response.status_code == 404
-        assert response.data == {"message": "Автор не найден"}
+        assert response.data == AUTHOR_NOT_FOUND
 
     def test_follow_delete_serializer(self, api_client, new_user, new_author):
         """
@@ -148,7 +156,7 @@ class TestFollowSerializers:
             url, data={"author": new_author.username}, format="json"
         )
         assert response.status_code == 204
-        assert response.data == {"message": "Вы успешно отписались от автора"}
+        assert response.data == SUCCESSFUL_UNSUBSCRIBE_FROM_THE_AUTHOR
         assert not Follow.objects.filter(user=new_user, author=new_author).exists()
 
     def test_follow_delete_non_authenticated(self, api_client, new_user, new_author):
@@ -162,7 +170,7 @@ class TestFollowSerializers:
             url, data={"author": new_author.username}, format="json"
         )
         assert response.status_code == 401
-        assert response.data == {"detail": "Учетные данные не были предоставлены."}
+        assert response.data == CREDENTIALS_WERE_NOT_PROVIDED
 
     def test_follow_delete_user_is_not_follower(self, api_client, new_user, new_author):
         """
@@ -175,4 +183,4 @@ class TestFollowSerializers:
         api_client.force_authenticate(user=new_user)
         response = api_client.delete(url, data={"author": test_user}, format="json")
         assert response.status_code == 404
-        assert response.data == {"detail": "Вы не подписаны на этого пользователя."}
+        assert response.data == NOT_FOLLOWING_THIS_USER

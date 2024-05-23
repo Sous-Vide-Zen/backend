@@ -1,6 +1,15 @@
 import pytest
 from django.contrib.contenttypes.models import ContentType
 
+from src.base.code_text import (
+    REACTION_ALREADY_SET,
+    SUCCESSFUL_LIKED_THE_RECIPE,
+    CREDENTIALS_WERE_NOT_PROVIDED,
+    PAGE_NOT_FOUND,
+    REACTION_CANCELLED,
+    SUCCESSFUL_APPRECIATED_COMMENT,
+    ALREADY_RATED_THIS_COMMENT,
+)
 from src.apps.reactions.choices import EmojyChoice
 from src.apps.reactions.models import Reaction
 
@@ -21,12 +30,10 @@ class TestRecipeReactionsUrl:
         response_duplicate = api_client.post(url, data={"emoji": "Like"}, format="json")
 
         assert response_default.status_code == 201
-        assert response_default.data == {"message": "Вы оценили рецепт!"}
+        assert response_default.data == SUCCESSFUL_LIKED_THE_RECIPE
         assert new_recipe.reactions.values("emoji")[0]["emoji"] == EmojyChoice.LIKE
         assert response_duplicate.status_code == 403
-        assert response_duplicate.data == {
-            "detail": "Вы уже поставили такую реакцию к данному рецепту"
-        }
+        assert response_duplicate.data == REACTION_ALREADY_SET
 
     def test_recipe_reaction_create_non_authorized(
         self, api_client, new_user, new_recipe
@@ -39,7 +46,7 @@ class TestRecipeReactionsUrl:
         url = f"/api/v1/recipe/{slug}/reactions/"
         response = api_client.post(url, data={"emoji": "Like"}, format="json")
         assert response.status_code == 401
-        assert response.data == {"detail": "Учетные данные не были предоставлены."}
+        assert response.data == CREDENTIALS_WERE_NOT_PROVIDED
 
     def test_recipe_reaction_create_recipe_not_found(
         self, api_client, new_user, new_recipe
@@ -52,7 +59,7 @@ class TestRecipeReactionsUrl:
         api_client.force_authenticate(user=new_user)
         response = api_client.post(url, data={"emoji": "Like"}, format="json")
         assert response.status_code == 404
-        assert response.data == {"detail": "Страница не найдена."}
+        assert response.data == PAGE_NOT_FOUND
 
     def test_recipe_reaction_delete_url(self, api_client, new_user, new_recipe):
         """
@@ -73,23 +80,21 @@ class TestRecipeReactionsUrl:
 
         response_non_authorized = api_client.delete(url)
         assert response_non_authorized.status_code == 401
-        assert response_non_authorized.data == {
-            "detail": "Учетные данные не были предоставлены."
-        }
+        assert response_non_authorized.data == CREDENTIALS_WERE_NOT_PROVIDED
 
         api_client.force_authenticate(user=new_user)
 
         response_not_found_reaction = api_client.delete(url_reaction_not_found)
         assert response_not_found_reaction.status_code == 404
-        assert response_not_found_reaction.data == {"detail": "Страница не найдена."}
+        assert response_not_found_reaction.data == PAGE_NOT_FOUND
 
         response_not_found_recipe = api_client.delete(url_recipe_not_found)
         assert response_not_found_recipe.status_code == 404
-        assert response_not_found_recipe.data == {"detail": "Страница не найдена."}
+        assert response_not_found_recipe.data == PAGE_NOT_FOUND
 
         response = api_client.delete(url)
         assert response.status_code == 204
-        assert response.data == {"message": "Реакция отменена!"}
+        assert response.data == REACTION_CANCELLED
 
     def test_recipe_reactions_list_url(self, api_client, new_user, new_recipe):
         """
@@ -98,7 +103,7 @@ class TestRecipeReactionsUrl:
         """
         response = api_client.get(f"/api/v1/recipe/non-existing-recipe/reactions/")
         assert response.status_code == 404
-        assert response.data == {"detail": "Страница не найдена."}
+        assert response.data == PAGE_NOT_FOUND
         slug = new_recipe.slug
         response = api_client.get(f"/api/v1/recipe/{slug}/reactions/")
         assert response.status_code == 200
@@ -120,12 +125,10 @@ class TestCommentReactionsUrl:
         response_default = api_client.post(url, data={}, format="json")
         response_duplicate = api_client.post(url, data={"emoji": "Like"}, format="json")
         assert response_default.status_code == 201
-        assert response_default.data == {"message": "Вы оценили комментарий!"}
+        assert response_default.data == SUCCESSFUL_APPRECIATED_COMMENT
         assert new_comment.reactions.values("emoji")[0]["emoji"] == EmojyChoice.LIKE
         assert response_duplicate.status_code == 403
-        assert response_duplicate.data == {
-            "detail": "Вы уже оценили данный комментарий"
-        }
+        assert response_duplicate.data == ALREADY_RATED_THIS_COMMENT
 
     def test_comment_reaction_create_non_authorized(
         self, api_client, new_user, new_comment
@@ -138,7 +141,7 @@ class TestCommentReactionsUrl:
         url = f"/api/v1/comment/{id}/reactions/"
         response = api_client.post(url, data={"emoji": "Like"}, format="json")
         assert response.status_code == 401
-        assert response.data == {"detail": "Учетные данные не были предоставлены."}
+        assert response.data == CREDENTIALS_WERE_NOT_PROVIDED
 
     def test_comment_reaction_create_comment_not_found(
         self, api_client, new_user, new_comment
@@ -151,7 +154,7 @@ class TestCommentReactionsUrl:
         api_client.force_authenticate(user=new_user)
         response = api_client.post(url, data={"emoji": "Like"}, format="json")
         assert response.status_code == 404
-        assert response.data == {"detail": "Страница не найдена."}
+        assert response.data == PAGE_NOT_FOUND
 
     def test_comment_reaction_delete_url(self, api_client, new_user, new_comment):
         """
@@ -170,23 +173,21 @@ class TestCommentReactionsUrl:
 
         response_non_authorized = api_client.delete(url)
         assert response_non_authorized.status_code == 401
-        assert response_non_authorized.data == {
-            "detail": "Учетные данные не были предоставлены."
-        }
+        assert response_non_authorized.data == CREDENTIALS_WERE_NOT_PROVIDED
 
         api_client.force_authenticate(user=new_user)
 
         response_not_found_reaction = api_client.delete(url_reaction_not_found)
         assert response_not_found_reaction.status_code == 404
-        assert response_not_found_reaction.data == {"detail": "Страница не найдена."}
+        assert response_not_found_reaction.data == PAGE_NOT_FOUND
 
         response_not_found_comment = api_client.delete(url_comment_not_found)
         assert response_not_found_comment.status_code == 404
-        assert response_not_found_comment.data == {"detail": "Страница не найдена."}
+        assert response_not_found_comment.data == PAGE_NOT_FOUND
 
         response = api_client.delete(url)
         assert response.status_code == 204
-        assert response.data == {"message": "Реакция отменена!"}
+        assert response.data == REACTION_CANCELLED
 
     def test_comment_reactions_list_url(self, api_client, new_user, new_comment):
         """
@@ -195,7 +196,7 @@ class TestCommentReactionsUrl:
         """
         response = api_client.get(f"/api/v1/comment/111/reactions/")
         assert response.status_code == 404
-        assert response.data == {"detail": "Страница не найдена."}
+        assert response.data == PAGE_NOT_FOUND
         id = new_comment.id
         response = api_client.get(f"/api/v1/comment/{id}/reactions/")
         assert response.status_code == 200

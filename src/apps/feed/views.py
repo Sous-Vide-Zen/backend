@@ -16,7 +16,8 @@ from .serializers import FeedSerializer
 
 class FeedUserList(mixins.ListModelMixin, viewsets.GenericViewSet):
     """
-    Listing all posts with sorting by activity_count, filtering by subs and username
+    Listing all posts with sorting by activity_count, filtering by subs and
+    username
     """
 
     pagination_class = FeedPagination
@@ -28,7 +29,8 @@ class FeedUserList(mixins.ListModelMixin, viewsets.GenericViewSet):
 
     def get_queryset(self):
         """
-        Get all posts with sorting by activity_count, filtering by subs and username
+        Get all posts with sorting by activity_count, filtering by subs and
+        username
         """
 
         last_month_start = make_aware(

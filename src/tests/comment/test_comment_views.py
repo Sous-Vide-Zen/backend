@@ -2,6 +2,16 @@ import datetime
 import pytest
 from django.utils import dateparse
 from collections import OrderedDict
+
+from src.base.code_text import (
+    PAGE_NOT_FOUND,
+    CREDENTIALS_WERE_NOT_PROVIDED,
+    COMMENT_NOT_FOUND,
+    INVALID_ID_FORMAT,
+    DONT_HAVE_PERMISSIONS,
+    CANT_EDIT_COMMENT,
+    COMMENT_SUCCESSFULLY_DELETE,
+)
 from src.apps.comments.models import Comment
 from unittest import mock
 
@@ -63,7 +73,7 @@ class TestCommentUrls:
         response = client.get("/api/v1/recipe/not-found/")
 
         assert response.status_code == 404
-        assert response.data == {"detail": "Страница не найдена."}
+        assert response.data == PAGE_NOT_FOUND
 
     def test_create_comment_to_recipe(self, api_client, new_author, new_recipe):
         """
@@ -111,7 +121,7 @@ class TestCommentUrls:
         response = api_client.post(url, data=comment_data, format="json")
 
         assert response.status_code == 404
-        assert response.data == {"detail": "Страница не найдена."}
+        assert response.data == PAGE_NOT_FOUND
 
     def test_create_comment_to_recipe_unauthorized(self, api_client, new_recipe):
         """
@@ -124,7 +134,7 @@ class TestCommentUrls:
         response = api_client.post(url, data=comment_data, format="json")
 
         assert response.status_code == 401
-        assert response.data == {"detail": "Учетные данные не были предоставлены."}
+        assert response.data == CREDENTIALS_WERE_NOT_PROVIDED
 
     def test_create_comment_to_recipe_no_text(self, api_client, new_author, new_recipe):
         """
@@ -230,7 +240,7 @@ class TestCommentUrls:
         response = api_client.put(url, data=comment_data, format="json")
 
         assert response.status_code == 404
-        assert response.data == {"detail": "Страница не найдена."}
+        assert response.data == PAGE_NOT_FOUND
 
     def test_update_comment_id_not_found(
         self, api_client, new_user, new_recipe, new_comment
@@ -245,7 +255,7 @@ class TestCommentUrls:
         response = api_client.put(url, data=comment_data, format="json")
 
         assert response.status_code == 404
-        assert response.data == {"detail": "Комментарий не найден."}
+        assert response.data == COMMENT_NOT_FOUND
 
     def test_update_comment_wrong_id_format(
         self, api_client, new_user, new_recipe, new_comment
@@ -260,7 +270,7 @@ class TestCommentUrls:
         response = api_client.put(url, data=comment_data, format="json")
 
         assert response.status_code == 400
-        assert response.data == {"detail": "Неверный формат id"}
+        assert response.data == INVALID_ID_FORMAT
 
     def test_update_comment_to_recipe_unauthorized(
         self, api_client, new_recipe, new_comment
@@ -275,7 +285,7 @@ class TestCommentUrls:
         url = f"/api/v1/recipe/{slug}/comments/{new_comment_id}/"
         response = api_client.put(url, data=comment_data, format="json")
         assert response.status_code == 401
-        assert response.data == {"detail": "Учетные данные не были предоставлены."}
+        assert response.data == CREDENTIALS_WERE_NOT_PROVIDED
 
     def test_update_other_user_comment_to_recipe(
         self, api_client, new_author, new_recipe, new_comment
@@ -291,9 +301,7 @@ class TestCommentUrls:
         response = api_client.put(url, data=comment_data, format="json")
 
         assert response.status_code == 403
-        assert response.data == {
-            "detail": "У вас недостаточно прав для выполнения данного действия."
-        }
+        assert response.data == DONT_HAVE_PERMISSIONS
 
     def test_update_comment_created_more_than_1_day_before(
         self, api_client, new_user, new_recipe
@@ -315,9 +323,7 @@ class TestCommentUrls:
         response = api_client.put(url, data=comment_data, format="json")
 
         assert response.status_code == 403
-        assert response.data == {
-            "detail": "Обновление комментария возможно только в течение суток после создания."
-        }
+        assert response.data == CANT_EDIT_COMMENT
 
     def test_comment_delete(self, api_client, new_user, new_recipe, new_comment):
         """
@@ -330,7 +336,7 @@ class TestCommentUrls:
         response = api_client.delete(url)
 
         assert response.status_code == 204
-        assert response.data == {"message": "Комментарий удален!"}
+        assert response.data == COMMENT_SUCCESSFULLY_DELETE
         assert not Comment.objects.filter(id=new_comment.id).exists()
 
     def test_comment_delete_by_not_author(
@@ -346,6 +352,4 @@ class TestCommentUrls:
         response = api_client.delete(url)
 
         assert response.status_code == 403
-        assert response.data == {
-            "detail": "У вас недостаточно прав для выполнения данного действия."
-        }
+        assert response.data == DONT_HAVE_PERMISSIONS

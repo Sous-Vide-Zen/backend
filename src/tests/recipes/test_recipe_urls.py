@@ -2,6 +2,14 @@ import pytest
 from collections import OrderedDict
 from src.apps.recipes.models import Recipe
 
+from src.base.code_text import (
+    PAGE_NOT_FOUND,
+    CANT_ADD_TWO_SIMILAR_INGREDIENT,
+    CREDENTIALS_WERE_NOT_PROVIDED,
+    DONT_HAVE_PERMISSIONS,
+    RECIPE_SUCCESSFUL_DELETE,
+)
+
 
 @pytest.mark.django_db
 @pytest.mark.api
@@ -46,16 +54,14 @@ class TestRecipeUrls:
         response_data.pop("updated_at", None)
         assert response_data == recipe_data
 
-    def test_retrive_recipes_not_found(self, client):
+    def test_retrieve_recipes_not_found(self, client):
         """
         Test for retrieve recipes not found
         [GET] http://127.0.0.1:8000/api/v1/recipe/{slug}/
         """
 
         assert client.get("/api/v1/recipe/not-found/").status_code == 404
-        assert client.get("/api/v1/recipe/not-found/").data == {
-            "detail": "Страница не найдена."
-        }
+        assert client.get("/api/v1/recipe/not-found/").data == PAGE_NOT_FOUND
 
     def test_create_recipe(self, api_client, new_author):
         """
@@ -95,7 +101,7 @@ class TestRecipeUrls:
         recipe_data["ingredients"].append(recipe_data["ingredients"][0])
         response = api_client.post("/api/v1/recipe/", recipe_data, format="json")
         assert response.status_code == 400
-        assert response.data == {"errors": "Нельзя добавить два одинаковых ингредиента"}
+        assert response.data == CANT_ADD_TWO_SIMILAR_INGREDIENT
 
     def test_create_recipe_if_slug_exists(self, api_client, new_author, recipe_data):
         """
@@ -185,7 +191,7 @@ class TestRecipeUrls:
         response = api_client.post("/api/v1/recipe/", recipe_data, format="json")
 
         assert response.status_code == 401
-        assert response.data == {"detail": "Учетные данные не были предоставлены."}
+        assert response.data == CREDENTIALS_WERE_NOT_PROVIDED
 
     def test_update_and_publish_recipe(
         self, api_client, new_author, new_recipe, recipe_data
@@ -231,7 +237,7 @@ class TestRecipeUrls:
         )
 
         assert response.status_code == 401
-        assert response.data == {"detail": "Учетные данные не были предоставлены."}
+        assert response.data == CREDENTIALS_WERE_NOT_PROVIDED
 
     def test_update_recipe_not_owner(
         self, api_client, new_user, new_recipe, recipe_data
@@ -248,9 +254,7 @@ class TestRecipeUrls:
         )
 
         assert response.status_code == 403
-        assert response.data == {
-            "detail": "У вас недостаточно прав для выполнения данного действия."
-        }
+        assert response.data == DONT_HAVE_PERMISSIONS
 
     def test_delete_recipe(self, api_client, new_author, new_recipe):
         """
@@ -263,7 +267,7 @@ class TestRecipeUrls:
         response = api_client.delete(f"/api/v1/recipe/{new_recipe.slug}/")
 
         assert response.status_code == 204
-        assert response.data == {"message": "Рецепт успешно удален."}
+        assert response.data == RECIPE_SUCCESSFUL_DELETE
 
     def test_delete_recipe_not_owner(self, api_client, new_user, new_recipe):
         """
@@ -276,9 +280,7 @@ class TestRecipeUrls:
         response = api_client.delete(f"/api/v1/recipe/{new_recipe.slug}/")
 
         assert response.status_code == 403
-        assert response.data == {
-            "detail": "У вас недостаточно прав для выполнения данного действия."
-        }
+        assert response.data == DONT_HAVE_PERMISSIONS
 
     def test_delete_recipe_by_admin(self, api_client, app_admin, new_recipe):
         """
@@ -291,4 +293,4 @@ class TestRecipeUrls:
         response = api_client.delete(f"/api/v1/recipe/{new_recipe.slug}/")
 
         assert response.status_code == 204
-        assert response.data == {"message": "Рецепт успешно удален."}
+        assert response.data == RECIPE_SUCCESSFUL_DELETE
