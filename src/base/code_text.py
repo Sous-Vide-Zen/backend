@@ -53,6 +53,12 @@ RECIPE_CAN_BE_EDIT_WITHIN_FIRST_DAY: dict = {
     "detail": "Обновление рецепта возможно только в течение суток после создания."
 }
 AMOUNT_OF_INGREDIENT_LESS_THAN_ZERO: str = "Количество должно быть больше 0"
+AMOUNT_OF_DRAFTS_LESS_THAN_THREE: dict = {
+    "detail": "Вы можете сохранить не более 3-х черновиков. Удалите ненужный черновик."
+}
+ENTER_RECIPE_NAME_BEFORE_PUBLISHING: dict = {
+    "detail": "Введите название рецепта перед публикацией."
+}
 
 # Errors status
 CANT_ADD_TWO_SIMILAR_INGREDIENT: dict = {

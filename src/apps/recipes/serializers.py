@@ -13,7 +13,11 @@ from config.settings import SHORT_RECIPE_SYMBOLS
 from src.apps.ingredients.serializers import IngredientInRecipeSerializer
 from src.apps.recipes.models import Recipe, Category
 from src.apps.users.serializers import AuthorInRecipeSerializer
-from src.base.code_text import RECIPE_CAN_BE_EDIT_WITHIN_FIRST_DAY
+from src.base.code_text import (
+    RECIPE_CAN_BE_EDIT_WITHIN_FIRST_DAY,
+    AMOUNT_OF_DRAFTS_LESS_THAN_THREE,
+    ENTER_RECIPE_NAME_BEFORE_PUBLISHING,
+)
 from src.base.services import (
     shorten_text,
     create_ingredients_in_recipe,
@@ -188,9 +192,8 @@ class RecipeCreateSerializer(BaseRecipeSerializer):
             author=self.context.get("request").user, published=False
         )
         if len(user_drafts) >= 3:
-            raise serializers.ValidationError(
-                "Вы можете сохранить не более 3-х черновиков. Удалите ненужный черновик."
-            )
+            raise serializers.ValidationError(AMOUNT_OF_DRAFTS_LESS_THAN_THREE)
+
         tags_data = validated_data.pop("tag", [])
         ingredients_data = (
             self.initial_data["ingredients"]
@@ -235,9 +238,7 @@ class RecipeUpdateSerializer(BaseRecipeSerializer):
                 RECIPE_CAN_BE_EDIT_WITHIN_FIRST_DAY, code="restriction_per_day"
             )
         if "title" not in self.initial_data and "draft" in instance.title.lower():
-            raise serializers.ValidationError(
-                "Введите название рецепта перед публикацией."
-            )
+            raise serializers.ValidationError(ENTER_RECIPE_NAME_BEFORE_PUBLISHING)
         tags_data = validated_data.pop("tag", [])
         ingredients_data = (
             self.initial_data["ingredients"]
