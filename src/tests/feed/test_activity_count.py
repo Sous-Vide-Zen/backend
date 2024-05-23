@@ -18,9 +18,9 @@ class UserFactory(DjangoModelFactory):
     class Meta:
         model = "users.CustomUser"
 
-    email = Faker("email")
-    username = Faker("user_name")
-    password = Faker("password")
+    email = Sequence(lambda n: f"email_{n}")
+    username = Sequence(lambda n: f"user_name_{n}")
+    password = Sequence(lambda n: f"password_{n}")
 
 
 class ReactionFactory(DjangoModelFactory):
