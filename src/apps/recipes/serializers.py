@@ -54,10 +54,10 @@ class TagSerializer(TagListSerializerField):
 
     def to_representation(self, value):
         """
-        Convert the input value to its representation. If the input value is not an
-        instance of TagList, it is converted to a list of dictionaries containing the
-        name and slug of each tag. If the input value is already an instance of
-        TagList, it is returned as is.
+        Convert the input value to its representation. If the input value is
+        not an instance of TagList, it is converted to a list of dictionaries
+        containing the name and slug of each tag. If the input value is
+        already an instance of TagList, it is returned as is.
 
         Parameters:
         - value: The input value to be converted
