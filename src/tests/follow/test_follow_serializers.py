@@ -109,7 +109,7 @@ class TestFollowSerializers:
 
     def test_follow_create_non_authenticated(self, api_client, new_user, new_author):
         """
-        Follow serializers test non authenticated
+        Follow serializers test non authenticated.
         """
 
         url = "/api/v1/subscribe/"
