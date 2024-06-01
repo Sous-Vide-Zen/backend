@@ -72,7 +72,8 @@ class FollowCreateSerializer(serializers.ModelSerializer):
 
         if Follow.objects.filter(user=user, author=author).exists():
             raise serializers.ValidationError(
-                ALREADY_SUBSCRIBED_TO_THIS_AUTHOR, code='already_subscribed_to_author',
+                ALREADY_SUBSCRIBED_TO_THIS_AUTHOR,
+                code="already_subscribed_to_author",
             )
 
         return data
