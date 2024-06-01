@@ -15,6 +15,8 @@ from src.base.code_text import (
 from src.apps.comments.models import Comment
 from unittest import mock
 
+from tests.factories.comment.comment_views_factory import get_create_comment_view_data
+
 
 @pytest.mark.django_db
 @pytest.mark.api
@@ -92,18 +94,7 @@ class TestCommentUrls:
         ).exists()
         assert response.status_code == 201
 
-        response_example_data = {
-            "id": 1,
-            "author": OrderedDict(
-                [
-                    ("id", 1),
-                    ("username", "user1"),
-                    ("display_name", None),
-                    ("avatar", None),
-                ]
-            ),
-            "text": "Test_comment",
-        }
+        response_example_data = get_create_comment_view_data()
         response_data = response.data.copy()
         response_data.pop("pub_date", None)
         response_data.pop("updated_date", None)

@@ -8,6 +8,7 @@ from src.base.code_text import (
     DONT_HAVE_PERMISSIONS,
     RECIPE_SUCCESSFUL_DELETE,
 )
+from tests.factories.recipes.recipe_urls_factory import get_retrieve_url_data
 
 
 @pytest.mark.django_db
@@ -24,27 +25,7 @@ class TestRecipeUrls:
         """
 
         slug_new_recipe = new_recipe.slug
-        recipe_data = {
-            "id": 1,
-            "title": "Test Recipe",
-            "slug": "test-recipe",
-            "author": OrderedDict(
-                [
-                    ("id", 1),
-                    ("username", "user1"),
-                    ("display_name", None),
-                    ("avatar", None),
-                ]
-            ),
-            "preview_image": None,
-            "ingredients": [],
-            "full_text": "This is a test recipe full text.",
-            "tag": [],
-            "category": [],
-            "cooking_time": 30,
-            "reactions_count": 0,
-            "views_count": 0,
-        }
+        recipe_data = get_retrieve_url_data()
         response = client.get(f"/api/v1/recipe/{slug_new_recipe}/")
         assert response.status_code == 200
 

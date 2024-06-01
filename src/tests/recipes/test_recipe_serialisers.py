@@ -1,4 +1,3 @@
-from collections import OrderedDict
 from datetime import timedelta
 
 import pytest
@@ -8,6 +7,11 @@ from src.base.code_text import (
     RECIPE_CAN_BE_EDIT_WITHIN_FIRST_DAY,
 )
 from src.apps.recipes.serializers import RecipeRetriveSerializer
+from tests.factories.recipes.recipe_serializers_factory import (
+    get_recipe_data,
+    get_create_data,
+    get_update_data,
+)
 
 
 @pytest.mark.django_db
@@ -26,25 +30,7 @@ class TestRecipeSerializers:
         [GET] http://127.0.0.1:8000/api/v1/recipe/{slug}/
         """
 
-        recipe_data = {
-            "id": 1,
-            "title": "Test Recipe",
-            "slug": "test-recipe",
-            "author": OrderedDict(
-                [
-                    ("id", 1),
-                    ("username", "user1"),
-                    ("display_name", None),
-                    ("avatar", None),
-                ]
-            ),
-            "preview_image": None,
-            "ingredients": [],
-            "full_text": "This is a test recipe full text.",
-            "tag": [],
-            "category": [],
-            "cooking_time": 30,
-        }
+        recipe_data = get_recipe_data()
         request.user = new_user
         serializer = RecipeRetriveSerializer(new_recipe, context={"request": request})
         serializer_data = serializer.data.copy()
@@ -57,54 +43,7 @@ class TestRecipeSerializers:
         Test for create recipe
         [POST] http://127.0.0.1:8000/api/v1/recipe/
         """
-        example_data = {
-            "title": "Delicious Recipe",
-            "slug": "delicious-recipe",
-            "preview_image": None,
-            "ingredients": [
-                {"name": "Water", "unit": "литр", "amount": 1},
-                {"name": "Сахар", "unit": "грамм", "amount": 500},
-            ],
-            "full_text": "Heat the oven to 180°C fan/gas 6. Separate the "
-            "leaves from the cauliflower and cut the florets "
-            "into 3-4cm chunks, spreading them out on a baking "
-            "tray as you work. Chop the central stalk into "
-            "similar sized chunks and add to the tray too. Strip "
-            "the leaves from their stems (reserving the leaves), "
-            "halve the stems and add them to the tray. Season, "
-            "drizzle with half the oil, then roast for 25 "
-            "minutes.",
-            "tag": ["Горячий", "вода", "сахар"],
-            "cooking_time": 30,
-            "category": [2],
-        }
-
-        example_response = {
-            "id": 1,
-            "title": "Delicious Recipe",
-            "slug": "delicious-recipe",
-            "preview_image": None,
-            "ingredients": [
-                {"name": "Water", "unit": "литр", "amount": 1},
-                {"name": "Сахар", "unit": "грамм", "amount": 500},
-            ],
-            "full_text": "Heat the oven to 180°C fan/gas 6. Separate the "
-            "leaves from the cauliflower and cut the florets "
-            "into 3-4cm chunks, spreading them out on a baking "
-            "tray as you work. Chop the central stalk into "
-            "similar sized chunks and add to the tray too. Strip "
-            "the leaves from their stems (reserving the leaves), "
-            "halve the stems and add them to the tray. Season, "
-            "drizzle with half the oil, then roast for 25 "
-            "minutes.",
-            "tag": [
-                {"name": "Горячий", "slug": "goriachii"},
-                {"name": "вода", "slug": "voda"},
-                {"name": "сахар", "slug": "sakhar"},
-            ],
-            "category": [2],
-            "cooking_time": 30,
-        }
+        example_data, example_response = get_create_data()
 
         api_client.force_authenticate(user=new_author)
         recipe = api_client.post("/api/v1/recipe/", example_data, format="json")
@@ -127,19 +66,7 @@ class TestRecipeSerializers:
         api_client.force_authenticate(user=new_author)
         patch_url = f"/api/v1/recipe/{new_recipe.slug}/"
 
-        example_data = {
-            "title": "Updated Recipe",
-            "slug": "updated-recipe",
-            "preview_image": None,
-            "ingredients": [
-                {"name": "Water", "unit": "литр", "amount": 1},
-                {"name": "Сахар", "unit": "грамм", "amount": 500},
-            ],
-            "full_text": "This is an updated recipe full text.",
-            "tag": ["Горячий", "вода", "сахар"],
-            "category": [2],
-            "cooking_time": 20,
-        }
+        example_data = get_update_data()
 
         assert new_recipe.slug == "test-recipe"
         print(example_data.get("title"))
