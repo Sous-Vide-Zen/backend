@@ -79,6 +79,7 @@ class Recipe(models.Model):
         """
         String representation
         """
+
         return f"{self.slug}"
 
 

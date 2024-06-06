@@ -1,6 +1,8 @@
+from django.db import transaction
 from django.db.models import Count
 from django.shortcuts import get_object_or_404
-from rest_framework import status
+
+from rest_framework import serializers, status
 from rest_framework.decorators import action
 from rest_framework.filters import SearchFilter
 from rest_framework.mixins import (
@@ -21,18 +23,22 @@ from src.base.code_text import (
     THE_RECIPE_IS_NOT_IN_FAVORITES,
     RECIPE_REMOVED_FROM_FAVORITES,
     LIST_OF_FAVORITES_IS_EMPTY,
+    AMOUNT_OF_DRAFTS_LESS_THAN_THREE,
+    ENTER_RECIPE_NAME_BEFORE_PUBLISHING,
+    DRAFT_SUCCESSFUL_UPDATE,
 )
 from src.apps.favorite.models import Favorite
 from src.apps.view.models import ViewRecipes
 from src.base.paginators import FeedPagination
 from src.base.permissions import IsOwnerOrStaffOrReadOnly
-from src.base.services import increment_view_count
+from src.base.services import increment_view_count, create_recipe_slug
 from .models import Recipe
 from .serializers import (
     RecipeRetriveSerializer,
     RecipeCreateSerializer,
     RecipeUpdateSerializer,
     BaseRecipeListSerializer,
+    DraftSerializer,
 )
 
 
@@ -83,12 +89,15 @@ class RecipeViewSet(
         return super(RecipeViewSet, self).get_permissions()
 
     def get_serializer_class(self):
-        serializer_classes = {
-            "GET": RecipeRetriveSerializer,
-            "POST": RecipeCreateSerializer,
-            "PATCH": RecipeUpdateSerializer,
-        }
-        self.serializer_class = serializer_classes.get(self.request.method)
+        if "publicate" in self.request.path:
+            self.serializer_class = RecipeCreateSerializer
+        else:
+            serializer_classes = {
+                "GET": RecipeRetriveSerializer,
+                "POST": DraftSerializer,
+                "PATCH": RecipeUpdateSerializer,
+            }
+            self.serializer_class = serializer_classes.get(self.request.method)
 
         return super(RecipeViewSet, self).get_serializer_class()
 
@@ -99,6 +108,64 @@ class RecipeViewSet(
         serializer = self.get_serializer(instance)
 
         return Response(serializer.data)
+
+    def create(self, request, *args, **kwargs):
+        user_drafts = Recipe.objects.filter(author=request.user, published=False)
+        if len(user_drafts) >= 3:
+            return Response(
+                AMOUNT_OF_DRAFTS_LESS_THAN_THREE, status=status.HTTP_400_BAD_REQUEST
+            )
+        data = {}
+        title = f"Черновик"
+        data["title"] = title
+        slug = create_recipe_slug(Recipe, data)["slug"]
+        recipe = Recipe.objects.create(
+            author=request.user,
+            title=title,
+            slug=slug,
+            cooking_time=10,
+            published=False,
+        )
+        serializer = DraftSerializer(recipe)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    def update(self, request, *args, **kwargs):
+        recipe = self.get_object()
+        serializer = self.get_serializer(recipe, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        if recipe.published:
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            return Response(DRAFT_SUCCESSFUL_UPDATE, status=status.HTTP_200_OK)
+
+    @transaction.atomic
+    def publicate_recipe(self, request, *args, **kwargs):
+        recipe = self.get_object()
+        title = request.data.get("title", recipe.title)
+        if "черновик" in title.lower():
+            return Response(
+                ENTER_RECIPE_NAME_BEFORE_PUBLISHING, status=status.HTTP_400_BAD_REQUEST
+            )
+        if "slug" not in request.data:
+            data = {}
+            data["title"] = title
+            recipe.slug = create_recipe_slug(Recipe, data)["slug"]
+        serializer = self.get_serializer(recipe, data=request.data, partial=False)
+        serializer.initial_data["title"] = title
+        serializer.initial_data["full_text"] = request.data.get(
+            "full_text", recipe.full_text
+        )
+        serializer.initial_data["cooking_time"] = recipe.cooking_time
+        try:
+            serializer.is_valid(raise_exception=True)
+        except serializers.ValidationError as error:
+            return Response(error.args, status=status.HTTP_400_BAD_REQUEST)
+        recipe.published = True
+        recipe.save()
+        self.perform_update(serializer)
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     def destroy(self, request, *args, **kwargs):
         """Delete recipe"""
@@ -164,6 +231,6 @@ class RecipeViewSet(
     def list_draft_recipes(self, request):
         """Getting a list of user's draft recipes."""
         queryset = Recipe.objects.filter(author=request.user, published=False)
-        serializer = RecipeCreateSerializer(queryset, many=True)
+        serializer = DraftSerializer(queryset, many=True)
 
         return Response(serializer.data)

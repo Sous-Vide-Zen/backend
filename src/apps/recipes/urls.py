@@ -19,5 +19,10 @@ urlpatterns = [
         RecipeViewSet.as_view({"get": "list_draft_recipes"}),
         name="drafts",
     ),
+    path(
+        "recipe/<slug:slug>/publicate/",
+        RecipeViewSet.as_view({"post": "publicate_recipe"}),
+        name="drafts",
+    ),
     path("", include(router.urls)),
 ]

@@ -83,6 +83,24 @@ def new_user(django_user_model):
 
 
 @pytest.fixture(scope="function")
+def draft_recipe(new_author):
+    """
+    Create new draft recipe
+    """
+
+    recipe = Recipe.objects.create(
+        author=new_author,
+        title="Черновик",
+        slug="chernovik",
+        cooking_time=10,
+        pub_date=timezone.now(),
+        updated_at=timezone.now(),
+        published=False,
+    )
+    return recipe
+
+
+@pytest.fixture(scope="function")
 def new_recipe(new_author, new_ingredient, new_unit):
     """
     Create new published recipe
