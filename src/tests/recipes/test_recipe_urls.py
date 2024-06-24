@@ -1,9 +1,9 @@
 import pytest
 from collections import OrderedDict
-from rest_framework import serializers
 
 from src.apps.recipes.models import Recipe
 from src.base.code_text import (
+    AMOUNT_OF_DRAFTS_LESS_THAN_THREE,
     PAGE_NOT_FOUND,
     CANT_ADD_TWO_SIMILAR_INGREDIENT,
     CREDENTIALS_WERE_NOT_PROVIDED,
@@ -82,6 +82,28 @@ class TestRecipeUrls:
         assert draft_recipe.published == False
         assert draft_recipe.title == "Черновик"
         assert draft_recipe.slug == "chernovik"
+
+    def test_create_more_than_three_drafts(self, api_client, new_author):
+        """
+        Test for create more than three drafts of recipe
+        [POST] http://127.0.0.1:8000/api/v1/recipe/
+        """
+
+        api_client.force_authenticate(user=new_author)
+        assert list(Recipe.objects.all()) == []
+
+        for _ in range(3):
+            response = api_client.post("/api/v1/recipe/", format="json")
+        draft_recipes = list(Recipe.objects.all())
+        
+        assert len(draft_recipes) == 3
+        assert str(draft_recipes[0]) == f"chernovik"
+        for i in range(1,3):
+            assert str(draft_recipes[i]) == f"chernovik_{i+1}"
+
+        fourth_draft_response = api_client.post("/api/v1/recipe/", format="json")
+        assert fourth_draft_response.status_code == 400
+        assert fourth_draft_response.data == AMOUNT_OF_DRAFTS_LESS_THAN_THREE
 
     def test_create_recipe_with_name_ingredient_more_than_100_characters(
         self, api_client, new_author, recipe_data, draft_recipe
