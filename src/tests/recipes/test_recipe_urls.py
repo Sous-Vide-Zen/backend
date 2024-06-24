@@ -95,10 +95,10 @@ class TestRecipeUrls:
         for _ in range(3):
             response = api_client.post("/api/v1/recipe/", format="json")
         draft_recipes = list(Recipe.objects.all())
-        
+
         assert len(draft_recipes) == 3
         assert str(draft_recipes[0]) == f"chernovik"
-        for i in range(1,3):
+        for i in range(1, 3):
             assert str(draft_recipes[i]) == f"chernovik_{i+1}"
 
         fourth_draft_response = api_client.post("/api/v1/recipe/", format="json")
