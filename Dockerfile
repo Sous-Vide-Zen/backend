@@ -32,7 +32,7 @@ RUN /app/venv/bin/python3 manage.py migrate
 # comment out for now, getting errors
 # RUN /app/venv/bin/python3 manage.py loaddata src/fixtures/*
 
-# container starting parameters
+# container starting parameters and migrations
 ENTRYPOINT ["/app/venv/bin/python3"]
 CMD ["manage.py", "runserver", "0.0.0.0:8000"]
 
