@@ -18,6 +18,13 @@ COPY . .
 # Explicitly copying start.sh to the working directory
 COPY start.sh /app/start.sh
 
+ARG SOUS_VID_ENV
+
+WORKDIR /config
+RUN touch .env && \
+    echo "SOUS_VID_ENV" >> .env
+
+
 # Setting the environment variable
 ENV PYTHONPATH=/app:$PYTHONPATH
 
