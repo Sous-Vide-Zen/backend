@@ -22,7 +22,7 @@ def django_db_setup(django_db_setup, django_db_blocker):
 @pytest.fixture
 def api_client():
     """
-    APIClient fixture
+    APIClient fixture.
     """
 
     return APIClient()
@@ -31,7 +31,7 @@ def api_client():
 @pytest.fixture
 def create_token(api_client, django_user_model):
     """
-    Create token
+    Create token.
     """
 
     django_user_model.objects.create_user(
@@ -48,7 +48,7 @@ def create_token(api_client, django_user_model):
 @pytest.fixture(scope="function")
 def app_admin(django_user_model):
     """
-    Create new user
+    Create new user.
     """
 
     return django_user_model.objects.create_user(
@@ -63,7 +63,7 @@ def app_admin(django_user_model):
 @pytest.fixture
 def new_author(django_user_model):
     """
-    Create new author
+    Create new author.
     """
 
     return django_user_model.objects.create_user(
@@ -74,7 +74,7 @@ def new_author(django_user_model):
 @pytest.fixture(scope="function")
 def new_user(django_user_model):
     """
-    Create new user
+    Create new user.
     """
 
     return django_user_model.objects.create_user(
@@ -85,7 +85,7 @@ def new_user(django_user_model):
 @pytest.fixture(scope="function")
 def draft_recipe(new_author):
     """
-    Create new draft recipe
+    Create new draft recipe.
     """
 
     recipe = Recipe.objects.create(
@@ -103,7 +103,7 @@ def draft_recipe(new_author):
 @pytest.fixture(scope="function")
 def new_recipe(new_author, new_ingredient, new_unit):
     """
-    Create new published recipe
+    Create new published recipe.
     """
 
     recipe = Recipe.objects.create(
@@ -123,7 +123,7 @@ def new_recipe(new_author, new_ingredient, new_unit):
 @pytest.fixture(scope="function")
 def new_ingredient():
     """
-    Create new ingredient
+    Create new ingredient.
     """
 
     ingredient = Ingredient.objects.create(name="Яйцо")
@@ -133,7 +133,7 @@ def new_ingredient():
 @pytest.fixture(scope="function")
 def new_unit():
     """
-    Create new unit
+    Create new unit.
     """
 
     unit = Unit.objects.create(name="Штука")
@@ -143,7 +143,7 @@ def new_unit():
 @pytest.fixture(scope="function")
 def new_ingredient_in_recipe(new_recipe, new_ingredient, new_unit):
     """
-    Create new ingredient in recipe
+    Create new ingredient in recipe.
     """
 
     ingredient_in_recipe = IngredientInRecipe.objects.create(
@@ -155,7 +155,7 @@ def new_ingredient_in_recipe(new_recipe, new_ingredient, new_unit):
 @pytest.fixture(scope="function")
 def category_1():
     """
-    Create new category
+    Create new category.
     """
 
     category = Category.objects.create(name="Рыба", slug="fish")
@@ -165,7 +165,7 @@ def category_1():
 @pytest.fixture(scope="function")
 def category_2():
     """
-    Create new category
+    Create new category.
     """
 
     category = Category.objects.create(name="Мясо", slug="meat")
@@ -175,7 +175,7 @@ def category_2():
 @pytest.fixture(scope="function")
 def category_3():
     """
-    Create new category
+    Create new category.
     """
 
     category = Category.objects.create(name="Овощи", slug="vegetables")
@@ -185,7 +185,7 @@ def category_3():
 @pytest.fixture(scope="function")
 def recipe_data(category_1, category_2, category_3):
     """
-    Create recipe data
+    Create recipe data.
     """
 
     return {
@@ -212,7 +212,7 @@ def recipe_data(category_1, category_2, category_3):
 @pytest.fixture(scope="function")
 def new_comment(new_user, new_recipe):
     """
-    Create new comment to recipe
+    Create new comment to recipe.
     """
     return Comment.objects.create(
         recipe=new_recipe, text="Test_comment_on_recipe", author=new_user

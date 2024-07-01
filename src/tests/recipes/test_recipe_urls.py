@@ -81,7 +81,7 @@ class TestRecipeUrls:
         assert response.status_code == 201
         assert draft_recipe.published == False
         assert draft_recipe.title == "Черновик"
-        assert draft_recipe.slug == "chernovik"
+        assert draft_recipe.slug == f"{new_author.username}_chernovik_1"
 
     def test_create_more_than_three_drafts(self, api_client, new_author):
         """
@@ -97,9 +97,8 @@ class TestRecipeUrls:
         draft_recipes = list(Recipe.objects.all())
 
         assert len(draft_recipes) == 3
-        assert str(draft_recipes[0]) == f"chernovik"
-        for i in range(1, 3):
-            assert str(draft_recipes[i]) == f"chernovik_{i+1}"
+        for i in range(3):
+            assert str(draft_recipes[i]) == f"{new_author.username}_chernovik_{i+1}"
 
         fourth_draft_response = api_client.post("/api/v1/recipe/", format="json")
         assert fourth_draft_response.status_code == 400

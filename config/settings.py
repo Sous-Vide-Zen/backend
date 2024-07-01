@@ -251,6 +251,7 @@ USER_LIST_PAGE_SIZE = 10
 # Variables
 
 ACTIVITY_INTERVAL = 30
+DRAFTS_MAX_AMOUNT = 3
 
 # Shorthand
 

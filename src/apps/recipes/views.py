@@ -15,6 +15,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
+from config.settings import DRAFTS_MAX_AMOUNT
 from src.base.code_text import (
     RECIPE_SUCCESSFUL_DELETE,
     RECIPE_ALREADY_IN_FAVORITES,
@@ -111,14 +112,18 @@ class RecipeViewSet(
 
     def create(self, request, *args, **kwargs):
         user_drafts = Recipe.objects.filter(author=request.user, published=False)
-        if len(user_drafts) >= 3:
+        if len(user_drafts) >= DRAFTS_MAX_AMOUNT:
             return Response(
                 AMOUNT_OF_DRAFTS_LESS_THAN_THREE, status=status.HTTP_400_BAD_REQUEST
             )
-        data = {}
         title = f"Черновик"
-        data["title"] = title
-        slug = create_recipe_slug(Recipe, data)["slug"]
+        nums = list(range(1, DRAFTS_MAX_AMOUNT + 1))
+        slug = f"{request.user.username}_chernovik_{nums[len(user_drafts)]}"
+        for i in range(3):
+            if Recipe.objects.filter(slug=slug).exists():
+                slug = f"{request.user.username}_chernovik_{nums[i]}"
+            else:
+                break
         recipe = Recipe.objects.create(
             author=request.user,
             title=title,

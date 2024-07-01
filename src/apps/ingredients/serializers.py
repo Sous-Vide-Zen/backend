@@ -2,7 +2,7 @@ from rest_framework import serializers
 from rest_framework.serializers import ModelSerializer, CharField
 
 from .models import IngredientInRecipe
-from ...base.code_text import AMOUNT_OF_INGREDIENT_LESS_THAN_ZERO
+from src.base.code_text import AMOUNT_OF_INGREDIENT_LESS_THAN_ZERO
 
 
 class IngredientInRecipeSerializer(ModelSerializer):
