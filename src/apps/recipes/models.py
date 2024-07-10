@@ -37,8 +37,7 @@ class Recipe(models.Model):
 
     """
 
-    author = models.ForeignKey(settings.AUTH_USER_MODEL,
-                               on_delete=models.CASCADE)
+    author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     title = models.CharField(max_length=150)
     slug = models.SlugField(unique=True, blank=True)
     full_text = models.TextField()
@@ -68,8 +67,7 @@ class Recipe(models.Model):
     )
     pub_date = models.DateTimeField(auto_now_add=True, db_index=True)
     updated_at = models.DateTimeField(auto_now=True)
-    reactions = GenericRelation(Reaction,
-                                related_query_name="recipe_reactions")
+    reactions = GenericRelation(Reaction, related_query_name="recipe_reactions")
     is_repost = models.BooleanField(default=False)
     published = models.BooleanField(default=True)
 
