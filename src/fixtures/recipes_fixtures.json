@@ -407,5 +407,29 @@
             1
         ]
     }
+},
+{
+    "model": "recipes.category",
+    "pk": 1,
+    "fields": {
+        "name": "Завтрак",
+        "slug": "zavtrak"
+    }
+},
+{
+    "model": "recipes.category",
+    "pk": 2,
+    "fields": {
+        "name": "Обед",
+        "slug": "obed"
+    }
+},
+{
+    "model": "recipes.category",
+    "pk": 3,
+    "fields": {
+        "name": "Ужин",
+        "slug": "uzhin"
+    }
 }
 ]

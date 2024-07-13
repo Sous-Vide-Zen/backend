@@ -1,1 +1,11 @@
-[{"model": "favorite.favorite", "pk": 1, "fields": {"author": 230, "recipe": 12, "pub_date": "2024-04-18T20:21:11.103Z"}}]
+[
+{
+    "model": "favorite.favorite",
+    "pk": 1,
+    "fields": {
+        "author": 230,
+        "recipe": 12,
+        "pub_date": "2024-04-18T20:21:11.103Z"
+    }
+}
+]

@@ -1,1 +1,14 @@
-[{"model": "comments.comment", "pk": 1, "fields": {"author": 69, "recipe": 3, "text": "Очень вкусно", "pub_date": "2024-06-27T16:33:37.409Z", "parent": null, "updated_date": "2024-06-27T16:33:37.409Z"}}]
+[
+{
+    "model": "comments.comment",
+    "pk": 1,
+    "fields": {
+        "author": 69,
+        "recipe": 3,
+        "text": "Очень вкусно",
+        "pub_date": "2024-06-27T16:33:37.409Z",
+        "parent": null,
+        "updated_date": "2024-06-27T16:33:37.409Z"
+    }
+}
+]
