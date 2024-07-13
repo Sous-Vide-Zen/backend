@@ -1,6 +1,7 @@
 from django.conf import settings
 from rest_framework import serializers
 
+from src.base.code_text import ALREADY_SUBSCRIBED_TO_THIS_AUTHOR
 from src.apps.follow.models import Follow
 from src.apps.users.models import CustomUser
 
@@ -71,7 +72,8 @@ class FollowCreateSerializer(serializers.ModelSerializer):
 
         if Follow.objects.filter(user=user, author=author).exists():
             raise serializers.ValidationError(
-                {"message": "Вы уже подписаны на этого автора"}
+                ALREADY_SUBSCRIBED_TO_THIS_AUTHOR,
+                code="already_subscribed_to_author",
             )
 
         return data

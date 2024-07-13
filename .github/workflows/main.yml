@@ -1,0 +1,21 @@
+name: Sous-Vide-Back
+
+on:
+  push:
+    branches: [develop]
+
+jobs:
+
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Deploy on VPS
+      env:
+        VPS_HOST: ${{ secrets.VPS_HOST }}
+        VPS_USER: ${{ secrets.VPS_USER }}
+        VPS_PASSWORD: ${{ secrets.VPS_HOST_PASSWORD }}
+      run:  |
+        scp -r . ${VPS_USER}@{VPS_HOST}:/var/www/git/sous-vide-zen

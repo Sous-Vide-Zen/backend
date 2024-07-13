@@ -1,5 +1,5 @@
 from datetime import timedelta
-from typing import List, Type, Any, Set
+from typing import List, Any, Set
 
 from random import sample
 from typing import Type
@@ -16,7 +16,9 @@ from unidecode import unidecode
 
 from config.settings import SHORT_RECIPE_SYMBOLS, TIME_FROM_VIEW_RECIPE
 from src.apps.ingredients.models import Ingredient, Unit, IngredientInRecipe
-from src.base.code_text import CANT_ADD_TWO_SIMILAR_INGREDIENT
+from src.base.code_text import (
+    CANT_ADD_TWO_SIMILAR_INGREDIENT,
+)
 
 
 def validate_avatar_size(value: Any) -> None:

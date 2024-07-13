@@ -1,52 +1,12 @@
 from datetime import datetime, timedelta
-
 import pytest
-from django.contrib.contenttypes.models import ContentType
 from django.utils.timezone import make_aware
-from factory import Faker, LazyAttribute, Sequence, SubFactory, SelfAttribute
-from factory.django import DjangoModelFactory
 
 from config.settings import ACTIVITY_INTERVAL
 from src.apps.comments.models import Comment
-from src.apps.reactions.choices import EmojyChoice
 from src.apps.reactions.models import Reaction
-from src.apps.recipes.models import Recipe
 from src.apps.view.models import ViewRecipes
-
-
-class UserFactory(DjangoModelFactory):
-    class Meta:
-        model = "users.CustomUser"
-
-    email = Sequence(lambda n: f"email_{n}")
-    username = Sequence(lambda n: f"user_name_{n}")
-    password = Sequence(lambda n: f"password_{n}")
-
-
-class ReactionFactory(DjangoModelFactory):
-    class Meta:
-        model = "reactions.Reaction"
-
-    author = SubFactory(UserFactory)
-    object_id = SelfAttribute("recipe.id")
-    content_type = LazyAttribute(lambda _: ContentType.objects.get_for_model(Recipe))
-    emoji = Faker("random_element", elements=EmojyChoice)
-
-
-class ViewFactory(DjangoModelFactory):
-    class Meta:
-        model = "view.ViewRecipes"
-
-    user = Sequence(lambda n: f"test_user_{n}")
-    recipe = SelfAttribute("recipe.id")
-
-
-class CommentFactory(DjangoModelFactory):
-    class Meta:
-        model = "comments.Comment"
-
-    author = SubFactory(UserFactory)
-    recipe = SelfAttribute("recipe.id")
+from src.tests.factories.factories import ReactionFactory, CommentFactory, ViewFactory
 
 
 @pytest.mark.feed

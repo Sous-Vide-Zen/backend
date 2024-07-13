@@ -35,7 +35,7 @@ from src.base.permissions import IsOwnerOrStaffOrReadOnly
 from src.base.services import increment_view_count, create_recipe_slug
 from .models import Recipe
 from .serializers import (
-    RecipeRetriveSerializer,
+    RecipeRetrieveSerializer,
     RecipeCreateSerializer,
     RecipeUpdateSerializer,
     BaseRecipeListSerializer,

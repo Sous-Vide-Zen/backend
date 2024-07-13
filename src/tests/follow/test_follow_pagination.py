@@ -1,27 +1,7 @@
-import factory
 import pytest
 from django.conf import settings
-from factory.django import DjangoModelFactory
 
-from src.apps.follow.models import Follow
-from src.apps.users.models import CustomUser
-
-
-class CustomUserFactory(DjangoModelFactory):
-    class Meta:
-        model = CustomUser
-
-    username = factory.Sequence(lambda n: f"test_user_{n}")
-    email = factory.LazyAttribute(lambda o: f"{o.username}@x.com")
-    password = "test_password"
-
-
-class FollowFactory(DjangoModelFactory):
-    class Meta:
-        model = Follow
-
-    user = factory.SubFactory(CustomUserFactory)
-    author = factory.SubFactory(CustomUserFactory)
+from tests.factories.factories import FollowFactory
 
 
 @pytest.mark.django_db

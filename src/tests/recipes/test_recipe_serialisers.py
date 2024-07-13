@@ -6,8 +6,10 @@ from django.utils import timezone
 
 from src.base.code_text import (
     RECIPE_CAN_BE_EDIT_WITHIN_FIRST_DAY,
+    AMOUNT_OF_INGREDIENT_LESS_THAN_ONE,
+    MAX_COUNT_OF_INGREDIENT,
 )
-from src.apps.recipes.serializers import RecipeRetriveSerializer
+from src.apps.recipes.serializers import RecipeRetrieveSerializer
 
 
 @pytest.mark.django_db
@@ -46,7 +48,7 @@ class TestRecipeSerializers:
             "cooking_time": 30,
         }
         request.user = new_user
-        serializer = RecipeRetriveSerializer(new_recipe, context={"request": request})
+        serializer = RecipeRetrieveSerializer(new_recipe, context={"request": request})
         serializer_data = serializer.data.copy()
         serializer_data.pop("pub_date", None)
         serializer_data.pop("updated_at", None)
@@ -80,6 +82,22 @@ class TestRecipeSerializers:
         response.data.pop("updated_at")
 
         assert response.data == example_response
+
+        # test min amount of ingredient
+        example_data["title"] = "Test Recipe"
+        example_data["slug"] = "test-recipe"
+        example_data["ingredients"][0]["amount"] = 0
+        recipe = api_client.post("/api/v1/recipe/", example_data, format="json")
+        assert (
+            recipe.data["ingredients"][0]["amount"]
+            == AMOUNT_OF_INGREDIENT_LESS_THAN_ONE
+        )
+
+        # test max amount of ingredient
+        example_data["title"] = "Second Test Recipe"
+        example_data["ingredients"][0]["amount"] = 1001
+        recipe = api_client.post("/api/v1/recipe/", example_data, format="json")
+        assert recipe.data["ingredients"][0]["amount"] == MAX_COUNT_OF_INGREDIENT
 
     def test_update_recipe_serializer(self, api_client, new_author, new_recipe):
         """
