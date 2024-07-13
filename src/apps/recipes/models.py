@@ -68,7 +68,7 @@ class Recipe(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     reactions = GenericRelation(Reaction, related_query_name="recipe_reactions")
     is_repost = models.BooleanField(default=False)
-    published = models.BooleanField(default=True)
+    published = models.BooleanField(default=False)
 
     class Meta:
         index_together = ["title", "slug"]
