@@ -84,19 +84,20 @@ class TestRecipeSerializers:
         assert response.data == example_response
 
         # test min amount of ingredient
-        example_data["title"] = "Test Recipe"
-        example_data["slug"] = "test-recipe"
-        example_data["ingredients"][0]["amount"] = 0
-        recipe = api_client.post("/api/v1/recipe/", example_data, format="json")
+        example_data["ingredients"] = [{"amount": 0}]
+        recipe = api_client.patch(
+            "/api/v1/recipe/delicious-recipe/", example_data, format="json"
+        )
         assert (
             recipe.data["ingredients"][0]["amount"]
             == AMOUNT_OF_INGREDIENT_LESS_THAN_ONE
         )
 
         # test max amount of ingredient
-        example_data["title"] = "Second Test Recipe"
         example_data["ingredients"][0]["amount"] = 1001
-        recipe = api_client.post("/api/v1/recipe/", example_data, format="json")
+        recipe = api_client.patch(
+            "/api/v1/recipe/delicious-recipe/", example_data, format="json"
+        )
         assert recipe.data["ingredients"][0]["amount"] == MAX_COUNT_OF_INGREDIENT
 
     def test_update_recipe_serializer(self, api_client, new_author, new_recipe):

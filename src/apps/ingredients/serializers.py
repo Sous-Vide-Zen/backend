@@ -6,7 +6,6 @@ from src.base.code_text import (
     MAX_COUNT_OF_INGREDIENT,
 )
 from .models import IngredientInRecipe
-from src.base.code_text import AMOUNT_OF_INGREDIENT_LESS_THAN_ZERO
 
 
 class IngredientInRecipeSerializer(ModelSerializer):

@@ -94,7 +94,7 @@ class RecipeViewSet(
             self.serializer_class = RecipeCreateSerializer
         else:
             serializer_classes = {
-                "GET": RecipeRetriveSerializer,
+                "GET": RecipeRetrieveSerializer,
                 "POST": DraftSerializer,
                 "PATCH": RecipeUpdateSerializer,
             }
