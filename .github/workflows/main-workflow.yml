@@ -2,13 +2,13 @@ name: Build and Push Sous-Vid-Zen Backend
 
 on:
   push:
-    branches: [ "devops-docker-files" ]
+    branches: ["devops-docker-files"]
   pull_request:
-    branches: [ "devops-docker-files" ]
+    branches: ["devops-docker-files"]
 
 jobs:
   build_and_push:
-    runs-on: ubuntu-latest
+    runs-on: alpine-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -29,7 +29,6 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: .
-          file: .docker/Dockerfile
+          file: .docker/Dockerfile.multi-stage
           push: true
           tags: sousvidzen/appimages:dev
-
