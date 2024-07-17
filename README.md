@@ -35,6 +35,7 @@ git clone git@github.com:Sous-Vide-Zen/backend.git
 ```
 
 Activate the virtual environment and install dependencies
+
 ```shell
 python3.11 -m venv venv
 . venv/bin/activate
@@ -48,6 +49,7 @@ cd config/
 ```
 
 Create an .env file
+
 ```shell
 touch .env
 ```
@@ -61,28 +63,46 @@ cd ..
 ```
 
 Launch a project
+
 ```shell
 python manage.py migrate
 python manage.py runserver
 ```
 
 Fill the database
+
 ```shell
 python manage.py loaddata src/fixtures/*
 ```
 
 ### Documentation url
+
 ```djangourlpath
 http://127.0.0.1:8000/api/v1/swagger/
 ```
 
 ### Oauth endpoints:
+
 ```text
 Эндпоинты регистрации через соц.сети
 http://127.0.0.1:8000/api/v1/login/yandex-oauth2/ - регистрация через яндекс
 http://127.0.0.1:8000/api/v1/login/vk-oauth2 - регистрация через вк
 
 Настройка редиректа, на проде нужно поменять 127.0.0.1:8000 на домен
-http://127.0.0.1:8000/api/v1/complete/yandex-oauth2/ 
+http://127.0.0.1:8000/api/v1/complete/yandex-oauth2/
 http://127.0.0.1:8000/api/v1/complete/vk-oauth2/ - настраивается в vk.com/dev
 ```
+
+# Dockerfile without ENV
+
+1. Clone repository to any folder
+
+2. Install Docker
+
+3. Open the folder with the repo in Terminal
+
+4. Execute
+  ```sudo docker buildx build -t your_image_name:your_tag -f .docker/Dockerfile.multi-stage```
+5. Wait for the build process to complete
+6. To launch the image execute the following command:
+  ```sudo docker run -p 8000:8000 your_image_name:your_tag```

@@ -1,39 +1,40 @@
-# Use a lightweight Python image
-FROM python:3.11-alpine
+# Build stage
+FROM python:3.11-alpine AS builder
 
-# Setting workdir to /app
 WORKDIR /app
 
-# Copying requirements to use them
 COPY src/requirements.txt .
 
-# Upgrading pip and installing requirements
 RUN pip install --upgrade pip && \
     pip install -r requirements.txt && \
     pip install gunicorn
 
-# Copying the project folder to the image
 COPY . .
 
-# Explicitly copying start.sh to the working directory
 COPY start.sh /app/start.sh
 
 ARG SOUS_VID_ENV
-
 WORKDIR /config
 RUN touch .env && \
     echo "SOUS_VID_ENV" >> .env
 
-
-# Setting the environment variable
-ENV PYTHONPATH=/app:$PYTHONPATH
-
-# Making start.sh executable
 RUN chmod +x /app/start.sh
 
-# Exposing port 8000 for dev mode
+# Production stage
+FROM python:3.11-alpine
+
+WORKDIR /app
+
+# Copy the installed packages from the builder stage
+COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
+COPY --from=builder /usr/local/bin/gunicorn /usr/local/bin/gunicorn
+
+COPY --from=builder /app /app
+COPY --from=builder /config/.env /config/.env
+
+# Set PYTHONPATH explicitly
+ENV PYTHONPATH=/app
+
 EXPOSE 8000
 
-# Container starting parameters
 CMD ["sh", "/app/start.sh"]
-
