@@ -29,7 +29,7 @@ class FeedUserList(mixins.ListModelMixin, viewsets.GenericViewSet):
     ]
     ordering_fields = ["activity_count"]
     ordering = ["-pub_date"]
-    search_fields = ["title"]
+    search_fields = ["title", "full_text", "short_text"]
     filterset_class = FeedFilter
 
     def get_queryset(self):
