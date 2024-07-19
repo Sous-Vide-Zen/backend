@@ -35,6 +35,15 @@ git clone git@github.com:Sous-Vide-Zen/backend.git
 ```
 
 Activate the virtual environment and install dependencies
+
+- Windows
+```shell
+python -m venv venv
+. venv/Scripts/activate
+pip install -r src/requirements.txt
+```
+
+- Linux and macOS
 ```shell
 python3.11 -m venv venv
 . venv/bin/activate
@@ -48,11 +57,11 @@ cd config/
 ```
 
 Create an .env file
-```shell
-touch .env
-```
 
-`Copy all from env.example to .env file`
+```shell
+cp .env.example .env
+```
+`Fill the file with your variables or use the default`
 
 Return to main directory
 
@@ -61,14 +70,16 @@ cd ..
 ```
 
 Launch a project
+
 ```shell
 python manage.py migrate
 python manage.py runserver
 ```
 
 Fill the database
+
 ```shell
-python manage.py loaddata src/fixtures/*
+python manage.py loaddata $(ls src/fixtures/)
 ```
 
 ### Documentation url
