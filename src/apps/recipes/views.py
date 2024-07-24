@@ -2,7 +2,7 @@ from django.db import transaction
 from django.db.models import Count
 from django.shortcuts import get_object_or_404
 
-from rest_framework import serializers, status
+from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.filters import SearchFilter
 from rest_framework.mixins import (
@@ -25,8 +25,6 @@ from src.base.code_text import (
     RECIPE_REMOVED_FROM_FAVORITES,
     LIST_OF_FAVORITES_IS_EMPTY,
     AMOUNT_OF_DRAFTS_LESS_THAN_THREE,
-    ENTER_RECIPE_NAME_BEFORE_PUBLISHING,
-    ENTER_INGREDIENTS_BEFORE_PUBLISHING,
     DRAFT_SUCCESSFUL_UPDATE,
 )
 from src.apps.favorite.models import Favorite

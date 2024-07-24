@@ -2,8 +2,6 @@ from datetime import timedelta
 from typing import List, Any, Set
 
 from random import sample
-from rest_framework import serializers, status
-from rest_framework.response import Response
 from typing import Type
 
 from django.contrib.contenttypes.models import ContentType
