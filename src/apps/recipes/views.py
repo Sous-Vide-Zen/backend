@@ -26,17 +26,23 @@ from src.base.code_text import (
     LIST_OF_FAVORITES_IS_EMPTY,
     AMOUNT_OF_DRAFTS_LESS_THAN_THREE,
     ENTER_RECIPE_NAME_BEFORE_PUBLISHING,
+    ENTER_INGREDIENTS_BEFORE_PUBLISHING,
     DRAFT_SUCCESSFUL_UPDATE,
 )
 from src.apps.favorite.models import Favorite
 from src.apps.view.models import ViewRecipes
 from src.base.paginators import FeedPagination
 from src.base.permissions import IsOwnerOrStaffOrReadOnly
-from src.base.services import increment_view_count, create_recipe_slug
+from src.base.services import (
+    create_draft_slug,
+    increment_view_count,
+    create_recipe_slug,
+    validate_recipe_publishing,
+)
 from .models import Recipe
 from .serializers import (
     RecipeRetrieveSerializer,
-    RecipeCreateSerializer,
+    RecipePublicateSerializer,
     RecipeUpdateSerializer,
     BaseRecipeListSerializer,
     DraftSerializer,
@@ -91,7 +97,7 @@ class RecipeViewSet(
 
     def get_serializer_class(self):
         if "publicate" in self.request.path:
-            self.serializer_class = RecipeCreateSerializer
+            self.serializer_class = RecipePublicateSerializer
         else:
             serializer_classes = {
                 "GET": RecipeRetrieveSerializer,
@@ -112,18 +118,14 @@ class RecipeViewSet(
 
     def create(self, request, *args, **kwargs):
         user_drafts = Recipe.objects.filter(author=request.user, published=False)
-        if len(user_drafts) >= DRAFTS_MAX_AMOUNT:
+        len_user_drafts = len(user_drafts)
+        if len_user_drafts >= DRAFTS_MAX_AMOUNT:
             return Response(
                 AMOUNT_OF_DRAFTS_LESS_THAN_THREE, status=status.HTTP_400_BAD_REQUEST
             )
         title = f"Черновик"
-        nums = list(range(1, DRAFTS_MAX_AMOUNT + 1))
-        slug = f"{request.user.username}_chernovik_{nums[len(user_drafts)]}"
-        for i in range(3):
-            if Recipe.objects.filter(slug=slug).exists():
-                slug = f"{request.user.username}_chernovik_{nums[i]}"
-            else:
-                break
+        slug = create_draft_slug(Recipe, len_user_drafts, request.user.username)
+
         recipe = Recipe.objects.create(
             author=request.user,
             title=title,
@@ -139,6 +141,7 @@ class RecipeViewSet(
         serializer = self.get_serializer(recipe, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
+
         if recipe.published:
             return Response(serializer.data, status=status.HTTP_200_OK)
         else:
@@ -147,25 +150,11 @@ class RecipeViewSet(
     @transaction.atomic
     def publicate_recipe(self, request, *args, **kwargs):
         recipe = self.get_object()
-        title = request.data.get("title", recipe.title)
-        if "черновик" in title.lower():
-            return Response(
-                ENTER_RECIPE_NAME_BEFORE_PUBLISHING, status=status.HTTP_400_BAD_REQUEST
-            )
-        if "slug" not in request.data:
-            data = {}
-            data["title"] = title
-            recipe.slug = create_recipe_slug(Recipe, data)["slug"]
         serializer = self.get_serializer(recipe, data=request.data, partial=False)
-        serializer.initial_data["title"] = title
-        serializer.initial_data["full_text"] = request.data.get(
-            "full_text", recipe.full_text
-        )
-        serializer.initial_data["cooking_time"] = recipe.cooking_time
-        try:
-            serializer.is_valid(raise_exception=True)
-        except serializers.ValidationError as error:
-            return Response(error.args, status=status.HTTP_400_BAD_REQUEST)
+        validate_recipe_publishing(recipe, request.data, serializer)
+        if "slug" not in request.data:
+            recipe.slug = create_recipe_slug(Recipe, request.data)["slug"]
+
         recipe.published = True
         recipe.save()
         self.perform_update(serializer)

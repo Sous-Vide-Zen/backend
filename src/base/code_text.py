@@ -63,14 +63,14 @@ AMOUNT_OF_DRAFTS_LESS_THAN_THREE: dict = {
 ENTER_RECIPE_NAME_BEFORE_PUBLISHING: dict = {
     "detail": "Введите название рецепта перед публикацией."
 }
-FILL_ALL_REQUIRED_FIELDS_BEFORE_PUBLISHING: str = (
-    "Заполните все необходимые поля перед публикацией рецепта."
-)
 AMOUNT_OF_INGREDIENT_LESS_THAN_ONE: dict = {
     "errors": "Количество должно быть больше 0."
 }
 MAX_COUNT_OF_INGREDIENT: dict = {
     "errors": "Максимальное количество ингредиента - 1000."
+}
+ENTER_INGREDIENTS_BEFORE_PUBLISHING: dict = {
+    "detail": "Введите ингредиенты перед публикацией рецепта."
 }
 
 # Errors status

@@ -14,6 +14,7 @@ from src.apps.recipes.models import Recipe, Category
 from src.apps.users.serializers import AuthorInRecipeSerializer
 from src.base.code_text import (
     RECIPE_CAN_BE_EDIT_WITHIN_FIRST_DAY,
+    ENTER_INGREDIENTS_BEFORE_PUBLISHING,
 )
 from src.base.services import (
     shorten_text,
@@ -177,14 +178,12 @@ class RecipeRetrieveSerializer(BaseRecipeSerializer):
         )
 
 
-class RecipeCreateSerializer(BaseRecipeSerializer):
+class RecipePublicateSerializer(BaseRecipeSerializer):
     """
     Publicate recipe serializer
     """
 
-    # title = serializers.CharField(max_length=150)
     ingredients = IngredientInRecipeSerializer(many=True, read_only=True)
-    # full_text = serializers.CharField(required=True)
 
     class Meta(BaseRecipeSerializer.Meta):
         fields = BaseRecipeSerializer.Meta.fields + ("published",)

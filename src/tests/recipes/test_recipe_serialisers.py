@@ -54,19 +54,31 @@ class TestRecipeSerializers:
         serializer_data.pop("updated_at", None)
         assert serializer_data == recipe_data
 
-    def test_publicate_recipe_serializer(self, api_client, new_author, new_recipe):
+    def test_publicate_recipe_serializer(
+        self, api_client, new_author, new_recipe, new_ingredient_in_recipe
+    ):
         """
         Test for publicate recipe
-        [POST] http://127.0.0.1:8000/api/v1/recipe/{slug}/publicate/
+        [POST] http://127.0.0.1:8000/api/v1/recipe/drafts/{slug}/publicate/
         """
-        example_data = {"title": "Delicious Recipe", "slug": "delicious-recipe"}
+        example_data = {"slug": "delicious-recipe"}
+        new_recipe.ingredients.add(new_ingredient_in_recipe)
+        new_recipe.refresh_from_db()
 
         example_response = {
             "id": 1,
-            "title": "Delicious Recipe",
+            "title": "Test Recipe",
             "slug": "delicious-recipe",
             "preview_image": None,
-            "ingredients": [],
+            "ingredients": [
+                OrderedDict(
+                    [
+                        ("name", new_ingredient_in_recipe.ingredient.name),
+                        ("unit", new_ingredient_in_recipe.unit.name),
+                        ("amount", new_ingredient_in_recipe.amount),
+                    ]
+                )
+            ],
             "full_text": """This is a test recipe full text.""",
             "tag": [],
             "category": [],
@@ -76,8 +88,11 @@ class TestRecipeSerializers:
 
         api_client.force_authenticate(user=new_author)
         response = api_client.post(
-            f"/api/v1/recipe/{new_recipe.slug}/publicate/", example_data, format="json"
+            f"/api/v1/recipe/drafts/{new_recipe.slug}/publicate/",
+            data=example_data,
+            format="json",
         )
+
         response.data.pop("pub_date")
         response.data.pop("updated_at")
 

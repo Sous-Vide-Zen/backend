@@ -2,6 +2,8 @@ from datetime import timedelta
 from typing import List, Any, Set
 
 from random import sample
+from rest_framework import serializers, status
+from rest_framework.response import Response
 from typing import Type
 
 from django.contrib.contenttypes.models import ContentType
@@ -14,10 +16,16 @@ from django.utils.text import slugify
 from django.utils.translation import gettext_lazy as _
 from unidecode import unidecode
 
-from config.settings import SHORT_RECIPE_SYMBOLS, TIME_FROM_VIEW_RECIPE
+from config.settings import (
+    DRAFTS_MAX_AMOUNT,
+    SHORT_RECIPE_SYMBOLS,
+    TIME_FROM_VIEW_RECIPE,
+)
 from src.apps.ingredients.models import Ingredient, Unit, IngredientInRecipe
 from src.base.code_text import (
     CANT_ADD_TWO_SIMILAR_INGREDIENT,
+    ENTER_RECIPE_NAME_BEFORE_PUBLISHING,
+    ENTER_INGREDIENTS_BEFORE_PUBLISHING,
 )
 
 
@@ -28,6 +36,25 @@ def validate_avatar_size(value: Any) -> None:
         raise ValidationError(
             _("Размер файла слишком большой. Максимальный размер - 5 МБ.")
         )
+
+
+def validate_recipe_publishing(instance: Model, attr: dict, serializer: Model) -> None:
+    errors = []
+    title = instance.title
+    if "черновик" in title.lower():
+        errors.append(ENTER_RECIPE_NAME_BEFORE_PUBLISHING)
+    if not instance.ingredients.all():
+        errors.append(ENTER_INGREDIENTS_BEFORE_PUBLISHING)
+    serializer.initial_data["title"] = title
+    serializer.initial_data["full_text"] = instance.full_text
+    serializer.initial_data["cooking_time"] = instance.cooking_time
+
+    try:
+        serializer.is_valid(raise_exception=True)
+    except ValidationError as error:
+        errors.append(error.args)
+    if errors:
+        raise ValidationError(errors)
 
 
 def user_avatar_path(instance: Model, filename: str) -> str:
@@ -165,12 +192,25 @@ def increment_view_count(
         model.objects.create(user=user_id, recipe=recipe)
 
 
+def create_draft_slug(
+    model: Type[Model], len_user_drafts: int, username: str, num: int = 1
+) -> str:
+    """Create draft recipe slug"""
+
+    nums = list(range(1, DRAFTS_MAX_AMOUNT + 1))
+    slug = f"{username}_chernovik_{nums[len_user_drafts]}"
+    while model.objects.filter(slug=slug).exists():
+        slug = f"{username}_chernovik_{num}"
+        num += 1
+    return slug
+
+
 def create_recipe_slug(model: Type[Model], data: dict, num: int = 1) -> dict:
     """Create recipe slug"""
 
     with transaction.atomic():
         same_recipes: int = model.objects.filter(
-            title__startswith=data["title"]
+            published=True, title__startswith=data["title"]
         ).count()
         slug_str: str = unidecode(
             f"{data['title']}_{same_recipes + num}" if same_recipes else data["title"]

@@ -224,47 +224,79 @@ class TestRecipeUrls:
     ):
         """
         Test for update draft recipe
-        [PATCH] http://127.0.0.1:8000/api/v1/recipe/{slug}/
+        [PATCH] http://127.0.0.1:8000/api/v1/recipe/drafts/{slug}/
         """
 
         api_client.force_authenticate(user=new_author)
 
         response = api_client.patch(
-            f"/api/v1/recipe/{draft_recipe.slug}/", recipe_data, format="json"
+            f"/api/v1/recipe/drafts/{draft_recipe.slug}/", recipe_data, format="json"
         )
 
         assert response.status_code == 200
         assert draft_recipe.published == False
 
-    def test_publicate_recipe_without_title(self, api_client, new_author, draft_recipe):
+    def test_publicate_recipe_without_title(
+        self, api_client, new_author, draft_recipe, new_ingredient_in_recipe
+    ):
         """
         Test for publicating recipe without title indicated in request data
-        [POST] http://127.0.0.1:8000/api/v1/recipe/{slug}/publicate/
+        [POST] http://127.0.0.1:8000/api/v1/recipe/drafts/{slug}/publicate/
         """
         api_client.force_authenticate(user=new_author)
+
+        request_data = {
+            "full_text": "Published text",
+            "ingredients": [
+                OrderedDict(
+                    [
+                        ("name", new_ingredient_in_recipe.ingredient.name),
+                        ("unit", new_ingredient_in_recipe.unit.name),
+                        ("amount", new_ingredient_in_recipe.amount),
+                    ]
+                )
+            ],
+        }
+        response = api_client.patch(
+            f"/api/v1/recipe/drafts/{draft_recipe.slug}/", request_data, format="json"
+        )
         response = api_client.post(
-            f"/api/v1/recipe/{draft_recipe.slug}/publicate/", format="json"
+            f"/api/v1/recipe/drafts/{draft_recipe.slug}/publicate/", format="json"
         )
 
         assert response.status_code == 400
-        assert response.data == ENTER_RECIPE_NAME_BEFORE_PUBLISHING
+        assert response.data[0] == ENTER_RECIPE_NAME_BEFORE_PUBLISHING
 
     def test_publicate_recipe_with_slug_in_request_data(
-        self, api_client, new_author, draft_recipe
+        self, api_client, new_author, draft_recipe, new_ingredient_in_recipe
     ):
         """
         Test for publicating recipe with slug indicated in request data
-        [POST] http://127.0.0.1:8000/api/v1/recipe/{slug}/publicate/
+        [POST] http://127.0.0.1:8000/api/v1/recipe/drafts/{slug}/publicate/
         """
+
         request_data = {
-            "title": "Published_title",
+            "title": "Test title",
             "full_text": "Published text",
-            "slug": "varenye-iaitsa",
+            "ingredients": [
+                OrderedDict(
+                    [
+                        ("name", new_ingredient_in_recipe.ingredient.name),
+                        ("unit", new_ingredient_in_recipe.unit.name),
+                        ("amount", new_ingredient_in_recipe.amount),
+                    ]
+                )
+            ],
         }
 
         api_client.force_authenticate(user=new_author)
+        response = api_client.patch(
+            f"/api/v1/recipe/drafts/{draft_recipe.slug}/", request_data, format="json"
+        )
+
+        request_data = {"slug": "varenye-iaitsa"}
         response = api_client.post(
-            f"/api/v1/recipe/{draft_recipe.slug}/publicate/",
+            f"/api/v1/recipe/drafts/{draft_recipe.slug}/publicate/",
             request_data,
             format="json",
         )
@@ -273,16 +305,28 @@ class TestRecipeUrls:
         assert response.data["slug"] == "varenye-iaitsa"
 
     def test_publicate_recipe(
-        self,
-        api_client,
-        new_author,
-        draft_recipe,
+        self, api_client, new_author, draft_recipe, new_ingredient_in_recipe
     ):
-        request_data = {"title": "Published_title", "full_text": "Published text"}
+        request_data = {
+            "title": "Published_title",
+            "full_text": "Published text",
+            "ingredients": [
+                OrderedDict(
+                    [
+                        ("name", new_ingredient_in_recipe.ingredient.name),
+                        ("unit", new_ingredient_in_recipe.unit.name),
+                        ("amount", new_ingredient_in_recipe.amount),
+                    ]
+                )
+            ],
+        }
+
         api_client.force_authenticate(user=new_author)
+        response = api_client.patch(
+            f"/api/v1/recipe/drafts/{draft_recipe.slug}/", request_data, format="json"
+        )
         response = api_client.post(
-            f"/api/v1/recipe/{draft_recipe.slug}/publicate/",
-            request_data,
+            f"/api/v1/recipe/drafts/{draft_recipe.slug}/publicate/",
             format="json",
         )
 
