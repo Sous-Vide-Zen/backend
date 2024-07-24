@@ -28,14 +28,17 @@ Sous-Vide Zen is a website for sharing and discovering recipes for sous-vide coo
 
 ### How to start a project:
 
-Clone the repository and navigate to it on the command line:
-
+Clone the repository:
 ```shell
 git clone git@github.com:Sous-Vide-Zen/backend.git
 ```
 
-Activate the virtual environment and install dependencies
+Navigate to the project directory:
+```shell
+cd ./backend/
+```
 
+Create and activate the virtual environment, install dependencies:
 - Windows
 ```shell
 python -m venv venv
@@ -51,33 +54,27 @@ pip install -r src/requirements.txt
 ```
 
 Navigate to the config directory
-
 ```shell
 cd config/
 ```
 
-Create an .env file
-
+Create an env file and, if necessary, fill it with your variables or use default values.
 ```shell
 cp .env.example .env
 ```
-`Fill the file with your variables or use the default`
 
-Return to main directory
-
+Return to the project directory:
 ```shell
 cd ..
 ```
 
-Launch a project
-
+Launch a project:
 ```shell
 python manage.py migrate
 python manage.py runserver
 ```
 
-Fill the database
-
+Fill the database:
 ```shell
 python manage.py loaddata $(ls src/fixtures/)
 ```
