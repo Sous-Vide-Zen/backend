@@ -31,4 +31,4 @@ jobs:
           context: .
           file: .docker/Dockerfile.multi-stage
           push: true
-          tags: sousvidzen/appimages:dev
+          tags: sousvidzen/backend:dev
