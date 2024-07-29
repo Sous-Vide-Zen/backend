@@ -1,4 +1,4 @@
-# Build stage step
+# Build stage
 FROM python:3.11-alpine AS builder
 
 WORKDIR /app
