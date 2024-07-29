@@ -32,3 +32,15 @@ jobs:
           file: .docker/Dockerfile
           push: true
           tags: sousvidzen/backend:dev
+
+      - name: Deploy to VPS
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          key: ${{ secrets.VPS_SSH_PRIVATE_KEY }}
+          script: |
+            cd /home/deploy/sous
+            git pull origin devops-docker-files
+            docker-compose pull
+            docker-compose up -d
