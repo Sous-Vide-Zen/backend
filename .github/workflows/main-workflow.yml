@@ -1,4 +1,4 @@
-name: Build and Push Sous-Vid-Zen Backend
+name: Sous-Backend Build
 
 on:
   push:
@@ -41,26 +41,26 @@ jobs:
           key: ${{ secrets.VPS_SSH_PRIVATE_KEY }}
           envs: DOCKERHUB_USERNAME,DOCKERHUB_TOKEN
           script: |
-            # Docker login
+            
             echo $DOCKERHUB_TOKEN | docker login -u $DOCKERHUB_USERNAME --password-stdin
 
-            # Navigate to the deploy user's home directory
+            
             cd /home/deploy
 
-            # If the directory doesn't exist, create it and clone the repository
+            
             if [ ! -d "sous" ]; then
-              git clone https://github.com/yourusername/sous-vid-zen.git sous
+              git clone https://github.com/Sous-Vide-Zen/docker-compose.git sous
             fi
 
-            # Navigate into the project directory
+            
             cd sous
 
-            # Fetch and pull the latest changes
+            
             git fetch --all
             git checkout devops-docker-files || git checkout -b devops-docker-files
             git pull origin devops-docker-files
 
-            # Create docker-compose.yml if it doesn't exist
+            
             if [ ! -f "docker-compose.yml" ]; then
               echo "Creating docker-compose.yml"
               echo 'version: "3.8"' > docker-compose.yml
@@ -82,9 +82,8 @@ jobs:
               echo '    driver: bridge' >> docker-compose.yml
             fi
 
-            # Pull and start Docker containers
+            
             docker-compose pull
             docker-compose up -d
 
-            # Docker logout
             docker logout
