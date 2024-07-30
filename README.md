@@ -93,16 +93,79 @@ http://127.0.0.1:8000/api/v1/complete/yandex-oauth2/
 http://127.0.0.1:8000/api/v1/complete/vk-oauth2/ - настраивается в vk.com/dev
 ```
 
-# Dockerfile without ENV
+Для локального запуска нашего Sous Vide Backend в Docker необходимо сделать следующее:
 
-1. Clone repository to any folder
+### **1. Установить Docker**
 
-2. Install Docker
+Если докер еще не установлен, его необходимо установить. Следуйте инструкциям для вашей ОС:
 
-3. Open the folder with the repo in Terminal
+- **Windows**: [Docker Desktop for Windows](https://docs.docker.com/desktop/install/windows-install/)
+- **macOS**: [Docker Desktop for Mac](https://docs.docker.com/desktop/install/mac-install/)
+- **Linux**: [Docker Engine](https://docs.docker.com/engine/install/)
 
-4. Execute
-  ```sudo docker buildx build -t your_image_name:your_tag -f .docker/Dockerfile.multi-stage```
-5. Wait for the build process to complete
-6. To launch the image execute the following command:
-  ```sudo docker run -p 8000:8000 your_image_name:your_tag```
+После установки убедитесь что Docker запущен и работает.
+
+### **2. Авторизация в DockerHUB**
+
+Так как наш image приватный, необходимо залогиниться в DockerHUB. Запустите терминал ивыполняйте команды:
+
+```bash
+docker login [registry-1.docker.io] -u sousvidzen
+```
+
+Пароль: Спрашиваем у Леры и Андрея
+
+### **3. Pull Docker Image**
+
+Для того чтобы запустить image необходимо его скачать
+
+```bash
+docker pull sousvidzen/backend:dev
+```
+
+### **4. Запустить Docker Container**
+
+После загрузки image необходимо его запустить
+
+```bash
+docker run -d --name sous-vid-zen-backend -p 8000:8000 sousvidzen/backend:dev
+```
+
+- `d`: Запускает контейнер в фоновом режиме.
+- `-name sous-vid-zen-backend`: Задает имя контейнера чтобы для понимания.
+- `p 8000:8000`: Делает контейнер доступным на 8000 порту.
+
+### **5. Убеждаемся что контейнер запустился и работает**
+
+Для проверки:
+
+```bash
+docker ps
+```
+
+Вы должны увидеть что `sous-vid-zen-backend` есть в списке, со статусом "Up."
+
+### **6. Остановка и удаление контейнера**
+
+Когда закончили тестировать или хотите спулить новую версию
+
+```bash
+docker stop sous-vid-zen-backend
+docker rm sous-vid-zen-backend
+```
+
+### **8. Полезные команды**
+
+- **Логи**: Чтобы посмотреть логи нашего контейнера
+    
+    ```bash
+    docker logs sous-vid-zen-backend
+    ```
+    
+- **Interactive Shell Access**: Для попадания в шелл самого контейнера
+    
+    ```bash
+    docker exec -it sous-vid-zen-backend /bin/sh
+    ```
+    
+    Полезно для дебага приложения
