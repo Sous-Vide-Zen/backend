@@ -41,49 +41,40 @@ jobs:
           key: ${{ secrets.VPS_SSH_PRIVATE_KEY }}
           envs: DOCKERHUB_USERNAME,DOCKERHUB_TOKEN
           script: |
-            
-            echo $DOCKERHUB_TOKEN | docker login -u $DOCKERHUB_USERNAME --password-stdin
+            # Docker login using environment variables
+            echo "$DOCKERHUB_TOKEN" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
 
-            
+            # Navigate to the deploy user's home directory
             cd /home/deploy
 
-            
-            if [ ! -d "sous" ]; then
-              git clone https://github.com/Sous-Vide-Zen/docker-compose.git sous
-            fi
-
-            
+            # Create sous directory if it doesn't exist
+            mkdir -p sous
             cd sous
 
-            
-            git fetch --all
-            git checkout devops-docker-files || git checkout -b devops-docker-files
-            git pull origin devops-docker-files
+            # Create docker-compose.yml
+            cat << EOF > docker-compose.yml
+            version: "3.8"
 
-            
-            if [ ! -f "docker-compose.yml" ]; then
-              echo "Creating docker-compose.yml"
-              echo 'version: "3.8"' > docker-compose.yml
-              echo '' >> docker-compose.yml
-              echo 'services:' >> docker-compose.yml
-              echo '  backend:' >> docker-compose.yml
-              echo '    image: sousvidzen/backend:dev' >> docker-compose.yml
-              echo '    container_name: sous-vid-zen-backend' >> docker-compose.yml
-              echo '    ports:' >> docker-compose.yml
-              echo '      - "8080:8080"' >> docker-compose.yml
-              echo '    environment:' >> docker-compose.yml
-              echo '      - NODE_ENV=production' >> docker-compose.yml
-              echo '    restart: unless-stopped' >> docker-compose.yml
-              echo '    networks:' >> docker-compose.yml
-              echo '      - sous-vid-zen-network' >> docker-compose.yml
-              echo '' >> docker-compose.yml
-              echo 'networks:' >> docker-compose.yml
-              echo '  sous-vid-zen-network:' >> docker-compose.yml
-              echo '    driver: bridge' >> docker-compose.yml
-            fi
+            services:
+              backend:
+                image: sousvidzen/backend:dev
+                container_name: sous-vid-zen-backend
+                ports:
+                  - "8000:8000"
+                environment:
+                  - NODE_ENV=production
+                restart: unless-stopped
+                networks:
+                  - sous-vid-zen-network
 
-            
+            networks:
+              sous-vid-zen-network:
+                driver: bridge
+            EOF
+
+            # Pull and start Docker containers
             docker-compose pull
             docker-compose up -d
 
+            # Docker logout
             docker logout
