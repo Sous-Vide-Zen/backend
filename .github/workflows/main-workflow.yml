@@ -1,4 +1,4 @@
-name: Sous-Backend Build
+name: Build and Push Sous-Vid-Zen Backend
 
 on:
   push:
@@ -9,8 +9,9 @@ on:
 jobs:
   build_and_push:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout code
+      - name: Checkout Code
         uses: actions/checkout@v2
 
       - name: Set up QEMU
@@ -25,7 +26,7 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build and push
+      - name: Build and Push Docker Image
         uses: docker/build-push-action@v4
         with:
           context: .
@@ -39,28 +40,20 @@ jobs:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USERNAME }}
           key: ${{ secrets.VPS_SSH_PRIVATE_KEY }}
-          envs: DOCKERHUB_USERNAME,DOCKERHUB_TOKEN
           script: |
-            # Docker login using environment variables
-            echo "$DOCKERHUB_TOKEN" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+            # Log in to Docker Hub
+            echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
 
-            # Navigate to the deploy user's home directory
-            cd /home/deploy
-
-            # Create sous directory if it doesn't exist
-            mkdir -p sous
-            cd sous
-
-            # Create docker-compose.yml
-            cat << EOF > docker-compose.yml
+            # Create necessary directories and docker-compose file
+            mkdir -p ~/sous && cd ~/sous
+            cat << 'EOF' > docker-compose.yml
             version: "3.8"
-
             services:
               backend:
                 image: sousvidzen/backend:dev
                 container_name: sous-vid-zen-backend
                 ports:
-                  - "8000:8000"
+                  - "8080:8080"
                 environment:
                   - NODE_ENV=production
                 restart: unless-stopped
@@ -72,9 +65,9 @@ jobs:
                 driver: bridge
             EOF
 
-            # Pull and start Docker containers
+            # Pull the latest image and start the container
             docker-compose pull
             docker-compose up -d
 
-            # Docker logout
+            # Log out of Docker Hub
             docker logout
