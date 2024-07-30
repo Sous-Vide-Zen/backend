@@ -40,7 +40,23 @@ jobs:
           username: ${{ secrets.VPS_USERNAME }}
           key: ${{ secrets.VPS_SSH_PRIVATE_KEY }}
           script: |
-            cd /home/deploy/sous
+            
+            cd /home/deploy
+
+            if [ ! -d "sous" ]; then
+              git clone https://github.com/yourusername/sous-vid-zen.git sous
+            fi
+
+            cd sous
+
+            git fetch --all
+            git checkout devops-docker-files
             git pull origin devops-docker-files
+
+            if [ ! -f "docker-compose.yml" ]; then
+              echo "Error: docker-compose.yml not found"
+              exit 1
+            fi
+
             docker-compose pull
             docker-compose up -d
