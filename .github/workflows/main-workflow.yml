@@ -39,13 +39,17 @@ jobs:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USERNAME }}
           key: ${{ secrets.VPS_SSH_PRIVATE_KEY }}
+          envs: DOCKERHUB_USERNAME,DOCKERHUB_TOKEN
           script: |
+            # Docker login
+            echo $DOCKERHUB_TOKEN | docker login -u $DOCKERHUB_USERNAME --password-stdin
+
             # Navigate to the deploy user's home directory
             cd /home/deploy
 
             # If the directory doesn't exist, create it and clone the repository
             if [ ! -d "sous" ]; then
-              git clone https://github.com/Sous-Vide-Zen/docker-compose.git sous
+              git clone https://github.com/yourusername/sous-vid-zen.git sous
             fi
 
             # Navigate into the project directory
@@ -81,3 +85,6 @@ jobs:
             # Pull and start Docker containers
             docker-compose pull
             docker-compose up -d
+
+            # Docker logout
+            docker logout
