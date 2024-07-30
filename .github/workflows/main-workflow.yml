@@ -44,7 +44,7 @@ jobs:
             cd /home/deploy
 
             if [ ! -d "sous" ]; then
-              git clone https://github.com/yourusername/sous-vid-zen.git sous
+              git clone git@github.com:Sous-Vide-Zen/docker-compose.git sous
             fi
 
             cd sous
