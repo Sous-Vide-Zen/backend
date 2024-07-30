@@ -40,45 +40,44 @@ jobs:
           username: ${{ secrets.VPS_USERNAME }}
           key: ${{ secrets.VPS_SSH_PRIVATE_KEY }}
           script: |
-            
+            # Navigate to the deploy user's home directory
             cd /home/deploy
 
             # If the directory doesn't exist, create it and clone the repository
             if [ ! -d "sous" ]; then
-              git clone https://github.com/yourusername/sous-vid-zen.git sous
+              git clone https://github.com/Sous-Vide-Zen/docker-compose.git sous
             fi
 
-            
+            # Navigate into the project directory
             cd sous
 
-            
+            # Fetch and pull the latest changes
             git fetch --all
             git checkout devops-docker-files || git checkout -b devops-docker-files
             git pull origin devops-docker-files
 
-            
+            # Create docker-compose.yml if it doesn't exist
             if [ ! -f "docker-compose.yml" ]; then
               echo "Creating docker-compose.yml"
-              cat << EOF > docker-compose.yml
-              version: '3.8'
-
-              services:
-                backend:
-                  image: sousvidzen/backend:dev
-                  container_name: sous-vid-zen-backend
-                  ports:
-                    - "8080:8080"
-                  environment:
-                    - NODE_ENV=production
-                  restart: unless-stopped
-                  networks:
-                    - sous-vid-zen-network
-
-              networks:
-                sous-vid-zen-network:
-                  driver: bridge
-              EOF
+              echo 'version: "3.8"' > docker-compose.yml
+              echo '' >> docker-compose.yml
+              echo 'services:' >> docker-compose.yml
+              echo '  backend:' >> docker-compose.yml
+              echo '    image: sousvidzen/backend:dev' >> docker-compose.yml
+              echo '    container_name: sous-vid-zen-backend' >> docker-compose.yml
+              echo '    ports:' >> docker-compose.yml
+              echo '      - "8080:8080"' >> docker-compose.yml
+              echo '    environment:' >> docker-compose.yml
+              echo '      - NODE_ENV=production' >> docker-compose.yml
+              echo '    restart: unless-stopped' >> docker-compose.yml
+              echo '    networks:' >> docker-compose.yml
+              echo '      - sous-vid-zen-network' >> docker-compose.yml
+              echo '' >> docker-compose.yml
+              echo 'networks:' >> docker-compose.yml
+              echo '  sous-vid-zen-network:' >> docker-compose.yml
+              echo '    driver: bridge' >> docker-compose.yml
             fi
-            
+
+            # Pull and start Docker containers
             docker-compose pull
             docker-compose up -d
