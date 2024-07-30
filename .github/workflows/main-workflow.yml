@@ -43,20 +43,42 @@ jobs:
             
             cd /home/deploy
 
+            # If the directory doesn't exist, create it and clone the repository
             if [ ! -d "sous" ]; then
-              git clone https://github.com/Sous-Vide-Zen/docker-compose.git sous
+              git clone https://github.com/yourusername/sous-vid-zen.git sous
             fi
 
+            
             cd sous
 
+            
             git fetch --all
-            git checkout devops-docker-files
+            git checkout devops-docker-files || git checkout -b devops-docker-files
             git pull origin devops-docker-files
 
+            
             if [ ! -f "docker-compose.yml" ]; then
-              echo "Error: docker-compose.yml not found"
-              exit 1
-            fi
+              echo "Creating docker-compose.yml"
+              cat << EOF > docker-compose.yml
+              version: '3.8'
 
+              services:
+                backend:
+                  image: sousvidzen/backend:dev
+                  container_name: sous-vid-zen-backend
+                  ports:
+                    - "8080:8080"
+                  environment:
+                    - NODE_ENV=production
+                  restart: unless-stopped
+                  networks:
+                    - sous-vid-zen-network
+
+              networks:
+                sous-vid-zen-network:
+                  driver: bridge
+              EOF
+            fi
+            
             docker-compose pull
             docker-compose up -d
