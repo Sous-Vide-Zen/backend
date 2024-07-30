@@ -53,7 +53,7 @@ jobs:
                 image: sousvidzen/backend:dev
                 container_name: sous-vid-zen-backend
                 ports:
-                  - "8080:8080"
+                  - "8000:8000"
                 environment:
                   - NODE_ENV=production
                 restart: unless-stopped
