@@ -1,4 +1,4 @@
-name: Build and Backend
+name: Build and Serve Backend
 on:
   push:
     branches: ["devops-docker-files"]
