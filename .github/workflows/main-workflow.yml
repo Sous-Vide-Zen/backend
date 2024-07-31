@@ -1,31 +1,24 @@
 name: Build and Push Sous-Vid-Zen Backend
-
 on:
   push:
     branches: ["devops-docker-files"]
   pull_request:
     branches: ["devops-docker-files"]
-
 jobs:
   build_and_push:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout Code
         uses: actions/checkout@v2
-
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
-
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
-
       - name: Login to DockerHub
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-
       - name: Build and Push Docker Image
         uses: docker/build-push-action@v4
         with:
@@ -33,7 +26,6 @@ jobs:
           file: .docker/Dockerfile
           push: true
           tags: sousvidzen/backend:dev
-
       - name: Deploy to VPS
         uses: appleboy/ssh-action@master
         with:
@@ -48,14 +40,28 @@ jobs:
             mkdir -p ~/sous && cd ~/sous
             cat << 'EOF' > docker-compose.yml
             version: "3.8"
+
             services:
               backend:
                 image: sousvidzen/backend:dev
                 container_name: sous-vid-zen-backend
-                ports:
-                  - "8000:8000"
+                expose:
+                  - "8000"
                 environment:
                   - NODE_ENV=production
+                restart: unless-stopped
+                networks:
+                  - sous-vid-zen-network
+
+              nginx:
+                image: nginx:latest
+                container_name: sous-vid-zen-nginx
+                ports:
+                  - "80:80"
+                volumes:
+                  - ./nginx.conf:/etc/nginx/nginx.conf:ro
+                depends_on:
+                  - backend
                 restart: unless-stopped
                 networks:
                   - sous-vid-zen-network
@@ -63,8 +69,8 @@ jobs:
             networks:
               sous-vid-zen-network:
                 driver: bridge
-            EOF
 
+    
             # Pull the latest image and start the container
             docker-compose pull
             docker-compose up -d
