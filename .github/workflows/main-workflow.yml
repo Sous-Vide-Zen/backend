@@ -1,4 +1,4 @@
-name: Build and Push Sous-Vid-Zen Backend
+name: Build and Backend
 on:
   push:
     branches: ["devops-docker-files"]
