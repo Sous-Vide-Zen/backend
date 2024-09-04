@@ -102,7 +102,7 @@ http://127.0.0.1:8000/api/v1/complete/vk-oauth2/ - настраивается в
 ```shell
 docker compose build &&
 cp .env.docker .env &&
-docker run -it --rm -p 5432:5432 -e POSTGRES_PASSWORD=postgres sous-vide-zen-db &&
+docker compose up -d &&
 createdb -h localhost -p 5432 -U postgres sous-vide-zen-db &&
 python manage.py migrate &&
 python manage.py loaddata src/fixtures/whole.json &&
@@ -110,7 +110,7 @@ python manage.py createsuperuser &&
 python manage.py runserver
 ```
 
-- run Postgres local `docker run -it --rm -p 5432:5432 -e POSTGRES_PASSWORD=postgres sous-vide-zen-db`
+- run Postgres local `docker compose up`
 
 - for connecting to external database need change `.env` change DATABASES section in `config/settings`
 
