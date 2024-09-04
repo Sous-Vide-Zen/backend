@@ -94,3 +94,29 @@ http://127.0.0.1:8000/api/v1/login/vk-oauth2 - регистрация через
 http://127.0.0.1:8000/api/v1/complete/yandex-oauth2/ 
 http://127.0.0.1:8000/api/v1/complete/vk-oauth2/ - настраивается в vk.com/dev
 ```
+
+### Postgres
+
+- install database for local development
+
+```shell
+docker compose build &&
+cp .env.docker .env &&
+docker run -it --rm -p 5432:5432 -e POSTGRES_PASSWORD=postgres sous-vide-zen-db &&
+createdb -h localhost -p 5432 -U postgres sous-vide-zen-db &&
+python manage.py migrate &&
+python manage.py loaddata src/fixtures/whole.json &&
+python manage.py createsuperuser &&
+python manage.py runserver
+```
+
+- run Postgres local `docker run -it --rm -p 5432:5432 -e POSTGRES_PASSWORD=postgres sous-vide-zen-db`
+
+- for connecting to external database need change `.env` change DATABASES section in `config/settings`
+
+- postgres console
+  `psql -h localhost -p 5432 -U postgres -d sous-vide-zen-db -W`
+
+- dump/restore
+  `python manage.py dumpdata > src/fixtures/whole.json`
+  `python manage.py loaddata src/fixtures/whole.json`
