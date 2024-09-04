@@ -25,58 +25,9 @@ services:
       timeout: 5s
       retries: 5
 
-  # app:
-  #   image: mcnic/rs-nest-service-app
-  #   restart: unless-stopped
-  #   environment:
-  #     - DATABASE_URL=${DATABASE_URL}
-  #     - LOG_LEVEL=${LOG_LEVEL}
-  #     - LOCALE=${LOCALE}
-  #     - TIME_ZONE=${TIME_ZONE}
-  #     - LOG_TO_CONSOLE=${LOG_TO_CONSOLE}
-  #     - LOG_TO_FILE=${LOG_TO_FILE}
-  #     - LOG_FILE_PATH=${LOG_FILE_PATH}
-  #     - ERROR_FILE_PATH=${ERROR_FILE_PATH}
-  #     - LOG_FILE_MAX_SIZE=${LOG_FILE_MAX_SIZE}
-  #     - BCRYPT_SALT_ROUND=${BCRYPT_SALT_ROUND}
-  #     - JWT_SECRET=${JWT_SECRET}
-  #     - JWT_EXPIRE_TIME=${JWT_EXPIRE_TIME}
-  #     - JWT_SECRET_REFRESH_KEY=${JWT_SECRET_REFRESH_KEY}
-  #     - JWT_REFRESH_EXPIRE_TIME=${JWT_REFRESH_EXPIRE_TIME}
-  #   ports:
-  #     - ${PORT}:${PORT}
-  #   depends_on:
-  #     db:
-  #       condition: service_healthy
-  #   networks:
-  #     - my_network
-  #   volumes:
-  #     - ./logs:/app/logs
-  #     - ./src:/app/src
-  #     - ./prisma:/app/prisma
-
-  # pgadmin:
-  #   image: dpage/pgadmin4
-  #   restart: on-failure
-  #   container_name: pgadmin4
-  #   environment:
-  #     - PGADMIN_DEFAULT_EMAIL=${PGADMIN_DEFAULT_EMAIL}
-  #     - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_DEFAULT_PASSWORD}
-  #     - PGADMIN_LISTEN_PORT=80
-  #   ports:
-  #     - '8080:80'
-  #   volumes:
-  #     - pgadmin:/var/lib/pgadmin
-  #   depends_on:
-  #     db:
-  #       condition: service_healthy
-  #   networks:
-  #     - my_network
-
 volumes:
   pg-data:
   pg-log:
-  # pgadmin:
 
 networks:
   my_network:
