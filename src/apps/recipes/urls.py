@@ -19,13 +19,13 @@ urlpatterns = [
         RecipeViewSet.as_view({"get": "list_draft_recipes"}),
         name="drafts",
     ),
-    path(
-        "recipe/drafts/<slug:slug>/",
-        RecipeViewSet.as_view(
-            {"patch": "update", "get": "retrieve", "delete": "destroy"}
-        ),
-        name="drafts",
-    ),
+    # path(
+    #     "recipe/drafts/<slug:slug>/",
+    #     RecipeViewSet.as_view(
+    #         {"patch": "update", "get": "retrieve", "delete": "destroy"}
+    #     ),
+    #     name="drafts",
+    # ),
     path(
         "recipe/drafts/<slug:slug>/publicate/",
         RecipeViewSet.as_view({"post": "publicate_recipe"}),
