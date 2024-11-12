@@ -311,7 +311,9 @@ class TestCommentUrls:
         [PUT] http://127.0.0.1:8000/api/v1/recipe/{slug}/comments/{id}/
         """
         with mock.patch("django.utils.timezone.now") as mock_now:
-            test_pub_date = datetime.datetime.now() - datetime.timedelta(hours=25)
+            test_pub_date = datetime.datetime.now(
+                datetime.timezone.utc
+            ) - datetime.timedelta(hours=25)
             mock_now.return_value = dateparse.parse_datetime(str(test_pub_date))
             new_comment = Comment.objects.create(
                 recipe=new_recipe, text="Test_comment_on_recipe", author=new_user
