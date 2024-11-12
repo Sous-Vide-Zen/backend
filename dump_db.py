@@ -17,7 +17,10 @@ def save_fixtures(app_name):
         os.makedirs(fixture_dir)
 
     call_command(
-        "dumpdata", app_name, output=os.path.join(fixture_dir, fixture_filename)
+        "dumpdata",
+        "--indent=4",
+        app_name,
+        output=os.path.join(fixture_dir, fixture_filename),
     )
 
 
