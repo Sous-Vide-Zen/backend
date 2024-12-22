@@ -37,3 +37,13 @@ create-superuser:
 .PHONY: loaddata-linux
 loaddata-linux:
 	${EXEC} ${APP_CONTAINER} ${MANAGE_PY} loaddata $(ls -d -1 "$PWD/"src/fixtures/**)
+
+
+# Keycloak
+.PHONY: keycloak-start
+keycloak-start:
+	$(DC) -f $(DOCKER_COMPOSE_FILE) up --build keycloak
+
+.PHONY: keycloak-stop
+keycloak-stop:
+	$(DC) -f $(DOCKER_COMPOSE_FILE) down keycloak
