@@ -2,8 +2,6 @@ from datetime import timedelta
 from pathlib import Path
 
 from decouple import config
-from django.urls import reverse
-from rest_framework.reverse import reverse_lazy
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
