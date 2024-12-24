@@ -64,8 +64,8 @@ docker run -p 8000:8000 svz-back
 <h3>By Docker Compose</h3>
 <ol>
 <li>
-Use need to install Docker and Makefile(if use windows) 
-<a href="https://ftp.gnu.org/gnu/make/">Install page for Makefile</a>
+You need to make sure that Docker and Makefile are installed.
+<a href="https://ftp.gnu.org/gnu/make/">Install page for Makefile(windows)</a>
 and 
 <a href="https://medium.com/@samsorrahman/how-to-run-a-makefile-in-windows-b4d115d7c516">Example Tutorial</a>
 </li>
