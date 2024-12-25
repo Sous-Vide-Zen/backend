@@ -1,6 +1,8 @@
-import pytest
 from collections import OrderedDict
 
+import pytest
+
+from src.apps.recipes.models import Recipe
 from src.base.code_text import (
     PAGE_NOT_FOUND,
     CANT_ADD_TWO_SIMILAR_INGREDIENT,
@@ -293,3 +295,62 @@ class TestRecipeUrls:
 
         assert response.status_code == 204
         assert response.data == RECIPE_SUCCESSFUL_DELETE
+
+    def test_repost_recipe(self, api_client, new_author, new_recipe):
+        """
+        Test reposting a recipe successfully.
+        [POST] http://127.0.0.1:8000/api/v1/recipe/{slug}/repost/
+        """
+        api_client.force_authenticate(user=new_author)
+
+        response = api_client.post(f"/api/v1/recipe/{new_recipe.slug}/repost/")
+
+        assert response.status_code == 201
+        assert response.data == {"detail": "Рецепт успешно добавлен на вашу страницу."}
+
+        # Verify reposted recipe exists
+        reposted_recipe = Recipe.objects.filter(
+            author=new_author, is_repost=True, slug__startswith=new_recipe.slug
+        ).first()
+        assert reposted_recipe is not None
+        assert reposted_recipe.title == new_recipe.title
+        assert reposted_recipe.author == new_author
+        assert reposted_recipe.is_repost is True
+
+    def test_repost_already_reposted_recipe(self, api_client, new_author, new_recipe):
+        """
+        Test reposting a recipe that has already been reposted.
+        [POST] http://127.0..1:8000/api/v1/recipe/{slug}/repost/
+        """
+        api_client.force_authenticate(user=new_author)
+
+        # First repost
+        api_client.post(f"/api/v1/recipe/{new_recipe.slug}/repost/")
+
+        # Attempt to repost again
+        response = api_client.post(f"/api/v1/recipe/{new_recipe.slug}/repost/")
+
+        assert response.status_code == 400
+        assert response.data == {"detail": "Вы уже поделились этим рецептом."}
+
+    def test_repost_recipe_unauthenticated(self, api_client, new_recipe):
+        """
+        Test reposting a recipe without authentication.
+        [POST] http://127.0.0.1:8000/api/v1/recipe/{slug}/repost/
+        """
+        response = api_client.post(f"/api/v1/recipe/{new_recipe.slug}/repost/")
+
+        assert response.status_code == 401
+        assert response.data == {"detail": "Учетные данные не были предоставлены."}
+
+    def test_repost_nonexistent_recipe(self, api_client, new_author):
+        """
+        Test reposting a non-existent recipe.
+        [POST] http://127.0.0.1:8000/api/v1/recipe/{slug}/repost/
+        """
+        api_client.force_authenticate(user=new_author)
+
+        response = api_client.post("/api/v1/recipe/nonexistent-slug/repost/")
+
+        assert response.status_code == 404
+        assert response.data == {"detail": "Страница не найдена."}

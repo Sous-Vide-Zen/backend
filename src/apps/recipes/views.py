@@ -1,3 +1,5 @@
+from uuid import uuid4
+
 from django.db.models import Count
 from django.shortcuts import get_object_or_404
 from rest_framework import status
@@ -13,6 +15,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
+from src.apps.favorite.models import Favorite
+from src.apps.view.models import ViewRecipes
 from src.base.code_text import (
     RECIPE_SUCCESSFUL_DELETE,
     RECIPE_ALREADY_IN_FAVORITES,
@@ -22,8 +26,6 @@ from src.base.code_text import (
     RECIPE_REMOVED_FROM_FAVORITES,
     LIST_OF_FAVORITES_IS_EMPTY,
 )
-from src.apps.favorite.models import Favorite
-from src.apps.view.models import ViewRecipes
 from src.base.paginators import FeedPagination
 from src.base.permissions import IsOwnerOrStaffOrReadOnly
 from src.base.services import increment_view_count
@@ -153,4 +155,47 @@ class RecipeViewSet(
         return Response(
             status=status.HTTP_204_NO_CONTENT,
             data=RECIPE_REMOVED_FROM_FAVORITES,
+        )
+
+    @action(
+        detail=True,
+        methods=["post"],
+        url_path="repost",
+    )
+    def repost(self, request, slug=None):
+        if not request.user.is_authenticated:
+            return Response(
+                {"detail": "Учетные данные не были предоставлены."},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+
+        original_recipe = get_object_or_404(Recipe, slug=slug)
+
+        if Recipe.objects.filter(
+            author=request.user, is_repost=True, slug__startswith=original_recipe.slug
+        ).exists():
+            return Response(
+                {"detail": "Вы уже поделились этим рецептом."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        new_slug = f"{original_recipe.slug}-{uuid4().hex[:8]}"
+        reposted_recipe = Recipe.objects.create(
+            author=request.user,
+            title=original_recipe.title,
+            slug=new_slug,
+            full_text=original_recipe.full_text,
+            short_text=original_recipe.short_text,
+            preview_image=original_recipe.preview_image,
+            cooking_time=original_recipe.cooking_time,
+            is_repost=True,
+        )
+
+        reposted_recipe.ingredients.set(original_recipe.ingredients.all())
+        reposted_recipe.category.set(original_recipe.category.all())
+        reposted_recipe.tag.set(original_recipe.tag.all())
+
+        return Response(
+            {"detail": "Рецепт успешно добавлен на вашу страницу."},
+            status=status.HTTP_201_CREATED,
         )
