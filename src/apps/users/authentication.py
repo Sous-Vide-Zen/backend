@@ -10,7 +10,7 @@ User = get_user_model()
 class CustomOIDCAuthenticationBackend(OIDCAuthenticationBackend):
     """
     Аутентификация, через OIDC + создание и обновление пользователя в БД.
-    В claims получаем данные пользователя из keycloak token и сверяем с данными в БД
+    В claims получаем данные пользователя из keycloak token и сверяем с данными в БД.
     """
 
     def get_username(self, claims):

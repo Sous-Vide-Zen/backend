@@ -84,19 +84,19 @@ make start
 </li>
 <li>Connecting keycloak<br>
     - Open page <a href="http://localhost:8080">keycloak localhost</a> and pass login: admin, password: admin<br>
-    - Create new client, set access urls mask to 'http://localhost:8000/*'<br>
-    - Add client secret key to config/.env<br>
+    - Create a new client, set access urls mask to 'http://localhost:8000/*'<br>
+    - Add client secret and client id key to config/.env<br>
     - Allow registration in realms settings
 </li>
 <li>Auth with keycloak<br>
-    - Restart docker compose with command
+    - Open page <a href="http://localhost:8000/api/v1/oids/authenticate/">Auth page</a> and create a new user or log in by admin<br>
+</li>
+<h4>If you set new a client id and a client secret key you need to restart the docker compose file</h4>    
+- Restart docker compose with command
 
 ```shell
 make start
 ```
-<br>
-    - Open page <a href="http://localhost:8000/api/v1/oids/authenticate/">Auth page</a> and create a new user or log in by admin<br>
-</li>
 </ol>
 
 
