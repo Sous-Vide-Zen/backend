@@ -36,17 +36,17 @@ def validate_avatar_size(value: Any) -> None:
         )
 
 
-def validate_recipe_publishing(instance: Model, attr: dict, serializer: Model) -> None:
+def validate_recipe_publishing(instance: Model, serializer: Model) -> None:
     errors = []
-    title = instance.title
-    if "черновик" in title.lower():
+    initial_data = serializer.initial_data
+    serializer.initial_data["title"] = initial_data.get('title', instance.title)
+    serializer.initial_data["full_text"] = initial_data.get('full_text', instance.full_text)
+    serializer.initial_data["cooking_time"] = initial_data.get('cooking_time', instance.cooking_time)
+    ingredients = serializer.initial_data.get("ingredients", instance.ingredients.all())
+    if "черновик" in serializer.initial_data.get("title").lower():
         errors.append(ENTER_RECIPE_NAME_BEFORE_PUBLISHING)
-    if not instance.ingredients.all():
+    if not ingredients:
         errors.append(ENTER_INGREDIENTS_BEFORE_PUBLISHING)
-    serializer.initial_data["title"] = title
-    serializer.initial_data["full_text"] = instance.full_text
-    serializer.initial_data["cooking_time"] = instance.cooking_time
-
     try:
         serializer.is_valid(raise_exception=True)
     except ValidationError as error:

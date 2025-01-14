@@ -86,7 +86,7 @@ class RecipeViewSet(
         return queryset
 
     def get_permissions(self):
-        if self.request.method == "POST" or "favorites" in self.request.path:
+        if self.request.method == "POST" or "favorite" or "drafts" in self.request.path:
             self.permission_classes = (IsAuthenticated,)
         else:
             self.permission_classes = (IsOwnerOrStaffOrReadOnly,)
@@ -149,10 +149,9 @@ class RecipeViewSet(
     def publicate_recipe(self, request, *args, **kwargs):
         recipe = self.get_object()
         serializer = self.get_serializer(recipe, data=request.data, partial=False)
-        validate_recipe_publishing(recipe, request.data, serializer)
+        validate_recipe_publishing(recipe, serializer)
         if "slug" not in request.data:
             recipe.slug = create_recipe_slug(Recipe, request.data)["slug"]
-
         recipe.published = True
         recipe.save()
         self.perform_update(serializer)
