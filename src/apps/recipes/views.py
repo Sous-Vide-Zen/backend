@@ -86,7 +86,11 @@ class RecipeViewSet(
         return queryset
 
     def get_permissions(self):
-        if self.request.method == "POST" or "favorite" or "drafts" in self.request.path:
+        if (
+            self.request.method == "POST"
+            or "favorite" in self.request.path
+            or "drafts" in self.request.path
+        ):
             self.permission_classes = (IsAuthenticated,)
         else:
             self.permission_classes = (IsOwnerOrStaffOrReadOnly,)

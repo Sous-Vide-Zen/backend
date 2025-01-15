@@ -224,13 +224,13 @@ class TestRecipeUrls:
     ):
         """
         Test for update draft recipe
-        [PATCH] http://127.0.0.1:8000/api/v1/recipe/drafts/{slug}/
+        [PATCH] http://127.0.0.1:8000/api/v1/recipe/{slug}/
         """
 
         api_client.force_authenticate(user=new_author)
 
         response = api_client.patch(
-            f"/api/v1/recipe/drafts/{draft_recipe.slug}/", recipe_data, format="json"
+            f"/api/v1/recipe/{draft_recipe.slug}/", recipe_data, format="json"
         )
 
         assert response.status_code == 200
@@ -291,7 +291,7 @@ class TestRecipeUrls:
 
         api_client.force_authenticate(user=new_author)
         response = api_client.patch(
-            f"/api/v1/recipe/drafts/{draft_recipe.slug}/", request_data, format="json"
+            f"/api/v1/recipe/{draft_recipe.slug}/", request_data, format="json"
         )
 
         request_data = {"slug": "varenye-iaitsa"}
@@ -300,7 +300,6 @@ class TestRecipeUrls:
             request_data,
             format="json",
         )
-
         assert response.status_code == 200
         assert response.data["slug"] == "varenye-iaitsa"
 
@@ -323,8 +322,9 @@ class TestRecipeUrls:
 
         api_client.force_authenticate(user=new_author)
         response = api_client.patch(
-            f"/api/v1/recipe/drafts/{draft_recipe.slug}/", request_data, format="json"
+            f"/api/v1/recipe/{draft_recipe.slug}/", request_data, format="json"
         )
+
         response = api_client.post(
             f"/api/v1/recipe/drafts/{draft_recipe.slug}/publicate/",
             format="json",
