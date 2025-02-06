@@ -46,10 +46,9 @@ def validate_recipe_publishing(instance: Model, serializer: Model) -> None:
     serializer.initial_data["cooking_time"] = initial_data.get(
         "cooking_time", instance.cooking_time
     )
-    ingredients = serializer.initial_data.get("ingredients", instance.ingredients.all())
     if "черновик" in serializer.initial_data.get("title").lower():
         errors.append(ENTER_RECIPE_NAME_BEFORE_PUBLISHING)
-    if not ingredients:
+    if not instance.ingredients.all():
         errors.append(ENTER_INGREDIENTS_BEFORE_PUBLISHING)
     try:
         serializer.is_valid(raise_exception=True)
@@ -211,15 +210,16 @@ def create_recipe_slug(model: Type[Model], data: dict, num: int = 1) -> dict:
     """Create recipe slug"""
 
     with transaction.atomic():
+        kwargs = {"published": True} if model.__name__ == "Recipe" else {}
         same_recipes: int = model.objects.filter(
-            published=True, title__startswith=data["title"]
+            **kwargs, title__startswith=data["title"]
         ).count()
         slug_str: str = unidecode(
             f"{data['title']}_{same_recipes + num}" if same_recipes else data["title"]
         )
         data["slug"]: str = slugify(slug_str)
 
-        if model.objects.filter(slug=data["slug"]).exists():
+        if model.objects.filter(**kwargs, slug=data["slug"]).exists():
             num += 1
             create_recipe_slug(model, data, num)
 

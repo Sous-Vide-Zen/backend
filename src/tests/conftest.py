@@ -121,6 +121,26 @@ def new_recipe(new_author, new_ingredient, new_unit):
 
 
 @pytest.fixture(scope="function")
+def new_recipe_for_publication(new_author, new_ingredient, new_unit):
+    """
+    Create new published recipe.
+    """
+
+    recipe = Recipe.objects.create(
+        author=new_author,
+        title="Test Recipe for publication",
+        slug=slugify("Test Recipe for publication"),
+        full_text="This is a test recipe full text.",
+        short_text="Test short text",
+        cooking_time=30,
+        pub_date=timezone.now(),
+        updated_at=timezone.now(),
+        published=False,
+    )
+    return recipe
+
+
+@pytest.fixture(scope="function")
 def new_ingredient():
     """
     Create new ingredient.
