@@ -2,6 +2,12 @@ import pytest
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 
+from src.base.code_text import (
+    HELP_TEXT_FOR_PASSWORD,
+    PASSWORD_MUST_CONTAIN_ONE_LOWERCASE,
+    PASSWORD_MUST_CONTAIN_ONE_UPPERCASE_LETTER,
+    PASSWORD_MUST_CONTAIN_ONE_NUMBER,
+)
 from src.base.validators import (
     CustomPasswordValidator,
     NoLowerCaseValidator,
@@ -43,19 +49,16 @@ def test_password_validators(password):
 @pytest.mark.parametrize(
     "validator_class, expected_help_text",
     [
-        (
-            CustomPasswordValidator,
-            "Пароль должен состоять не менее чем из 8 символов: минимум с одной прописной (a-z) и одной заглавной буквой (A-Z), минимум с одной цифрой (0-9) и одним специальным символом (!@#$%^&*).",
-        ),
+        (CustomPasswordValidator, HELP_TEXT_FOR_PASSWORD),
         (
             NoLowerCaseValidator,
-            "Пароль должен содержать хотя бы одну строчную букву (a-z, а-я).",
+            PASSWORD_MUST_CONTAIN_ONE_LOWERCASE,
         ),
         (
             NoUpperCaseValidator,
-            "Пароль должен содержать хотя бы одну заглавную букву (A-Z, А-Я).",
+            PASSWORD_MUST_CONTAIN_ONE_UPPERCASE_LETTER,
         ),
-        (NoNumbersValidator, "Пароль должен содержать хотя бы одну цифру (0-9)."),
+        (NoNumbersValidator, PASSWORD_MUST_CONTAIN_ONE_NUMBER),
     ],
 )
 def test_validator_help_texts(validator_class, expected_help_text):

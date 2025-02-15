@@ -1,3 +1,23 @@
+# Validators
+SPECIAL_SYMBOLS: str = "[!@#$%^&*]_"
+PASSWORD_MUST_CONTAIN_SPECIAL_CHARACTER: str = (
+    f"Пароль должен содержать хотя бы один специальный символ ({SPECIAL_SYMBOLS})."
+)
+HELP_TEXT_FOR_PASSWORD: str = (
+    "Пароль должен состоять не менее чем из 8 символов:"
+    " минимум с одной прописной (a-z) и одной заглавной буквой (A-Z),"
+    f" минимум с одной цифрой (0-9) и одним специальным символом ({SPECIAL_SYMBOLS})."
+)
+PASSWORD_MUST_CONTAIN_ONE_LOWERCASE: str = (
+    "Пароль должен содержать хотя бы одну строчную букву (a-z, а-я)."
+)
+PASSWORD_MUST_CONTAIN_ONE_UPPERCASE_LETTER: str = (
+    "Пароль должен содержать хотя бы одну заглавную букву (A-Z, А-Я)."
+)
+PASSWORD_MUST_CONTAIN_ONE_NUMBER: str = (
+    "Пароль должен содержать хотя бы одну цифру (0-9)."
+)
+
 # Base
 PAGE_NOT_FOUND: dict = {"detail": "Страница не найдена."}
 CREDENTIALS_WERE_NOT_PROVIDED: dict = {
