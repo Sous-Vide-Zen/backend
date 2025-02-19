@@ -1,6 +1,3 @@
-import re
-from uuid import UUID
-
 from django.db import transaction
 from django.contrib.contenttypes.models import ContentType
 from django.shortcuts import get_object_or_404
@@ -23,6 +20,7 @@ from src.base.code_text import (
     ALREADY_RATED_THIS_COMMENT,
     SUCCESSFUL_RATED_COMMENT,
 )
+from src.base.services import extract_original_slug
 from src.base.throttling import ScopedOnePerThreeSecsThrottle
 from src.apps.reactions.models import Reaction
 from src.apps.reactions.serializers import (
@@ -78,14 +76,6 @@ class ReactionViewSet(
         serializer = serializer(instance, context={"request": request})
         return Response(serializer.data)
 
-    def extract_original_slug(self, slug):
-        parts = slug.split("-")
-        if len(parts) > 1:
-            last_part = parts[-1]
-            if re.match(r"^[a-f0-9]{8}$", last_part):
-                return "-".join(parts[:-1])
-        return slug
-
     @transaction.atomic
     def create(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -95,47 +85,39 @@ class ReactionViewSet(
         serializer.is_valid(raise_exception=True)
 
         if isinstance(instance, Recipe) and instance.is_repost:
-            original_slug = self.extract_original_slug(instance.slug)
+            original_slug = extract_original_slug(instance.slug)
             try:
                 original_recipe = Recipe.objects.get(
                     slug=original_slug, is_repost=False
-                )
-                content_type_original = ContentType.objects.get_for_model(
-                    original_recipe
                 )
                 Reaction.objects.get_or_create(
                     emoji=serializer.validated_data["emoji"],
                     author=self.request.user,
                     object_id=original_recipe.id,
-                    content_type=content_type_original,
+                    content_type=content_type,
                     defaults={"is_deleted": False},
                 )
-                Reaction.objects.get_or_create(
-                    emoji=serializer.validated_data["emoji"],
-                    author=self.request.user,
-                    object_id=instance.id,
-                    content_type=content_type_original,
-                    defaults={"is_deleted": False},
-                )
+
             except Recipe.DoesNotExist:
                 print("Recipe DoesNotExist")
                 pass
-        else:
-            reaction, created = Reaction.objects.get_or_create(
-                emoji=serializer.data["emoji"],
-                author=self.request.user,
-                object_id=instance.id,
-                content_type=content_type,
-            )
 
-            if not created and not reaction.is_deleted:
-                return Response(
-                    REACTION_ALREADY_SET,
-                    status=status.HTTP_403_FORBIDDEN,
-                )
-            if reaction.is_deleted:
-                reaction.is_deleted = False
-                reaction.save()
+        reaction, created = Reaction.objects.get_or_create(
+            emoji=serializer.validated_data["emoji"],
+            author=self.request.user,
+            object_id=instance.id,
+            content_type=content_type,
+            defaults={"is_deleted": False},
+        )
+
+        if not created and not reaction.is_deleted:
+            return Response(
+                REACTION_ALREADY_SET,
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        if reaction.is_deleted:
+            reaction.is_deleted = False
+            reaction.save()
 
         return Response(SUCCESSFUL_RATED_IT, status=status.HTTP_201_CREATED)
 

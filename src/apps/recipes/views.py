@@ -236,11 +236,6 @@ class RecipeViewSet(
         url_path="repost",
     )
     def repost(self, request, slug=None):
-        if not request.user.is_authenticated:
-            return Response(
-                {"detail": "Учетные данные не были предоставлены."},
-                status=status.HTTP_401_UNAUTHORIZED,
-            )
 
         original_recipe = get_object_or_404(Recipe, slug=slug)
 
@@ -253,20 +248,14 @@ class RecipeViewSet(
             )
 
         new_slug = f"{original_recipe.slug}-{uuid4().hex[:8]}"
-        reposted_recipe = Recipe.objects.create(
-            author=request.user,
-            title=original_recipe.title,
-            slug=new_slug,
-            full_text=original_recipe.full_text,
-            short_text=original_recipe.short_text,
-            preview_image=original_recipe.preview_image,
-            cooking_time=original_recipe.cooking_time,
-            is_repost=True,
-        )
+        reposted_recipe = original_recipe
+        reposted_recipe.pk = None
+        reposted_recipe._state.adding = True
+        kwargs = {"author": request.user, "slug": new_slug, "is_repost": True}
+        for key in kwargs:
+            setattr(reposted_recipe, key, kwargs[key])
 
-        reposted_recipe.ingredients.set(original_recipe.ingredients.all())
-        reposted_recipe.category.set(original_recipe.category.all())
-        reposted_recipe.tag.set(original_recipe.tag.all())
+        reposted_recipe.save()
 
         return Response(
             {"detail": "Рецепт успешно добавлен на вашу страницу."},

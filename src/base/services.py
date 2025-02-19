@@ -1,3 +1,4 @@
+import re
 from datetime import timedelta
 from typing import List, Any, Set
 
@@ -289,3 +290,12 @@ def get_or_none(instance: Model, **kwargs):
         return instance.objects.get(**kwargs)
     except instance.DoesNotExist:
         return None
+
+
+def extract_original_slug(slug):
+    parts = slug.split("-")
+    if len(parts) > 1:
+        last_part = parts[-1]
+        if re.match(r"^[a-f0-9]{8}$", last_part):
+            return "-".join(parts[:-1])
+    return slug
