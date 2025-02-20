@@ -83,7 +83,7 @@ class CustomUser(AbstractUser, PermissionsMixin):
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ["username"]
     username = CharField(max_length=50, unique=True, blank=True, null=True)
-    email = EmailField(max_length=150, unique=True)
+    email = EmailField(max_length=150, unique=True, null=True)
     display_name = CharField(max_length=30, blank=True, null=True)
     phone = PhoneNumberField(blank=True, null=True)
     country = CharField(

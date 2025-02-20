@@ -4,7 +4,7 @@ from djoser.serializers import UserCreateSerializer
 from django.contrib.auth.password_validation import validate_password
 
 from .models import CustomUser
-from src.base.code_text import PASSWORDS_ARE_NOT_SIMILAR
+from src.base.code_text import PASSWORDS_ARE_NOT_SIMILAR, EMAIL_IS_A_REQUIRED_FIELD
 
 
 class CustomUserCreateSerializer(UserCreateSerializer):
@@ -22,6 +22,11 @@ class CustomUserCreateSerializer(UserCreateSerializer):
         fields = ["id", "email", "username", "password", "password2"]
 
     def validate(self, attrs):
+        if "email" not in attrs:
+            raise serializers.ValidationError(
+                EMAIL_IS_A_REQUIRED_FIELD, code="required_field"
+            )
+
         validate_password(attrs["password"])
         if attrs["password"] != attrs["password2"]:
             raise serializers.ValidationError(

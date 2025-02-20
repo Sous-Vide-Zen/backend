@@ -41,6 +41,7 @@ SUCCESSFUL_APPRECIATED_COMMENT: dict = {"message": "Вы оценили комм
 # User status
 USER_DOES_NOT_EXIST: dict = {"detail": "Пользователь не существует."}
 PASSWORDS_ARE_NOT_SIMILAR: dict = {"password": "Пароли не совпадают!"}
+EMAIL_IS_A_REQUIRED_FIELD: dict = {"email": "Обязательное поле."}
 
 # Author status
 AUTHOR_IS_MISSING: dict = {"message": "Отсутствует автор."}
