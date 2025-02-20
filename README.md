@@ -69,7 +69,7 @@ Create and activate the virtual environment, install dependencies:
 ```shell
 python -m venv venv
 . venv/Scripts/activate
-pip install -r src/requirements.txt
+pip install -r src/requirements/requirements-dev.txt
 ```
 
 - Linux and macOS
@@ -77,25 +77,39 @@ pip install -r src/requirements.txt
 ```shell
 python3.11 -m venv venv
 . venv/bin/activate
-pip install -r src/requirements.txt
+pip install -r src/requirements/requirements-dev.txt
 ```
+Now the application settings are divided into product and local. In order to use local settings, you need to create a file local_settings.py in the config/settings/ directory. An example of the file contents:
 
-Navigate to the config directory
+```python
+from pathlib import Path
 
-```shell
-cd config/
+DEBUG = True
+
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
+
+ALLOWED_HOSTS = ["localhost", "127.0.0.1", "0.0.0.0"]
+
+DATABASES = {
+    "default": {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": BASE_DIR / "db.sqlite3",
+    }
+}
+
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+
+SOCIAL_AUTH_VK_OAUTH2_KEY = "Your VK OAuth 2.0 key"
+SOCIAL_AUTH_VK_OAUTH2_SECRET = "Your VK OAuth 2.0 secret"
+SOCIAL_AUTH_YANDEX_OAUTH2_KEY = "Your Yandex OAuth 2.0 key"
+SOCIAL_AUTH_YANDEX_OAUTH2_SECRET = "Your Yandex OAuth 2.0 secret"
+
+CORS_ALLOW_ALL_ORIGINS = True
 ```
-
-Create an env file and, if necessary, fill it with your variables or use default values.
+Create an env file and, if necessary, fill it with your variables or use default values.(This step can be skipped for local deployment)
 
 ```shell
 cp .env.example .env
-```
-
-Return to the project directory:
-
-```shell
-cd ..
 ```
 
 Launch a project:
