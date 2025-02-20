@@ -1,8 +1,9 @@
 from datetime import datetime, timedelta
+
 import pytest
+from django.conf import settings
 from django.utils.timezone import make_aware
 
-from config.settings import ACTIVITY_INTERVAL
 from src.apps.comments.models import Comment
 from src.apps.reactions.models import Reaction
 from src.apps.view.models import ViewRecipes
@@ -32,7 +33,7 @@ class TestFeedResponseFields:
 
         for reaction in old_reaction:
             reaction.pub_date = make_aware(
-                datetime.now() - timedelta(days=ACTIVITY_INTERVAL + 1)
+                datetime.now() - timedelta(days=settings.ACTIVITY_INTERVAL + 1)
             )
 
         Reaction.objects.bulk_update(old_reaction, ["pub_date"], batch_size=100)
@@ -49,7 +50,7 @@ class TestFeedResponseFields:
 
         for view in old_view:
             view.created_at = make_aware(
-                datetime.now() - timedelta(days=ACTIVITY_INTERVAL + 1)
+                datetime.now() - timedelta(days=settings.ACTIVITY_INTERVAL + 1)
             )
 
         ViewRecipes.objects.bulk_update(old_view, ["created_at"], batch_size=100)
@@ -63,12 +64,14 @@ class TestFeedResponseFields:
         old_comment = CommentFactory.create_batch(
             self.NUM_OLD_ACTIVITY,
             recipe=new_recipe,
-            pub_date=make_aware(datetime.now() - timedelta(days=ACTIVITY_INTERVAL + 1)),
+            pub_date=make_aware(
+                datetime.now() - timedelta(days=settings.ACTIVITY_INTERVAL + 1)
+            ),
         )
 
         for comment in old_comment:
             comment.pub_date = make_aware(
-                datetime.now() - timedelta(days=ACTIVITY_INTERVAL + 1)
+                datetime.now() - timedelta(days=settings.ACTIVITY_INTERVAL + 1)
             )
 
         Comment.objects.bulk_update(old_comment, ["pub_date"], batch_size=100)
