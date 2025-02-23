@@ -1,4 +1,5 @@
 from django.db import transaction
+from django.utils.timezone import now
 from uuid import uuid4
 
 from django.db.models import Count
@@ -146,19 +147,22 @@ class RecipeViewSet(
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
 
-        if recipe.published:
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        else:
-            return Response(DRAFT_SUCCESSFUL_UPDATE, status=status.HTTP_200_OK)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+        # if recipe.published:
+        #     return Response(serializer.data, status=status.HTTP_200_OK)
+        # else:
+        #     return Response(DRAFT_SUCCESSFUL_UPDATE, status=status.HTTP_200_OK)
 
     @transaction.atomic
     def publicate_recipe(self, request, *args, **kwargs):
         recipe = self.get_object()
-        serializer = self.get_serializer(recipe, data=request.data, partial=False)
+        serializer = self.get_serializer(recipe, partial=False)
         validate_recipe_publishing(recipe, serializer)
-        recipe.slug = create_recipe_slug(Recipe, request.data)["slug"]
+        recipe.slug = create_recipe_slug(Recipe, serializer.data)["slug"]
         recipe.published = True
+        recipe.pub_date = now()
         recipe.save()
+        serializer = RecipePublicateSerializer(recipe)
 
         return Response(serializer.data, status=status.HTTP_200_OK)
 

@@ -94,7 +94,6 @@ class TestRecipeSerializers:
             f"/api/v1/recipe/drafts/{new_recipe_for_publication.slug}/publicate/",
             format="json",
         )
-
         response.data.pop("pub_date")
         response.data.pop("updated_at")
 

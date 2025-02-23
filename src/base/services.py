@@ -39,22 +39,11 @@ def validate_avatar_size(value: Any) -> None:
 
 def validate_recipe_publishing(instance: Model, serializer: Model) -> None:
     errors = []
-    initial_data = serializer.initial_data
-    serializer.initial_data["title"] = initial_data.get("title", instance.title)
-    serializer.initial_data["full_text"] = initial_data.get(
-        "full_text", instance.full_text
-    )
-    serializer.initial_data["cooking_time"] = initial_data.get(
-        "cooking_time", instance.cooking_time
-    )
-    if "черновик" in serializer.initial_data.get("title").lower():
+    title = serializer.data.get("title", None)
+    if title and "черновик" in title.lower():
         errors.append(ENTER_RECIPE_NAME_BEFORE_PUBLISHING)
-    if not instance.ingredients.all():
+    if not serializer.data.get("ingredients", None):
         errors.append(ENTER_INGREDIENTS_BEFORE_PUBLISHING)
-    try:
-        serializer.is_valid(raise_exception=True)
-    except ValidationError as error:
-        errors.append(error.args)
     if errors:
         raise ValidationError(errors)
 
@@ -218,9 +207,11 @@ def create_recipe_slug(model: Type[Model], data: dict, num: int = 1) -> dict:
         slug_str: str = unidecode(
             f"{data['title']}_{same_recipes + num}" if same_recipes else data["title"]
         )
-        data["slug"]: str = slugify(slug_str)
+        data["slug"]: str = (
+            f"{slugify(slug_str)}_{num}" if num > 1 else slugify(slug_str)
+        )
 
-        if model.objects.filter(**kwargs, slug=data["slug"]).exists():
+        if model.objects.filter(slug=data["slug"]).exists():
             num += 1
             create_recipe_slug(model, data, num)
 
