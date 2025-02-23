@@ -438,12 +438,12 @@ class TestRecipeUrls:
         assert response.status_code == 204
         assert response.data == RECIPE_SUCCESSFUL_DELETE
 
-    def test_repost_recipe(self, api_client, new_author, new_recipe):
+    def test_repost_recipe(self, api_client, new_user, new_recipe):
         """
         Test reposting a recipe successfully.
         [POST] http://127.0.0.1:8000/api/v1/recipe/{slug}/repost/
         """
-        api_client.force_authenticate(user=new_author)
+        api_client.force_authenticate(user=new_user)
 
         response = api_client.post(f"/api/v1/recipe/{new_recipe.slug}/repost/")
 
@@ -452,19 +452,19 @@ class TestRecipeUrls:
 
         # Verify reposted recipe exists
         reposted_recipe = Recipe.objects.filter(
-            author=new_author, is_repost=True, slug__startswith=new_recipe.slug
+            author=new_user, is_repost=True, original_recipe=new_recipe
         ).first()
         assert reposted_recipe is not None
         assert reposted_recipe.title == new_recipe.title
-        assert reposted_recipe.author == new_author
+        assert reposted_recipe.author == new_user
         assert reposted_recipe.is_repost is True
 
-    def test_repost_already_reposted_recipe(self, api_client, new_author, new_recipe):
+    def test_repost_already_reposted_recipe(self, api_client, new_user, new_recipe):
         """
         Test reposting a recipe that has already been reposted.
         [POST] http://127.0..1:8000/api/v1/recipe/{slug}/repost/
         """
-        api_client.force_authenticate(user=new_author)
+        api_client.force_authenticate(user=new_user)
 
         # First repost
         api_client.post(f"/api/v1/recipe/{new_recipe.slug}/repost/")

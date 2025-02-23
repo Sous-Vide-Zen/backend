@@ -33,6 +33,7 @@ class Recipe(models.Model):
     • reactions (GenericRelation): reactions on a recipe.
     • is_repost (BooleanField): indicates whether recipe was reposted. Default False.
     • published (BooleanField): indicates whether recipe was published or it's a draft (if False).
+    • original_recipe (ForeignKey): original recipe.
 
     """
 
@@ -69,6 +70,14 @@ class Recipe(models.Model):
     reactions = GenericRelation(Reaction, related_query_name="recipe_reactions")
     is_repost = models.BooleanField(default=False)
     published = models.BooleanField(default=False)
+    original_recipe = models.ForeignKey(
+        "self",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="reposts",
+        db_index=True,
+    )
 
     class Meta:
         index_together = ["title", "slug"]

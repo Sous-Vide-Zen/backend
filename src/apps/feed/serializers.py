@@ -11,12 +11,14 @@ class FeedSerializer(BaseRecipeListSerializer):
     activity_count = IntegerField()
     category = CategorySerializer(many=True, required=False)
     is_favorite = SerializerMethodField()
+    reposts_count = IntegerField()
 
     class Meta(BaseRecipeListSerializer.Meta):
         fields = BaseRecipeListSerializer.Meta.fields + (
             "category",
             "activity_count",
             "is_favorite",
+            "reposts_count",
         )
 
     def get_is_favorite(self, instance):

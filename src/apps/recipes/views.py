@@ -2,6 +2,7 @@ from django.db import transaction
 from uuid import uuid4
 
 from django.db.models import Count
+from django.forms.models import model_to_dict
 from django.shortcuts import get_object_or_404
 
 from rest_framework import status
@@ -239,8 +240,14 @@ class RecipeViewSet(
 
         original_recipe = get_object_or_404(Recipe, slug=slug)
 
+        if request.user == original_recipe.author:
+            return Response(
+                {"detail": "Вы не можете поделиться своим рецептом."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         if Recipe.objects.filter(
-            author=request.user, is_repost=True, slug__startswith=original_recipe.slug
+            author=request.user, original_recipe=original_recipe, is_repost=True
         ).exists():
             return Response(
                 {"detail": "Вы уже поделились этим рецептом."},
@@ -248,14 +255,36 @@ class RecipeViewSet(
             )
 
         new_slug = f"{original_recipe.slug}-{uuid4().hex[:8]}"
-        reposted_recipe = original_recipe
-        reposted_recipe.pk = None
-        reposted_recipe._state.adding = True
-        kwargs = {"author": request.user, "slug": new_slug, "is_repost": True}
-        for key in kwargs:
-            setattr(reposted_recipe, key, kwargs[key])
+        recipe_data = model_to_dict(
+            original_recipe,
+            exclude=[
+                "id",
+                "pk",
+                "slug",
+                "author",
+                "is_repost",
+                "original_recipe",
+                "ingredients",
+                "category",
+                "tag",
+            ],
+        )
 
-        reposted_recipe.save()
+        # Создаем новый рецепт
+        reposted_recipe = Recipe.objects.create(
+            **recipe_data,
+            slug=new_slug,
+            author=request.user,
+            is_repost=True,
+            original_recipe=original_recipe,
+        )
+
+        # Копируем ManyToManyField вручную
+        reposted_recipe.ingredients.set(original_recipe.ingredients.all())
+        reposted_recipe.category.set(original_recipe.category.all())
+
+        # Копируем теги (TaggableManager)
+        reposted_recipe.tag.set(original_recipe.tag.all())
 
         return Response(
             {"detail": "Рецепт успешно добавлен на вашу страницу."},

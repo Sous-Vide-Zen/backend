@@ -92,9 +92,11 @@ class FeedUserList(mixins.ListModelMixin, viewsets.GenericViewSet):
                 comments_count=Count("comments", distinct=True),
                 views_count=Count("views", distinct=True),
                 reactions_count=Count("reactions", distinct=True),
+                reposts_count=Count("reposts", distinct=True),
                 activity_count=F("latest_comments_count")
                 + F("latest_views_count")
-                + F("latest_reactions_count"),
+                + F("latest_reactions_count")
+                + F("reposts_count"),
             )
         )
         return queryset
