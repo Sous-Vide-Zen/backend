@@ -21,9 +21,9 @@ class UserFactory(DjangoModelFactory):
     class Meta:
         model = User
 
-    email = Faker("email")
-    password = Faker("password")
-    username = Faker("user_name")
+    email = Sequence(lambda n: f"email_user_{n}@mail.ru")
+    password = Sequence(lambda n: f"password_user_{n}")
+    username = Sequence(lambda n: f"username_{n}")
 
 
 class FollowFactory(DjangoModelFactory):

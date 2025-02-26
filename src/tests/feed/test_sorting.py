@@ -30,6 +30,7 @@ class TestFeedSorting:
                 full_text=full_text,
                 cooking_time=10,
                 slug=f"recipe-{i}",
+                published=True,
             )
             for j in range(i):
                 Comment.objects.create(

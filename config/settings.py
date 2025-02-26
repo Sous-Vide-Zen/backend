@@ -186,7 +186,8 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 
-STATIC_URL = "src/static/"
+STATIC_URL = "/static/"
+STATIC_ROOT = BASE_DIR / "src/static"
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "src/media"
@@ -251,6 +252,7 @@ USER_LIST_PAGE_SIZE = 10
 # Variables
 
 ACTIVITY_INTERVAL = 30
+DRAFTS_MAX_AMOUNT = 3
 
 # Shorthand
 
@@ -264,8 +266,3 @@ TIME_FROM_VIEW_RECIPE = 20
 # Regex for custom user
 
 REGEX = r"^[a-zA-Zа-яА-Я\s\-\‘\u00C0-\u017F]+$"
-
-# try:
-#     from .local_settings import *
-# except ImportError:
-#     pass

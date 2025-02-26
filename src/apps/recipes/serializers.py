@@ -1,7 +1,6 @@
 from datetime import timedelta
 
 from rest_framework.serializers import IntegerField
-from django.db import transaction
 from django.utils import timezone
 from rest_framework import serializers
 from rest_framework.exceptions import PermissionDenied
@@ -13,9 +12,7 @@ from config.settings import SHORT_RECIPE_SYMBOLS
 from src.apps.ingredients.serializers import IngredientInRecipeSerializer
 from src.apps.recipes.models import Recipe, Category
 from src.apps.users.serializers import AuthorInRecipeSerializer
-from src.base.code_text import (
-    RECIPE_CAN_BE_EDIT_WITHIN_FIRST_DAY,
-)
+from src.base.code_text import RECIPE_CAN_BE_EDIT_WITHIN_FIRST_DAY
 from src.base.services import (
     shorten_text,
     create_ingredients_in_recipe,
@@ -80,6 +77,21 @@ class TagSerializer(TagListSerializerField):
         return value
 
 
+class DraftSerializer(ModelSerializer):
+    """
+    Draft recipe serializer
+    """
+
+    draft_title = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Recipe
+        fields = ("draft_title", "id", "slug")
+
+    def get_draft_title(self, obj):
+        return f"{obj.title} от {obj.pub_date.date()}"
+
+
 class BaseRecipeSerializer(ModelSerializer):
     """
     Base recipe serializer
@@ -110,12 +122,8 @@ class BaseRecipeSerializer(ModelSerializer):
         """
         Validate data
         """
-
         if "full_text" in data:
             data["short_text"] = shorten_text(data["full_text"], SHORT_RECIPE_SYMBOLS)
-
-        if "title" in data:
-            data = create_recipe_slug(Recipe, data)
 
         return data
 
@@ -167,34 +175,15 @@ class RecipeRetrieveSerializer(BaseRecipeSerializer):
         )
 
 
-class RecipeCreateSerializer(BaseRecipeSerializer):
+class RecipePublicateSerializer(BaseRecipeSerializer):
     """
-    Create recipe serializer
+    Publicate recipe serializer
     """
+
+    ingredients = IngredientInRecipeSerializer(many=True, read_only=True)
 
     class Meta(BaseRecipeSerializer.Meta):
-        fields = BaseRecipeSerializer.Meta.fields
-
-    @transaction.atomic
-    def create(self, validated_data):
-        """Create recipe"""
-        tags_data = validated_data.pop("tag", [])
-        ingredients_data = self.initial_data["ingredients"]
-        validated_data.pop("ingredients", [])
-        category_data = validated_data.pop("category", [])
-
-        recipe = Recipe.objects.create(**validated_data)
-
-        if tags_data:
-            recipe.tag.set(tags_data)
-        if category_data:
-            recipe.category.set(category_data)
-
-        ingredients_instance = create_ingredients_in_recipe(recipe, ingredients_data)
-
-        if ingredients_instance:
-            recipe.ingredients.set(ingredients_instance)
-        return recipe
+        fields = BaseRecipeSerializer.Meta.fields + ("published",)
 
 
 class RecipeUpdateSerializer(BaseRecipeSerializer):
@@ -203,6 +192,7 @@ class RecipeUpdateSerializer(BaseRecipeSerializer):
     """
 
     slug = SlugField(read_only=True)
+    cooking_time = serializers.IntegerField(max_value=60 * 24, min_value=10)
 
     class Meta(BaseRecipeSerializer.Meta):
         fields = BaseRecipeSerializer.Meta.fields
@@ -211,10 +201,14 @@ class RecipeUpdateSerializer(BaseRecipeSerializer):
         """
         Update recipe
         """
-        if timezone.now() - instance.pub_date > timedelta(days=1):
+        if instance.published and timezone.now() - instance.pub_date > timedelta(
+            days=1
+        ):
             raise PermissionDenied(
                 RECIPE_CAN_BE_EDIT_WITHIN_FIRST_DAY, code="restriction_per_day"
             )
+        if instance.published and "title" in validated_data:
+            validated_data = create_recipe_slug(Recipe, validated_data)
 
         tags_data = validated_data.pop("tag", [])
         ingredients_data = (
