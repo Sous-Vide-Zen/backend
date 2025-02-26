@@ -54,87 +54,50 @@ class TestRecipeSerializers:
         serializer_data.pop("updated_at", None)
         assert serializer_data == recipe_data
 
-    def test_create_recipe_serializer(self, api_client, new_author, recipe_data):
+    def test_publicate_recipe_serializer(
+        self,
+        api_client,
+        new_author,
+        new_recipe_for_publication,
+        new_ingredient_in_recipe,
+    ):
         """
-        Test for create recipe
-        [POST] http://127.0.0.1:8000/api/v1/recipe/
+        Test for publicate recipe
+        [POST] http://127.0.0.1:8000/api/v1/recipe/drafts/{slug}/publicate/
         """
-        example_data = {
-            "title": "Delicious Recipe",
-            "slug": "delicious-recipe",
-            "preview_image": None,
-            "ingredients": [
-                {"name": "Water", "unit": "литр", "amount": 1},
-                {"name": "Сахар", "unit": "грамм", "amount": 500},
-            ],
-            "full_text": "Heat the oven to 180°C fan/gas 6. Separate the "
-            "leaves from the cauliflower and cut the florets "
-            "into 3-4cm chunks, spreading them out on a baking "
-            "tray as you work. Chop the central stalk into "
-            "similar sized chunks and add to the tray too. Strip "
-            "the leaves from their stems (reserving the leaves), "
-            "halve the stems and add them to the tray. Season, "
-            "drizzle with half the oil, then roast for 25 "
-            "minutes.",
-            "tag": ["Горячий", "вода", "сахар"],
-            "cooking_time": 30,
-            "category": [2],
-        }
+        new_recipe_for_publication.ingredients.add(new_ingredient_in_recipe)
+        new_recipe_for_publication.refresh_from_db()
 
         example_response = {
             "id": 1,
-            "title": "Delicious Recipe",
-            "slug": "delicious-recipe",
+            "title": "Test Recipe for publication",
+            "slug": "test-recipe-for-publication",
             "preview_image": None,
             "ingredients": [
-                {"name": "Water", "unit": "литр", "amount": 1},
-                {"name": "Сахар", "unit": "грамм", "amount": 500},
+                OrderedDict(
+                    [
+                        ("name", new_ingredient_in_recipe.ingredient.name),
+                        ("unit", new_ingredient_in_recipe.unit.name),
+                        ("amount", new_ingredient_in_recipe.amount),
+                    ]
+                )
             ],
-            "full_text": "Heat the oven to 180°C fan/gas 6. Separate the "
-            "leaves from the cauliflower and cut the florets "
-            "into 3-4cm chunks, spreading them out on a baking "
-            "tray as you work. Chop the central stalk into "
-            "similar sized chunks and add to the tray too. Strip "
-            "the leaves from their stems (reserving the leaves), "
-            "halve the stems and add them to the tray. Season, "
-            "drizzle with half the oil, then roast for 25 "
-            "minutes.",
-            "tag": [
-                {"name": "Горячий", "slug": "goriachii"},
-                {"name": "вода", "slug": "voda"},
-                {"name": "сахар", "slug": "sakhar"},
-            ],
-            "category": [2],
+            "full_text": """This is a test recipe full text.""",
+            "tag": [],
+            "category": [],
             "cooking_time": 30,
+            "published": True,
         }
 
         api_client.force_authenticate(user=new_author)
-        recipe = api_client.post("/api/v1/recipe/", example_data, format="json")
-        recipe.data.pop("pub_date")
-        recipe.data.pop("updated_at")
-
-        assert recipe.data["tag"]
-
-        recipe.data.pop("tag")
-        example_response.pop("tag")
-
-        assert recipe.data == example_response
-
-        # test min amount of ingredient
-        example_data["title"] = "Test Recipe"
-        example_data["slug"] = "test-recipe"
-        example_data["ingredients"][0]["amount"] = 0
-        recipe = api_client.post("/api/v1/recipe/", example_data, format="json")
-        assert (
-            recipe.data["ingredients"][0]["amount"]
-            == AMOUNT_OF_INGREDIENT_LESS_THAN_ONE
+        response = api_client.post(
+            f"/api/v1/recipe/drafts/{new_recipe_for_publication.slug}/publicate/",
+            format="json",
         )
+        response.data.pop("pub_date")
+        response.data.pop("updated_at")
 
-        # test max amount of ingredient
-        example_data["title"] = "Second Test Recipe"
-        example_data["ingredients"][0]["amount"] = 1001
-        recipe = api_client.post("/api/v1/recipe/", example_data, format="json")
-        assert recipe.data["ingredients"][0]["amount"] == MAX_COUNT_OF_INGREDIENT
+        assert response.data == example_response
 
     def test_update_recipe_serializer(self, api_client, new_author, new_recipe):
         """
@@ -160,7 +123,6 @@ class TestRecipeSerializers:
         }
 
         assert new_recipe.slug == "test-recipe"
-        print(example_data.get("title"))
 
         response = api_client.patch(
             f"{patch_url}", data=dict(title=example_data.get("title")), format="json"
@@ -207,6 +169,19 @@ class TestRecipeSerializers:
         assert (
             response_tags_set == expected_tags
         ), "Теги в ответе не соответствуют ожидаемым."
+
+        # test min amount of ingredient
+        example_data["ingredients"][0]["amount"] = 0
+        recipe = api_client.patch(f"{new_url}", example_data, format="json")
+        assert (
+            recipe.data["ingredients"][0]["amount"]
+            == AMOUNT_OF_INGREDIENT_LESS_THAN_ONE
+        )
+
+        # test max amount of ingredient
+        example_data["ingredients"][0]["amount"] = 1001
+        recipe = api_client.patch(f"{new_url}", example_data, format="json")
+        assert recipe.data["ingredients"][0]["amount"] == MAX_COUNT_OF_INGREDIENT
 
     def test_recipe_update_once_per_day(self, api_client, new_author, new_recipe):
         """

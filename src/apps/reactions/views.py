@@ -20,6 +20,7 @@ from src.base.code_text import (
     ALREADY_RATED_THIS_COMMENT,
     SUCCESSFUL_RATED_COMMENT,
 )
+from src.base.services import extract_original_slug
 from src.base.throttling import ScopedOnePerThreeSecsThrottle
 from src.apps.reactions.models import Reaction
 from src.apps.reactions.serializers import (
@@ -82,11 +83,31 @@ class ReactionViewSet(
         serializer = self.get_serializer_class()
         serializer = serializer(data=self.request.data)
         serializer.is_valid(raise_exception=True)
+
+        if isinstance(instance, Recipe) and instance.is_repost:
+            original_slug = extract_original_slug(instance.slug)
+            try:
+                original_recipe = Recipe.objects.get(
+                    slug=original_slug, is_repost=False
+                )
+                Reaction.objects.get_or_create(
+                    emoji=serializer.validated_data["emoji"],
+                    author=self.request.user,
+                    object_id=original_recipe.id,
+                    content_type=content_type,
+                    defaults={"is_deleted": False},
+                )
+
+            except Recipe.DoesNotExist:
+                print("Recipe DoesNotExist")
+                pass
+
         reaction, created = Reaction.objects.get_or_create(
-            emoji=serializer.data["emoji"],
+            emoji=serializer.validated_data["emoji"],
             author=self.request.user,
             object_id=instance.id,
             content_type=content_type,
+            defaults={"is_deleted": False},
         )
 
         if not created and not reaction.is_deleted:

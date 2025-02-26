@@ -1,12 +1,18 @@
-import pytest
 from collections import OrderedDict
 
+from src.apps.recipes.models import Recipe
+import pytest
+
+from src.apps.recipes.models import Recipe
 from src.base.code_text import (
+    AMOUNT_OF_DRAFTS_LESS_THAN_THREE,
     PAGE_NOT_FOUND,
     CANT_ADD_TWO_SIMILAR_INGREDIENT,
     CREDENTIALS_WERE_NOT_PROVIDED,
     DONT_HAVE_PERMISSIONS,
     RECIPE_SUCCESSFUL_DELETE,
+    NAME_OF_INGREDIENT_LESS_THAN_HUNDRED_SYMBLS,
+    ENTER_RECIPE_NAME_BEFORE_PUBLISHING,
 )
 
 
@@ -62,131 +68,151 @@ class TestRecipeUrls:
         assert client.get("/api/v1/recipe/not-found/").status_code == 404
         assert client.get("/api/v1/recipe/not-found/").data == PAGE_NOT_FOUND
 
-    def test_create_recipe(self, api_client, new_author, recipe_data):
+    def test_create_draft(self, api_client, new_author):
         """
-        Test for create recipe
+        Test for create draft recipe
         [POST] http://127.0.0.1:8000/api/v1/recipe/
         """
 
         api_client.force_authenticate(user=new_author)
+        assert list(Recipe.objects.all()) == []
 
-        assert (
-            api_client.post("/api/v1/recipe/", recipe_data, format="json").status_code
-            == 201
-        )
+        response = api_client.post("/api/v1/recipe/", format="json")
+        draft_recipe = Recipe.objects.all()[0]
+
+        assert response.status_code == 201
+        assert draft_recipe.published == False
+        assert draft_recipe.title == "Черновик"
+        assert draft_recipe.slug == f"{new_author.username}_chernovik_1"
+
+    def test_create_more_than_three_drafts(self, api_client, new_author):
+        """
+        Test for create more than three drafts of recipe
+        [POST] http://127.0.0.1:8000/api/v1/recipe/
+        """
+
+        api_client.force_authenticate(user=new_author)
+        assert list(Recipe.objects.all()) == []
+
+        for _ in range(3):
+            response = api_client.post("/api/v1/recipe/", format="json")
+        draft_recipes = list(Recipe.objects.all())
+
+        assert len(draft_recipes) == 3
+        for i in range(3):
+            assert str(draft_recipes[i]) == f"{new_author.username}_chernovik_{i+1}"
+
+        fourth_draft_response = api_client.post("/api/v1/recipe/", format="json")
+        assert fourth_draft_response.status_code == 400
+        assert fourth_draft_response.data == AMOUNT_OF_DRAFTS_LESS_THAN_THREE
 
     def test_create_recipe_with_name_ingredient_more_than_100_characters(
-        self, api_client, new_author, recipe_data
+        self, api_client, new_author, recipe_data, draft_recipe
     ):
         """
-        Test for create recipe
-        [POST] http://127.0.0.1:8000/api/v1/recipe/
+        Test for create new recipe data by updating its draft
+        [PATCH] http://127.0.0.1:8000/api/v1/recipe/{slug}/
         """
 
         api_client.force_authenticate(user=new_author)
-        recipe_data["ingredients"] = ["a" * 101]
-        assert (
-            api_client.post("/api/v1/recipe/", recipe_data, format="json").status_code
-            == 400
+        recipe_data["ingredients"] = [{"name": "a" * 101}]
+
+        response = api_client.patch(
+            f"/api/v1/recipe/{draft_recipe.slug}/", recipe_data, format="json"
         )
+        assert response.data == {
+            "ingredients": [{"name": [NAME_OF_INGREDIENT_LESS_THAN_HUNDRED_SYMBLS]}]
+        }
+        assert response.status_code == 400
 
     def test_create_recipe_with_2_equal_ingredients(
-        self, api_client, new_author, recipe_data
+        self, api_client, new_author, recipe_data, draft_recipe
     ):
         """
-        Test for create recipe
-        [POST] http://127.0.0.1:8000/api/v1/recipe/
+        Test for create new recipe data by updating its draft
+        [PATCH] http://127.0.0.1:8000/api/v1/recipe/{slug}/
         """
 
         api_client.force_authenticate(user=new_author)
         recipe_data["ingredients"].append(recipe_data["ingredients"][0])
-        response = api_client.post("/api/v1/recipe/", recipe_data, format="json")
+        response = api_client.patch(
+            f"/api/v1/recipe/{draft_recipe.slug}/", recipe_data, format="json"
+        )
         assert response.status_code == 400
-        assert response.data == CANT_ADD_TWO_SIMILAR_INGREDIENT
-
-    def test_create_recipe_if_slug_exists(self, api_client, new_author, recipe_data):
-        """
-        Test for create recipe
-        [POST] http://127.0.0.1:8000/api/v1/recipe/
-        """
-
-        slug = "varenye-iaitsa"
-        api_client.force_authenticate(user=new_author)
-        response = api_client.post("/api/v1/recipe/", recipe_data, format="json")
-        assert response.status_code == 201
-        assert response.data["slug"] == slug
-
-        response = api_client.post("/api/v1/recipe/", recipe_data, format="json")
-        assert response.status_code == 201
-        assert response.data["slug"] == slug + "_2"
-
-        response = api_client.post("/api/v1/recipe/", recipe_data, format="json")
-        assert response.status_code == 201
-        assert response.data["slug"] == slug + "_3"
+        assert str(response.data[0]) == (
+            f"Проверьте заполнение полей ({CANT_ADD_TWO_SIMILAR_INGREDIENT},) в поле 'ingredients'."
+        )
 
     def test_create_recipe_with_value_ingredients_less_than_or_equal_to_zero(
-        self, api_client, new_author, recipe_data
+        self, api_client, new_author, recipe_data, draft_recipe
     ):
         """
-        Test for create recipe
-        [POST] http://127.0.0.1:8000/api/v1/recipe/
+        Test for create new recipe data by updating its draft
+        [PATCH] http://127.0.0.1:8000/api/v1/recipe/{slug}/
         """
 
         api_client.force_authenticate(user=new_author)
         recipe_data["ingredients"] = [0]
         assert (
-            api_client.post("/api/v1/recipe/", recipe_data, format="json").status_code
+            api_client.patch(
+                f"/api/v1/recipe/{draft_recipe.slug}/", recipe_data, format="json"
+            ).status_code
             == 400
         )
 
     def test_create_recipe_with_len_units_ingredients_less_more_than_30_characters(
-        self, api_client, new_author, recipe_data
+        self, api_client, new_author, recipe_data, draft_recipe
     ):
         """
-        Test for create recipe
-        [POST] http://127.0.0.1:8000/api/v1/recipe/
+        Test for create new recipe data by updating its draft
+        [PATCH] http://127.0.0.1:8000/api/v1/recipe/{slug}/
         """
 
         api_client.force_authenticate(user=new_author)
         recipe_data["ingredients"][0]["unit"] = ["a" * 31]
         assert (
-            api_client.post("/api/v1/recipe/", recipe_data, format="json").status_code
+            api_client.patch(
+                f"/api/v1/recipe/{draft_recipe.slug}/", recipe_data, format="json"
+            ).status_code
             == 400
         )
 
     def test_create_recipe_with_cooking_time_less_than_ten_minutes(
-        self, api_client, new_author, recipe_data
+        self, api_client, new_author, recipe_data, draft_recipe
     ):
         """
-        Test for create recipe
-        [POST] http://127.0.0.1:8000/api/v1/recipe/
+        Test for create new recipe data by updating its draft
+        [PATCH] http://127.0.0.1:8000/api/v1/recipe/{slug}/
         """
 
         api_client.force_authenticate(user=new_author)
         recipe_data["cooking_time"] = 9
-        assert (
-            api_client.post("/api/v1/recipe/", recipe_data, format="json").status_code
-            == 400
+        response = api_client.patch(
+            f"/api/v1/recipe/{draft_recipe.slug}/", recipe_data, format="json"
         )
 
+        assert response.status_code == 400
+
     def test_create_recipe_with_tags_name_more_than_100_characters(
-        self, api_client, new_author, recipe_data
+        self, api_client, new_author, recipe_data, draft_recipe
     ):
         """
-        Test for create recipe
-        [POST] http://127.0.0.1:8000/api/v1/recipe/
+        Test for create new recipe data by updating its draft
+        [PATCH] http://127.0.0.1:8000/api/v1/recipe/{slug}/
         """
 
         api_client.force_authenticate(user=new_author)
         recipe_data["tag"] = ["a" * 101]
         assert (
-            api_client.post("/api/v1/recipe/", recipe_data, format="json").status_code
+            api_client.patch(
+                f"/api/v1/recipe/{draft_recipe.slug}/", recipe_data, format="json"
+            ).status_code
             == 400
         )
 
     def test_create_recipe_not_authenticated(self, api_client, recipe_data):
         """
-        Test for create recipe not authenticated
+        Test for create draft recipe not authenticated
         [POST] http://127.0.0.1:8000/api/v1/recipe/
         """
 
@@ -195,9 +221,127 @@ class TestRecipeUrls:
         assert response.status_code == 401
         assert response.data == CREDENTIALS_WERE_NOT_PROVIDED
 
-    def test_update_recipe(self, api_client, new_author, new_recipe, recipe_data):
+    def test_update_draft_recipe(
+        self, api_client, new_author, recipe_data, draft_recipe
+    ):
         """
-        Test for update recipe
+        Test for update draft recipe
+        [PATCH] http://127.0.0.1:8000/api/v1/recipe/{slug}/
+        """
+
+        api_client.force_authenticate(user=new_author)
+
+        response = api_client.patch(
+            f"/api/v1/recipe/{draft_recipe.slug}/", recipe_data, format="json"
+        )
+
+        assert response.status_code == 200
+        assert draft_recipe.published == False
+
+    def test_publicate_recipe_without_title(
+        self, api_client, new_author, draft_recipe, new_ingredient_in_recipe
+    ):
+        """
+        Test for publicating recipe without title indicated in request data
+        [POST] http://127.0.0.1:8000/api/v1/recipe/drafts/{slug}/publicate/
+        """
+        api_client.force_authenticate(user=new_author)
+
+        request_data = {
+            "full_text": "Published text",
+            "ingredients": [
+                OrderedDict(
+                    [
+                        ("name", new_ingredient_in_recipe.ingredient.name),
+                        ("unit", new_ingredient_in_recipe.unit.name),
+                        ("amount", new_ingredient_in_recipe.amount),
+                    ]
+                )
+            ],
+        }
+        response = api_client.patch(
+            f"/api/v1/recipe/drafts/{draft_recipe.slug}/", request_data, format="json"
+        )
+        response = api_client.post(
+            f"/api/v1/recipe/drafts/{draft_recipe.slug}/publicate/", format="json"
+        )
+
+        assert response.status_code == 400
+        assert response.data[0] == ENTER_RECIPE_NAME_BEFORE_PUBLISHING
+
+    # def test_publicate_recipe_with_slug_in_request_data(
+    #     self, api_client, new_author, draft_recipe, new_ingredient_in_recipe
+    # ):
+    #     """
+    #     Test for publicating recipe with slug indicated in request data
+    #     [POST] http://127.0.0.1:8000/api/v1/recipe/drafts/{slug}/publicate/
+    #     """
+
+    #     request_data = {
+    #         "title": "Test title",
+    #         "full_text": "Published text",
+    #         "ingredients": [
+    #             OrderedDict(
+    #                 [
+    #                     ("name", new_ingredient_in_recipe.ingredient.name),
+    #                     ("unit", new_ingredient_in_recipe.unit.name),
+    #                     ("amount", new_ingredient_in_recipe.amount),
+    #                 ]
+    #             )
+    #         ],
+    #     }
+
+    #     api_client.force_authenticate(user=new_author)
+    #     response = api_client.patch(
+    #         f"/api/v1/recipe/{draft_recipe.slug}/", request_data, format="json"
+    #     )
+
+    #     request_data = {"slug": "varenye-iaitsa"}
+    #     response = api_client.post(
+    #         f"/api/v1/recipe/drafts/{draft_recipe.slug}/publicate/",
+    #         request_data,
+    #         format="json",
+    #     )
+    #     assert response.status_code == 200
+    #     assert response.data["slug"] == "varenye-iaitsa"
+
+    def test_publicate_recipe(
+        self, api_client, new_author, draft_recipe, new_ingredient_in_recipe
+    ):
+        request_data = {
+            "title": "Published_title",
+            "full_text": "Published text",
+            "ingredients": [
+                OrderedDict(
+                    [
+                        ("name", new_ingredient_in_recipe.ingredient.name),
+                        ("unit", new_ingredient_in_recipe.unit.name),
+                        ("amount", new_ingredient_in_recipe.amount),
+                    ]
+                )
+            ],
+        }
+
+        api_client.force_authenticate(user=new_author)
+        response = api_client.patch(
+            f"/api/v1/recipe/{draft_recipe.slug}/", request_data, format="json"
+        )
+
+        response = api_client.post(
+            f"/api/v1/recipe/drafts/{draft_recipe.slug}/publicate/",
+            format="json",
+        )
+
+        assert response.status_code == 200
+        assert response.data["title"] == "Published_title"
+        assert response.data["slug"] == "published_title"
+        assert Recipe.objects.all()[0].published == True
+
+    def test_update_published_recipe(
+        self, api_client, new_author, new_recipe, recipe_data
+    ):
+        """
+        Test for update published recipe
         [PATCH] http://127.0.0.1:8000/api/v1/recipe/{slug}/
         """
 
@@ -293,3 +437,62 @@ class TestRecipeUrls:
 
         assert response.status_code == 204
         assert response.data == RECIPE_SUCCESSFUL_DELETE
+
+    def test_repost_recipe(self, api_client, new_author, new_recipe):
+        """
+        Test reposting a recipe successfully.
+        [POST] http://127.0.0.1:8000/api/v1/recipe/{slug}/repost/
+        """
+        api_client.force_authenticate(user=new_author)
+
+        response = api_client.post(f"/api/v1/recipe/{new_recipe.slug}/repost/")
+
+        assert response.status_code == 201
+        assert response.data == {"detail": "Рецепт успешно добавлен на вашу страницу."}
+
+        # Verify reposted recipe exists
+        reposted_recipe = Recipe.objects.filter(
+            author=new_author, is_repost=True, slug__startswith=new_recipe.slug
+        ).first()
+        assert reposted_recipe is not None
+        assert reposted_recipe.title == new_recipe.title
+        assert reposted_recipe.author == new_author
+        assert reposted_recipe.is_repost is True
+
+    def test_repost_already_reposted_recipe(self, api_client, new_author, new_recipe):
+        """
+        Test reposting a recipe that has already been reposted.
+        [POST] http://127.0..1:8000/api/v1/recipe/{slug}/repost/
+        """
+        api_client.force_authenticate(user=new_author)
+
+        # First repost
+        api_client.post(f"/api/v1/recipe/{new_recipe.slug}/repost/")
+
+        # Attempt to repost again
+        response = api_client.post(f"/api/v1/recipe/{new_recipe.slug}/repost/")
+
+        assert response.status_code == 400
+        assert response.data == {"detail": "Вы уже поделились этим рецептом."}
+
+    def test_repost_recipe_unauthenticated(self, api_client, new_recipe):
+        """
+        Test reposting a recipe without authentication.
+        [POST] http://127.0.0.1:8000/api/v1/recipe/{slug}/repost/
+        """
+        response = api_client.post(f"/api/v1/recipe/{new_recipe.slug}/repost/")
+
+        assert response.status_code == 401
+        assert response.data == {"detail": "Учетные данные не были предоставлены."}
+
+    def test_repost_nonexistent_recipe(self, api_client, new_author):
+        """
+        Test reposting a non-existent recipe.
+        [POST] http://127.0.0.1:8000/api/v1/recipe/{slug}/repost/
+        """
+        api_client.force_authenticate(user=new_author)
+
+        response = api_client.post("/api/v1/recipe/nonexistent-slug/repost/")
+
+        assert response.status_code == 404
+        assert response.data == {"detail": "Страница не найдена."}

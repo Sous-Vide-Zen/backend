@@ -66,6 +66,7 @@ SUCCESSFUL_RATED_COMMENT: dict = {"message": "Вы оценили коммент
 # Recipes status
 SUCCESSFUL_APPRECIATED_RECIPE: dict = {"message": "Вы оценили рецепт!"}
 RECIPE_SUCCESSFUL_DELETE: dict = {"message": "Рецепт успешно удален."}
+DRAFT_SUCCESSFUL_UPDATE: dict = {"message": "Черновик успешно обновлен."}
 RECIPE_ALREADY_IN_FAVORITES: dict = {"detail": "Рецепт уже находится в избранном."}
 SUCCESSFUL_ADDED_TO_FAVORITES: dict = {"detail": "Рецепт добавлен в избранное."}
 THE_RECIPE_IS_NOT_IN_FAVORITES: dict = {"detail": "Рецепт не находится в избранном."}
@@ -73,11 +74,24 @@ RECIPE_REMOVED_FROM_FAVORITES: dict = {"detail": "Рецепт удален из
 RECIPE_CAN_BE_EDIT_WITHIN_FIRST_DAY: dict = {
     "detail": "Обновление рецепта возможно только в течение суток после создания."
 }
+AMOUNT_OF_INGREDIENT_LESS_THAN_ZERO: str = "Количество должно быть больше 0."
+NAME_OF_INGREDIENT_LESS_THAN_HUNDRED_SYMBLS: str = (
+    "Убедитесь, что это значение содержит не более 100 символов."
+)
+AMOUNT_OF_DRAFTS_LESS_THAN_THREE: dict = {
+    "detail": "Вы можете сохранить не более 3-х черновиков. Удалите ненужный черновик."
+}
+ENTER_RECIPE_NAME_BEFORE_PUBLISHING: dict = {
+    "detail": "Введите название рецепта перед публикацией."
+}
 AMOUNT_OF_INGREDIENT_LESS_THAN_ONE: dict = {
     "errors": "Количество должно быть больше 0."
 }
 MAX_COUNT_OF_INGREDIENT: dict = {
     "errors": "Максимальное количество ингредиента - 1000."
+}
+ENTER_INGREDIENTS_BEFORE_PUBLISHING: dict = {
+    "detail": "Введите ингредиенты перед публикацией рецепта."
 }
 
 # Errors status

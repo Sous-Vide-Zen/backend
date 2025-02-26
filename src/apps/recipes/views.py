@@ -1,5 +1,10 @@
+from django.db import transaction
+from django.utils.timezone import now
+from uuid import uuid4
+
 from django.db.models import Count
 from django.shortcuts import get_object_or_404
+
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.filters import SearchFilter
@@ -13,6 +18,9 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
+from config.settings import DRAFTS_MAX_AMOUNT
+from src.apps.favorite.models import Favorite
+from src.apps.view.models import ViewRecipes
 from src.base.code_text import (
     RECIPE_SUCCESSFUL_DELETE,
     RECIPE_ALREADY_IN_FAVORITES,
@@ -21,18 +29,24 @@ from src.base.code_text import (
     THE_RECIPE_IS_NOT_IN_FAVORITES,
     RECIPE_REMOVED_FROM_FAVORITES,
     LIST_OF_FAVORITES_IS_EMPTY,
+    AMOUNT_OF_DRAFTS_LESS_THAN_THREE,
+    DRAFT_SUCCESSFUL_UPDATE,
 )
-from src.apps.favorite.models import Favorite
-from src.apps.view.models import ViewRecipes
 from src.base.paginators import FeedPagination
 from src.base.permissions import IsOwnerOrStaffOrReadOnly
-from src.base.services import increment_view_count
+from src.base.services import (
+    create_draft_slug,
+    increment_view_count,
+    create_recipe_slug,
+    validate_recipe_publishing,
+)
 from .models import Recipe
 from .serializers import (
     RecipeRetrieveSerializer,
-    RecipeCreateSerializer,
+    RecipePublicateSerializer,
     RecipeUpdateSerializer,
     BaseRecipeListSerializer,
+    DraftSerializer,
 )
 
 
@@ -71,22 +85,31 @@ class RecipeViewSet(
                 views_count=Count("views", distinct=True),
             )
         )
+
         return queryset
 
     def get_permissions(self):
-        if self.request.method == "POST" or "favorites" in self.request.path:
+        if (
+            self.request.method == "POST"
+            or "favorite" in self.request.path
+            or "drafts" in self.request.path
+        ):
             self.permission_classes = (IsAuthenticated,)
         else:
             self.permission_classes = (IsOwnerOrStaffOrReadOnly,)
+
         return super(RecipeViewSet, self).get_permissions()
 
     def get_serializer_class(self):
-        serializer_classes = {
-            "GET": RecipeRetrieveSerializer,
-            "POST": RecipeCreateSerializer,
-            "PATCH": RecipeUpdateSerializer,
-        }
-        self.serializer_class = serializer_classes.get(self.request.method)
+        if "publicate" in self.request.path:
+            self.serializer_class = RecipePublicateSerializer
+        else:
+            serializer_classes = {
+                "GET": RecipeRetrieveSerializer,
+                "POST": DraftSerializer,
+                "PATCH": RecipeUpdateSerializer,
+            }
+            self.serializer_class = serializer_classes.get(self.request.method)
 
         return super(RecipeViewSet, self).get_serializer_class()
 
@@ -95,7 +118,53 @@ class RecipeViewSet(
         increment_view_count(ViewRecipes, instance, request)
 
         serializer = self.get_serializer(instance)
+
         return Response(serializer.data)
+
+    def create(self, request, *args, **kwargs):
+        user_drafts = Recipe.objects.filter(author=request.user, published=False)
+        len_user_drafts = len(user_drafts)
+        if len_user_drafts >= DRAFTS_MAX_AMOUNT:
+            return Response(
+                AMOUNT_OF_DRAFTS_LESS_THAN_THREE, status=status.HTTP_400_BAD_REQUEST
+            )
+        title = f"Черновик"
+        slug = create_draft_slug(Recipe, len_user_drafts, request.user.username)
+
+        recipe = Recipe.objects.create(
+            author=request.user,
+            title=title,
+            slug=slug,
+            cooking_time=10,
+            published=False,
+        )
+        serializer = DraftSerializer(recipe)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    def update(self, request, *args, **kwargs):
+        recipe = self.get_object()
+        serializer = self.get_serializer(recipe, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
+        # if recipe.published:
+        #     return Response(serializer.data, status=status.HTTP_200_OK)
+        # else:
+        #     return Response(DRAFT_SUCCESSFUL_UPDATE, status=status.HTTP_200_OK)
+
+    @transaction.atomic
+    def publicate_recipe(self, request, *args, **kwargs):
+        recipe = self.get_object()
+        serializer = self.get_serializer(recipe, partial=False)
+        validate_recipe_publishing(recipe, serializer)
+        recipe.slug = create_recipe_slug(Recipe, serializer.data)["slug"]
+        recipe.published = True
+        recipe.pub_date = now()
+        recipe.save()
+        serializer = RecipePublicateSerializer(recipe)
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     def destroy(self, request, *args, **kwargs):
         """Delete recipe"""
@@ -123,6 +192,7 @@ class RecipeViewSet(
         return self.get_paginated_response(serializer.data)
 
     def add_to_favorites(self, request, slug):
+        """Adding a recipe to a list of user's favorites."""
         recipe = get_object_or_404(Recipe, slug=slug)
         favorite_recipe, created = Favorite.objects.get_or_create(
             author=request.user, recipe=recipe
@@ -135,6 +205,7 @@ class RecipeViewSet(
         return Response(SUCCESSFUL_ADDED_TO_FAVORITES, status=status.HTTP_201_CREATED)
 
     def remove_from_favorites(self, request, slug):
+        """Removing a recipe from a list of user's favorites."""
         if not request.user.is_authenticated:
             return Response(
                 data=CREDENTIALS_WERE_NOT_PROVIDED,
@@ -150,7 +221,47 @@ class RecipeViewSet(
             )
 
         favorite_recipe.delete()
+
         return Response(
             status=status.HTTP_204_NO_CONTENT,
             data=RECIPE_REMOVED_FROM_FAVORITES,
+        )
+
+    def list_draft_recipes(self, request):
+        """Getting a list of user's draft recipes."""
+        queryset = Recipe.objects.filter(author=request.user, published=False)
+        serializer = DraftSerializer(queryset, many=True)
+
+        return Response(serializer.data)
+
+    @action(
+        detail=True,
+        methods=["post"],
+        url_path="repost",
+    )
+    def repost(self, request, slug=None):
+
+        original_recipe = get_object_or_404(Recipe, slug=slug)
+
+        if Recipe.objects.filter(
+            author=request.user, is_repost=True, slug__startswith=original_recipe.slug
+        ).exists():
+            return Response(
+                {"detail": "Вы уже поделились этим рецептом."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        new_slug = f"{original_recipe.slug}-{uuid4().hex[:8]}"
+        reposted_recipe = original_recipe
+        reposted_recipe.pk = None
+        reposted_recipe._state.adding = True
+        kwargs = {"author": request.user, "slug": new_slug, "is_repost": True}
+        for key in kwargs:
+            setattr(reposted_recipe, key, kwargs[key])
+
+        reposted_recipe.save()
+
+        return Response(
+            {"detail": "Рецепт успешно добавлен на вашу страницу."},
+            status=status.HTTP_201_CREATED,
         )

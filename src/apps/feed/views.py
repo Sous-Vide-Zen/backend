@@ -22,9 +22,14 @@ class FeedUserList(mixins.ListModelMixin, viewsets.GenericViewSet):
 
     pagination_class = FeedPagination
     serializer_class = FeedSerializer
-    filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
+    filter_backends = [
+        DjangoFilterBackend,
+        filters.OrderingFilter,
+        filters.SearchFilter,
+    ]
     ordering_fields = ["activity_count"]
     ordering = ["-pub_date"]
+    search_fields = ["title"]
     filterset_class = FeedFilter
 
     def get_queryset(self):
@@ -38,7 +43,7 @@ class FeedUserList(mixins.ListModelMixin, viewsets.GenericViewSet):
         )
 
         queryset = (
-            Recipe.objects.all()
+            Recipe.objects.filter(published=True)
             .only(
                 "id",
                 "title",

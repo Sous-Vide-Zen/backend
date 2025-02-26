@@ -1,13 +1,16 @@
+import uuid
+
 import pytest
 from django.contrib.contenttypes.models import ContentType
 
+from src.apps.reactions.choices import EmojyChoice
+from src.apps.reactions.models import Reaction
+from src.apps.recipes.models import Recipe
 from src.base.code_text import (
     SUCCESSFUL_APPRECIATED_COMMENT,
     REACTION_CANCELLED,
     SUCCESSFUL_APPRECIATED_RECIPE,
 )
-from src.apps.reactions.choices import EmojyChoice
-from src.apps.reactions.models import Reaction
 
 
 @pytest.mark.reactions
@@ -66,6 +69,71 @@ class TestRecipeReactionsView:
         assert reaction_default.is_deleted == True
         assert response.status_code == 204
         assert response.data == REACTION_CANCELLED
+
+    @pytest.fixture
+    def original_recipe(self, new_user):
+        return Recipe.objects.create(
+            author=new_user,
+            title="Original Recipe",
+            slug="original-recipe",
+            full_text="Original recipe full text",
+            short_text="Original recipe short text",
+            cooking_time=30,
+            is_repost=False,
+        )
+
+    @pytest.fixture
+    def repost_with_uuid(self, new_user, original_recipe):
+        return Recipe.objects.create(
+            author=new_user,
+            title="Repost Recipe",
+            slug=f"{original_recipe.slug}-{uuid.uuid4().hex[:8]}",
+            full_text="Repost recipe full text",
+            short_text="Repost recipe short text",
+            cooking_time=30,
+            is_repost=True,
+        )
+
+    @pytest.fixture
+    def repost_without_uuid(self, new_user, original_recipe):
+        return Recipe.objects.create(
+            author=new_user,
+            title="Invalid Repost",
+            slug="original-recipe-slug",
+            full_text="Invalid repost full text",
+            short_text="Invalid repost short text",
+            cooking_time=30,
+            is_repost=True,
+        )
+
+    def test_reaction_on_repost_creates_on_original(
+        self, api_client, new_user, repost_with_uuid, original_recipe
+    ):
+        api_client.force_authenticate(new_user)
+
+        response = api_client.post(
+            f"/api/v1/recipe/{repost_with_uuid.slug}/reactions/",
+            {"emoji": EmojyChoice.LIKE},
+        )
+
+        assert response.status_code == 201
+        assert Reaction.objects.filter(object_id=repost_with_uuid.id).count() == 1
+        assert Reaction.objects.filter(object_id=original_recipe.id).count() == 1
+
+    # def test_reaction_on_repost_without_uuid_does_not_create(
+    #     self, api_client, new_user, repost_without_uuid, original_recipe
+    # ):
+    #     api_client.force_authenticate(new_user)
+
+    #     response = api_client.post(
+    #         f"/api/v1/recipe/{repost_without_uuid.slug}/reactions/",
+    #         {"emoji": EmojyChoice.LIKE},
+    #     )
+
+    #     assert response.status_code == 201
+    #     assert Reaction.objects.filter(object_id=repost_without_uuid.id).count() == 0
+    #     assert Reaction.objects.filter(object_id=original_recipe.id).count() == 0
+    #     assert original_recipe.id == repost_without_uuid.id
 
 
 @pytest.mark.reactions
