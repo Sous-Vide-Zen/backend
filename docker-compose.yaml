@@ -1,0 +1,33 @@
+version: "3.8"
+services:
+  django:
+    build: .
+    container_name: svz-django
+    env_file:
+      - config/.env
+    volumes:
+      - .:/home/app
+    depends_on:
+      - keycloak
+
+  keycloak:
+    image: keycloak/keycloak:26.0
+    container_name: svz-keycloak
+    ports:
+      - "8080:8080"
+    env_file:
+      - config/keycloak.env
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8080/health/ready" ]
+      interval: 10s
+      timeout: 2s
+      retries: 3
+    command: ["start-dev", "--http-port", "8080"]
+    volumes:
+      - keycloak:/opt/keycloak/data/
+      - .local/keycloak/:/opt/jboss/keycloak/standalone/data/
+
+
+volumes:
+  keycloak:

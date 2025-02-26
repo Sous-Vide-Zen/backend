@@ -61,6 +61,45 @@ docker run -p 8000:8000 svz-back
 </li>
 </ol>
 
+<h3>By Docker Compose</h3>
+<ol>
+<li>
+You need to make sure that Docker and Makefile are installed.
+<a href="https://ftp.gnu.org/gnu/make/">Install page for Makefile(windows)</a>
+and 
+<a href="https://medium.com/@samsorrahman/how-to-run-a-makefile-in-windows-b4d115d7c516">Example Tutorial</a>
+</li>
+<li>Create env files and, if necessary, fill it with your variables.
+
+```shell
+cp config/.env.example  config/.env
+cp config/keycloak.env.example config/keycloak.env
+```
+</li>
+<li>Then execute command
+
+```shell
+make start
+```
+</li>
+<li>Connecting keycloak<br>
+    - Open page <a href="http://localhost:8080">keycloak localhost</a> and pass login: admin, password: admin<br>
+    - Create a new client, set access urls mask to 'http://localhost:8000/*'<br>
+    - Add client secret and client id key to config/.env<br>
+    - Allow registration in realms settings
+</li>
+<li>Auth with keycloak<br>
+    - Open page <a href="http://localhost:8000/api/v1/oids/authenticate/">Auth page</a> and create a new user or log in by admin<br>
+</li>
+<h4>If you set new a client id and a client secret key you need to restart the docker compose file</h4>    
+- Restart docker compose with command
+
+```shell
+make start
+```
+</ol>
+
+
 <h3>By venv:</h3>
 Create and activate the virtual environment, install dependencies:
 

@@ -31,6 +31,7 @@ INSTALLED_APPS = [
     "taggit",
     "corsheaders",
     "phonenumber_field",
+    "mozilla_django_oidc",
     # apps
     "src.apps.users",
     "src.apps.recipes",
@@ -52,6 +53,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "mozilla_django_oidc.middleware.SessionRefresh",
 ]
 
 ROOT_URLCONF = "config.urls"
@@ -131,6 +133,7 @@ AUTHENTICATION_BACKENDS = (
     "config.plugin_soc_auth.CustomVKOAuth2",
     "social_core.backends.yandex.YandexOAuth2",
     "django.contrib.auth.backends.ModelBackend",
+    "src.apps.users.authentication.CustomOIDCAuthenticationBackend",
 )
 
 
@@ -230,12 +233,33 @@ SOCIAL_AUTH_YANDEX_OAUTH2_KEY = config(
 SOCIAL_AUTH_YANDEX_OAUTH2_SECRET = config(
     "SOCIAL_AUTH_YANDEX_OAUTH2_SECRET", default="5fbd3f9c1f4f4d9d9a1f3c9f1f5f7f9f8"
 )
-
-
 SOCIAL_AUTH_JSONFIELD_ENABLED = True
 
-# Settings for django-taggit
+#  Settings for keycloak
+KEYCLOAK_BASE_URL = config("KEYCLOAK_BASE_URL", default="http://localhost:8080/")
+KEYCLOAK_REALM = config("KEYCLOAK_REALM", default="master")
 
+OIDC_OP_JWKS_ENDPOINT = (
+    f"{KEYCLOAK_BASE_URL}realms/{KEYCLOAK_REALM}/protocol/openid-connect/certs"
+)
+OIDC_OP_AUTHORIZATION_ENDPOINT = (
+    f"{KEYCLOAK_BASE_URL}realms/{KEYCLOAK_REALM}/protocol/openid-connect/auth"
+)
+OIDC_OP_TOKEN_ENDPOINT = (
+    f"{KEYCLOAK_BASE_URL}realms/{KEYCLOAK_REALM}/protocol/openid-connect/token"
+)
+OIDC_OP_USER_ENDPOINT = (
+    f"{KEYCLOAK_BASE_URL}realms/{KEYCLOAK_REALM}/protocol/openid-connect/userinfo"
+)
+
+OIDC_RP_SIGN_ALGO = config("OIDC_RP_SIGN_ALGO", default="RS256")
+OIDC_RP_CLIENT_ID = config("OIDC_RP_CLIENT_ID", default="django")
+OIDC_RP_CLIENT_SECRET = config("OIDC_RP_CLIENT_SECRET", default="<your-client-secret>")
+
+LOGIN_REDIRECT_URL = "/"
+LOGOUT_REDIRECT_URL = "/"
+
+# Settings for django-taggit
 TAGGIT_STRIP_UNICODE_WHEN_SLUGIFYING = True
 
 
