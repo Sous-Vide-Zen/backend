@@ -183,7 +183,7 @@ def create_draft_slug(
 ) -> str:
     """Create draft recipe slug"""
 
-    nums = list(range(1, DRAFTS_MAX_AMOUNT + 1))
+    nums = list(range(1, settings.DRAFTS_MAX_AMOUNT + 1))
     slug = f"{username}_chernovik_{nums[len_user_drafts]}"
     while model.objects.filter(slug=slug).exists():
         slug = f"{username}_chernovik_{num}"
