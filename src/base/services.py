@@ -1,3 +1,4 @@
+import re
 from datetime import timedelta
 from random import sample
 from typing import List, Any, Set
@@ -17,6 +18,8 @@ from unidecode import unidecode
 from src.apps.ingredients.models import Ingredient, Unit, IngredientInRecipe
 from src.base.code_text import (
     CANT_ADD_TWO_SIMILAR_INGREDIENT,
+    ENTER_RECIPE_NAME_BEFORE_PUBLISHING,
+    ENTER_INGREDIENTS_BEFORE_PUBLISHING,
 )
 
 
@@ -27,6 +30,17 @@ def validate_avatar_size(value: Any) -> None:
         raise ValidationError(
             _("Размер файла слишком большой. Максимальный размер - 5 МБ.")
         )
+
+
+def validate_recipe_publishing(instance: Model, serializer: Model) -> None:
+    errors = []
+    title = serializer.data.get("title", None)
+    if title and "черновик" in title.lower():
+        errors.append(ENTER_RECIPE_NAME_BEFORE_PUBLISHING)
+    if not serializer.data.get("ingredients", None):
+        errors.append(ENTER_INGREDIENTS_BEFORE_PUBLISHING)
+    if errors:
+        raise ValidationError(errors)
 
 
 def user_avatar_path(instance: Model, filename: str) -> str:
@@ -81,55 +95,65 @@ def create_ingredients_in_recipe(
     """
     Create or update ingredients in recipe
     """
+    try:
+        ingredient_names: List[str] = [data["name"] for data in ingredients_data]
+        if len(ingredient_names) != len(set(ingredient_names)):
+            raise ValidationError(
+                CANT_ADD_TWO_SIMILAR_INGREDIENT, code="unique_ingredient"
+            )
 
-    ingredient_names: List[str] = [data["name"] for data in ingredients_data]
-    if len(ingredient_names) != len(set(ingredient_names)):
-        raise ValidationError(CANT_ADD_TWO_SIMILAR_INGREDIENT, code="unique_ingredient")
-
-    existing_ingredients: List[IngredientInRecipe] = IngredientInRecipe.objects.filter(
-        recipe=recipe
-    )
-    existing_ingredient_names: Set = set(
-        existing_ingredients.values_list("ingredient__name", flat=True)
-    )
-
-    ingredients_to_remove: Set = existing_ingredient_names - set(ingredient_names)
-    existing_ingredients.filter(ingredient__name__in=ingredients_to_remove).delete()
-
-    existing_ingredients: List[str] = IngredientInRecipe.objects.filter(
-        recipe=recipe, ingredient__name__in=ingredient_names
-    ).values_list("ingredient__name", flat=True)
-
-    new_ingredients: List[dict] = [
-        data for data in ingredients_data if data["name"] not in existing_ingredients
-    ]
-
-    ingredient_objs: List[Ingredient] = [
-        Ingredient(name=data["name"]) for data in new_ingredients
-    ]
-    unit_names: Set[str] = {data["unit"] for data in new_ingredients}
-    unit_objs: List[Unit] = [Unit(name=name) for name in unit_names]
-
-    with transaction.atomic():
-        ingredients: dict = {
-            ingredient.name: ingredient
-            for ingredient in bulk_get_or_create(Ingredient, ingredient_objs, "name")
-        }
-        units: dict = {
-            unit.name: unit for unit in bulk_get_or_create(Unit, unit_objs, "name")
-        }
-
-    ingredients_in_recipe_objs: List[IngredientInRecipe] = [
-        IngredientInRecipe(
-            recipe=recipe,
-            ingredient=ingredients[ingredient_data["name"]],
-            unit=units[ingredient_data["unit"]],
-            amount=ingredient_data["amount"],
+        existing_ingredients: List[
+            IngredientInRecipe
+        ] = IngredientInRecipe.objects.filter(recipe=recipe)
+        existing_ingredient_names: Set = set(
+            existing_ingredients.values_list("ingredient__name", flat=True)
         )
-        for ingredient_data in new_ingredients
-    ]
-    IngredientInRecipe.objects.bulk_create(ingredients_in_recipe_objs)
-    return IngredientInRecipe.objects.filter(recipe=recipe)
+
+        ingredients_to_remove: Set = existing_ingredient_names - set(ingredient_names)
+        existing_ingredients.filter(ingredient__name__in=ingredients_to_remove).delete()
+
+        existing_ingredients: List[str] = IngredientInRecipe.objects.filter(
+            recipe=recipe, ingredient__name__in=ingredient_names
+        ).values_list("ingredient__name", flat=True)
+
+        new_ingredients: List[dict] = [
+            data
+            for data in ingredients_data
+            if data["name"] not in existing_ingredients
+        ]
+
+        ingredient_objs: List[Ingredient] = [
+            Ingredient(name=data["name"]) for data in new_ingredients
+        ]
+        unit_names: Set[str] = {data["unit"] for data in new_ingredients}
+        unit_objs: List[Unit] = [Unit(name=name) for name in unit_names]
+
+        with transaction.atomic():
+            ingredients: dict = {
+                ingredient.name: ingredient
+                for ingredient in bulk_get_or_create(
+                    Ingredient, ingredient_objs, "name"
+                )
+            }
+            units: dict = {
+                unit.name: unit for unit in bulk_get_or_create(Unit, unit_objs, "name")
+            }
+
+        ingredients_in_recipe_objs: List[IngredientInRecipe] = [
+            IngredientInRecipe(
+                recipe=recipe,
+                ingredient=ingredients[ingredient_data["name"]],
+                unit=units[ingredient_data["unit"]],
+                amount=ingredient_data["amount"],
+            )
+            for ingredient_data in new_ingredients
+        ]
+        IngredientInRecipe.objects.bulk_create(ingredients_in_recipe_objs)
+        return IngredientInRecipe.objects.filter(recipe=recipe)
+    except Exception as error:
+        raise ValidationError(
+            f"Проверьте заполнение полей {str(error.args)} в поле 'ingredients'."
+        )
 
 
 def increment_view_count(
@@ -154,17 +178,33 @@ def increment_view_count(
         model.objects.create(user=user_id, recipe=recipe)
 
 
+def create_draft_slug(
+    model: Type[Model], len_user_drafts: int, username: str, num: int = 1
+) -> str:
+    """Create draft recipe slug"""
+
+    nums = list(range(1, DRAFTS_MAX_AMOUNT + 1))
+    slug = f"{username}_chernovik_{nums[len_user_drafts]}"
+    while model.objects.filter(slug=slug).exists():
+        slug = f"{username}_chernovik_{num}"
+        num += 1
+    return slug
+
+
 def create_recipe_slug(model: Type[Model], data: dict, num: int = 1) -> dict:
     """Create recipe slug"""
 
     with transaction.atomic():
+        kwargs = {"published": True} if model.__name__ == "Recipe" else {}
         same_recipes: int = model.objects.filter(
-            title__startswith=data["title"]
+            **kwargs, title__startswith=data["title"]
         ).count()
         slug_str: str = unidecode(
             f"{data['title']}_{same_recipes + num}" if same_recipes else data["title"]
         )
-        data["slug"]: str = slugify(slug_str)
+        data["slug"]: str = (
+            f"{slugify(slug_str)}_{num}" if num > 1 else slugify(slug_str)
+        )
 
         if model.objects.filter(slug=data["slug"]).exists():
             num += 1
@@ -236,3 +276,12 @@ def get_or_none(instance: Model, **kwargs):
         return instance.objects.get(**kwargs)
     except instance.DoesNotExist:
         return None
+
+
+def extract_original_slug(slug):
+    parts = slug.split("-")
+    if len(parts) > 1:
+        last_part = parts[-1]
+        if re.match(r"^[a-f0-9]{8}$", last_part):
+            return "-".join(parts[:-1])
+    return slug

@@ -9,24 +9,11 @@ from src.apps.recipes.models import Recipe
 @pytest.mark.feed
 @pytest.mark.api
 class TestFeedResponseFields:
-    def test_reactions_field_emojies_count(
-        self,
-        new_user,
-        api_client,
-    ):
+    def test_reactions_field_emojies_count(self, new_user, api_client, new_recipe):
         """
         Count of emojies are reflected in reactions_count field
         """
 
-        title = "Recipe 1"
-        full_text = "recipe 1 full text"
-
-        new_recipe = Recipe.objects.create(
-            author=new_user,
-            title=title,
-            full_text=full_text,
-            cooking_time=10,
-        )
         content_type = ContentType.objects.get_for_model(Recipe)
         for choice in EmojyChoice:
             Reaction.objects.create(
@@ -39,24 +26,11 @@ class TestFeedResponseFields:
         response = api_client.get(url)
         assert response.data["results"][0]["reactions_count"] == len(EmojyChoice.values)
 
-    def test_is_favorite_field(
-        self,
-        new_user,
-        api_client,
-    ):
+    def test_is_favorite_field(self, new_user, api_client, new_recipe):
         """
         is_favorite is True when recipe is in user's favorite otherwise False
         """
 
-        title = "Recipe 1"
-        full_text = "recipe 1 full text"
-
-        new_recipe = Recipe.objects.create(
-            author=new_user,
-            title=title,
-            full_text=full_text,
-            cooking_time=10,
-        )
         new_recipe.favorite.create(author=new_user, recipe=new_recipe)
 
         url = "/api/v1/feed/?ordering=-activity_count"

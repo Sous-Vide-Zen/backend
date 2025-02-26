@@ -32,6 +32,7 @@ class TestFeedPagination:
                 slug=f"{title}_{i}",
                 full_text=full_text,
                 cooking_time=10,
+                published=True,
             )
 
         next_page_url = "/api/v1/feed/"
