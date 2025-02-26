@@ -1,5 +1,7 @@
 import pytest
 
+from src.base.code_text import EMAIL_IS_A_REQUIRED_FIELD
+
 BASE_URL = "http://127.0.0.1:8000/api/v1"
 
 
@@ -97,3 +99,13 @@ class TestUserSerializer:
         assert user_data["is_active"] is True
         assert user_data["is_staff"] is False
         assert user_data["is_admin"] is False
+
+    def test_create_user_without_email_serializer(self, api_client):
+        """
+        User Serializers Test
+        http://127.0.0.1:8000/api/v1/auth/users/
+        """
+        data = {"password": "password1", "password2": "password1"}
+        response = api_client.post(f"{BASE_URL}/auth/users/", data=data, format="json")
+        assert response.status_code == 400
+        assert str(response.data["email"][0]) == EMAIL_IS_A_REQUIRED_FIELD["email"]
