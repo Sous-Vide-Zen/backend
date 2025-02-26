@@ -3,10 +3,8 @@ from pathlib import Path
 
 from decouple import config
 
-# BASE_DIR указывает на корень проекта
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
-# Чувствительные данные из .env
 SECRET_KEY = config(
     "SECRET_KEY", default="bad-key-_$i&ghy42$5ki+155q9$dpz6e410wec7adv*c3u0@6tjn7&yv+"
 )
@@ -168,9 +166,15 @@ SWAGGER_SETTINGS = {
 
 # Настройки социальных сетей (ключи из .env)
 SOCIAL_AUTH_VK_OAUTH2_KEY = config("SOCIAL_AUTH_VK_OAUTH2_KEY", default="12345678")
-SOCIAL_AUTH_VK_OAUTH2_SECRET = config("SOCIAL_AUTH_VK_OAUTH2_SECRET", default="12345678")
-SOCIAL_AUTH_YANDEX_OAUTH2_KEY = config("SOCIAL_AUTH_YANDEX_OAUTH2_KEY", default="12345678")
-SOCIAL_AUTH_YANDEX_OAUTH2_SECRET = config("SOCIAL_AUTH_YANDEX_OAUTH2_SECRET", default="12345678")
+SOCIAL_AUTH_VK_OAUTH2_SECRET = config(
+    "SOCIAL_AUTH_VK_OAUTH2_SECRET", default="12345678"
+)
+SOCIAL_AUTH_YANDEX_OAUTH2_KEY = config(
+    "SOCIAL_AUTH_YANDEX_OAUTH2_KEY", default="12345678"
+)
+SOCIAL_AUTH_YANDEX_OAUTH2_SECRET = config(
+    "SOCIAL_AUTH_YANDEX_OAUTH2_SECRET", default="12345678"
+)
 SOCIAL_AUTH_JSONFIELD_ENABLED = True
 SOCIAL_AUTH_LOGIN_REDIRECT_URL = config(
     "SOCIAL_AUTH_LOGIN_REDIRECT_URL", default="/api/v1/auth/o/vk_oauth2/"
