@@ -1,0 +1,12 @@
+.gitignore
+.DS_Store
+.idea/
+.vscode/
+.pytest_cache/
+venv/
+.env.example
+.github/
+.git/
+__pycache__/
+dump_db.py
+README.md

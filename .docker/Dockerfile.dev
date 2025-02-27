@@ -1,0 +1,29 @@
+# Этап сборки: установка зависимостей
+FROM python:3.11-alpine as builder
+
+WORKDIR /install
+
+# Копируем только необходимые файлы зависимостей
+COPY src/requirements/* requirements/
+
+RUN pip install --upgrade pip && \
+    pip install --prefix=/install -r requirements/requirements-dev.txt --no-cache-dir
+
+# Этап рантайма: минимальный образ
+FROM python:3.11-alpine
+
+# Копируем только установленные пакеты и бинарники из сборки
+COPY --from=builder /install/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
+COPY --from=builder /install/bin /usr/local/bin
+
+WORKDIR /app
+# Копируем исходный код приложения
+COPY . /app
+
+# Устанавливаем переменные окружения
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONPATH=/app
+
+# Команда для запуска приложения
+CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]

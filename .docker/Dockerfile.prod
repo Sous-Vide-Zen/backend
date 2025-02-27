@@ -1,0 +1,66 @@
+# Этап сборки
+FROM python:3.11-alpine AS builder
+
+# Устанавливаем необходимые зависимости для сборки
+RUN apk add --no-cache \
+    postgresql-dev \
+    gcc \
+    python3-dev \
+    musl-dev \
+    libffi-dev \
+    zlib-dev \
+    jpeg-dev \
+    freetype-dev \
+    libjpeg \
+    tiff-dev \
+    tk-dev \
+    tcl-dev
+
+WORKDIR /install
+
+# Копируем только файл зависимостей
+COPY src/requirements/requirements-prod.txt requirements/
+
+# Устанавливаем зависимости в отдельную директорию
+RUN pip install --upgrade pip && \
+    pip install --prefix=/install -r requirements/requirements-prod.txt --no-cache-dir
+
+# Финальный этап
+FROM python:3.11-alpine
+
+# Устанавливаем необходимые runtime зависимости
+RUN apk add --no-cache \
+    postgresql-libs \
+    jpeg \
+    zlib \
+    freetype \
+    tiff \
+    libxcb \
+    && adduser -D appuser && \
+       mkdir -p /app && chown appuser:appuser /app && \
+       mkdir -p /app/src/media && chown appuser:appuser /app/src/media && \
+       mkdir -p /app/src/static && chown appuser:appuser /app/src/static
+
+WORKDIR /app
+
+# Копируем файл entrypoint.sh и даем ему права на выполнение
+# COPY entrypoint.sh /app/entrypoint.sh
+# RUN chmod +x /app/entrypoint.sh
+
+# Копируем установленные зависимости из этапа сборки
+COPY --from=builder /install /usr/local
+
+# Копируем код приложения
+COPY --chown=appuser:appuser . .
+
+# Настраиваем переменные окружения
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONPATH=/app
+
+# Переключаемся на непривилегированного пользователя
+USER appuser
+
+# Основная команда запуска
+# ENTRYPOINT ["/app/entrypoint.sh"]
+CMD ["gunicorn", "--bind", "0.0.0.0:8000", "--workers", "4", "--max-requests", "1000", "--max-requests-jitter", "50", "--timeout", "120", "--keep-alive", "5", "--log-level", "info", "config.wsgi:application"]
