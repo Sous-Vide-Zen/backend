@@ -63,4 +63,5 @@ USER appuser
 
 # Основная команда запуска
 # ENTRYPOINT ["/app/entrypoint.sh"]
-CMD ["gunicorn", "--bind", "0.0.0.0:8000", "--workers", "4", "--max-requests", "1000", "--max-requests-jitter", "50", "--timeout", "120", "--keep-alive", "5", "--log-level", "info", "config.wsgi:application"]
+#CMD ["gunicorn", "--bind", "0.0.0.0:8000", "--workers", "4", "--max-requests", "1000", "--max-requests-jitter", "50", "--timeout", "120", "--keep-alive", "5", "--log-level", "info", "config.wsgi:application"]
+CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]

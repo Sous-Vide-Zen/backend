@@ -384,31 +384,6 @@
     }
 },
 {
-    "model": "recipes.recipe",
-    "pk": 17,
-    "fields": {
-        "author": 230,
-        "title": "DDie folgenden Codes sind Implementierungen zum Lesen von Bildern und Anzeigen von Bildern auf dem Bildschirm mithilfe von OpenCV- und Matplotlib-Bibl",
-        "slug": "ddie-folgenden-codes-sind-implementierungen-zum-lesen-von-bildern-und-anzeigen-von-bildern-auf-dem-bildschirm-mithilfe-von-opencv-und-matplotlib-bibl",
-        "full_text": "Вареные яйца - это простое и полезное блюдо, которое можно приготовить за несколько минут. Вот рецепт вареных яиц: \nНалейте в кастрюлю холодную воду и поставьте на сильный огонь. \nОпустите в воду яйца и доведите до кипения.\nКак только вода закипит, уменьшите огонь и варите яйца в зависимости от желаемой степени прожарки:\n3-4 минуты для яиц в мешочек (мягких)\n5-6 минут для яиц всмятку (средних)\n7-8 минут для яиц вкрутую (твердых)\nСлейте горячую воду и охладите яйца под холодной водой или в ледяной воде.\nОчистите яйца от скорлупы и подавайте по вкусу: с солью, перцем, майонезом, сметаной, зеленью, хлебом и т.д.\nНадеюсь, вам понравится этот рецепт.",
-        "short_text": "Вареные яйца - это простое и полезное блюдо, которое можно приготовить за несколько минут. Вот",
-        "preview_image": "",
-        "cooking_time": 10,
-        "pub_date": "2024-04-14T21:01:24.210Z",
-        "updated_at": "2024-04-14T21:01:24.210Z",
-        "is_repost": false,
-        "published": true,
-        "ingredients": [
-            37,
-            38,
-            39
-        ],
-        "category": [
-            1
-        ]
-    }
-},
-{
     "model": "recipes.category",
     "pk": 1,
     "fields": {

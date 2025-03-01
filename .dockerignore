@@ -4,6 +4,7 @@
 .vscode/
 .pytest_cache/
 .env
+.env.example
 venv/
 .env.example
 .github/
@@ -13,7 +14,7 @@ dump_db.py
 README.md
 pytest.ini
 **/tests/**
-config/settings/local.py
+config/settings/local_settings.py
 db.sqlite3
 test.db.sqlite3
 Makefile
