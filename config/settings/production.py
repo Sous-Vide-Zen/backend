@@ -32,8 +32,20 @@ EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD", default="password")
 EMAIL_USE_TLS = config("EMAIL_USE_TLS", cast=bool, default=False)
 EMAIL_USE_SSL = config("EMAIL_USE_SSL", cast=bool, default=True)
 
-# Натройки CORS
-CORS_ALLOW_ALL_ORIGINS = False
+# Логи проекта
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+        },
+    },
+    "root": {
+        "handlers": ["console"],
+        "level": "DEBUG",
+    },
+}
 
 
 # Загрузка локальных настроек
