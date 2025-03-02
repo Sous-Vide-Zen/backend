@@ -1,25 +1,20 @@
 import re
 from datetime import timedelta
-from typing import List, Any, Set
-
 from random import sample
+from typing import List, Any, Set
 from typing import Type
 
+from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
-from rest_framework.exceptions import ValidationError
 from django.db import transaction
 from django.db.models import Count, Model
 from django.http import HttpRequest
 from django.utils import timezone
 from django.utils.text import slugify
 from django.utils.translation import gettext_lazy as _
+from rest_framework.exceptions import ValidationError
 from unidecode import unidecode
 
-from config.settings import (
-    DRAFTS_MAX_AMOUNT,
-    SHORT_RECIPE_SYMBOLS,
-    TIME_FROM_VIEW_RECIPE,
-)
 from src.apps.ingredients.models import Ingredient, Unit, IngredientInRecipe
 from src.base.code_text import (
     CANT_ADD_TWO_SIMILAR_INGREDIENT,
@@ -65,7 +60,7 @@ def shorten_text(full_text: str, n: int) -> str:
     Shorten text to n characters with rounding by last word
     """
 
-    short_text = full_text[:SHORT_RECIPE_SYMBOLS]
+    short_text = full_text[: settings.SHORT_RECIPE_SYMBOLS]
     if len(full_text) > n and full_text[n] != "":
         short_text = short_text[: short_text.rfind(" ")]
     return short_text
@@ -172,7 +167,7 @@ def increment_view_count(
         else f"Anonymous-{request.META.get('REMOTE_ADDR')}"
     )
     time_threshold: timezone.datetime = timezone.now() - timedelta(
-        minutes=TIME_FROM_VIEW_RECIPE
+        minutes=settings.TIME_FROM_VIEW_RECIPE
     )
 
     view_exists: bool = model.objects.filter(
@@ -188,7 +183,7 @@ def create_draft_slug(
 ) -> str:
     """Create draft recipe slug"""
 
-    nums = list(range(1, DRAFTS_MAX_AMOUNT + 1))
+    nums = list(range(1, settings.DRAFTS_MAX_AMOUNT + 1))
     slug = f"{username}_chernovik_{nums[len_user_drafts]}"
     while model.objects.filter(slug=slug).exists():
         slug = f"{username}_chernovik_{num}"

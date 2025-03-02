@@ -4,6 +4,7 @@ from uuid import uuid4
 
 from django.db.models import Count
 from django.shortcuts import get_object_or_404
+from django.conf import settings
 
 from rest_framework import status
 from rest_framework.decorators import action
@@ -18,7 +19,6 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
-from config.settings import DRAFTS_MAX_AMOUNT
 from src.apps.favorite.models import Favorite
 from src.apps.view.models import ViewRecipes
 from src.base.code_text import (
@@ -124,7 +124,7 @@ class RecipeViewSet(
     def create(self, request, *args, **kwargs):
         user_drafts = Recipe.objects.filter(author=request.user, published=False)
         len_user_drafts = len(user_drafts)
-        if len_user_drafts >= DRAFTS_MAX_AMOUNT:
+        if len_user_drafts >= settings.DRAFTS_MAX_AMOUNT:
             return Response(
                 AMOUNT_OF_DRAFTS_LESS_THAN_THREE, status=status.HTTP_400_BAD_REQUEST
             )

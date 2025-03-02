@@ -165,3 +165,6 @@ static/
 
 /db.sqlite31
 /.coveragerc
+
+# DS_Store
+.DS_Store

@@ -3,25 +3,21 @@ from pathlib import Path
 
 from decouple import config
 
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 SECRET_KEY = config(
     "SECRET_KEY", default="bad-key-_$i&ghy42$5ki+155q9$dpz6e410wec7adv*c3u0@6tjn7&yv+"
 )
 
-DEBUG = config("DEBUG", default=False, cast=bool)
-
-ALLOWED_HOSTS = ["*"]
-
 INSTALLED_APPS = [
-    # django
+    # Django
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    # 3rd party
+    # Сторонние библиотеки
     "rest_framework",
     "djoser",
     "rest_framework_simplejwt",
@@ -31,7 +27,7 @@ INSTALLED_APPS = [
     "taggit",
     "corsheaders",
     "phonenumber_field",
-    # apps
+    # Приложения проекта
     "src.apps.users",
     "src.apps.recipes",
     "src.apps.comments",
@@ -74,6 +70,9 @@ TEMPLATES = [
     },
 ]
 
+WSGI_APPLICATION = "config.wsgi.application"
+
+# Настройки Django Rest Framework
 REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.IsAuthenticated",
@@ -86,18 +85,7 @@ REST_FRAMEWORK = {
     "DEFAULT_THROTTLE_RATES": {"reactions": "100/second"},
 }
 
-EMAIL_BACKEND = config(
-    "EMAIL_BACKEND", default="django.core.mail.backends.smtp.EmailBackend"
-)
-EMAIL_HOST = config("EMAIL_HOST", default="smtp.yandex.ru")
-EMAIL_PORT = config("EMAIL_PORT", default=465, cast=int)
-EMAIL_HOST_USER = config("EMAIL_HOST_USER", default="user@yandex.ru")
-DEFAULT_FROM_EMAIL = config("DEFAULT_FROM_EMAIL", default="user@yandex.ru")
-EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD", default="password")
-EMAIL_USE_TLS = False
-EMAIL_USE_SSL = True
-
-
+# Настройки Djoser
 DJOSER = {
     "PASSWORD_RESET_CONFIRM_URL": "api/v1/auth/users/password/reset/confirm/{uid}/{token}",
     "USERNAME_RESET_CONFIRM_URL": "#/username/reset/confirm/{uid}/{token}",
@@ -110,7 +98,6 @@ DJOSER = {
         "user_delete": ["rest_framework.permissions.IsAdminUser"],
     },
     "SERIALIZERS": {
-        # "user_create": "src.apps.users.serializers.CustomUserCreateSerializer",
         "user_create_password_retype": "src.apps.users.serializers.CustomUserCreateSerializer",
         "current_user": "src.apps.users.serializers.CustomUserMeSerializer",
         "user": "src.apps.users.serializers.CustomUserSerializer",
@@ -121,87 +108,50 @@ DJOSER = {
     },
 }
 
-
+# Настройки Simple JWT
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60),
     "AUTH_HEADER_TYPES": ("Bearer",),
 }
 
+# Аутентификация
 AUTHENTICATION_BACKENDS = (
     "config.plugin_soc_auth.CustomVKOAuth2",
     "social_core.backends.yandex.YandexOAuth2",
     "django.contrib.auth.backends.ModelBackend",
 )
 
-
-WSGI_APPLICATION = "config.wsgi.application"
-
-# Database
-
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
-    }
-}
-
-# Password validation
-
+# Валидаторы паролей
 AUTH_PASSWORD_VALIDATORS = [
+    {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
+    {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
+    {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
+    {"NAME": "src.base.validators.CustomPasswordValidator"},
+    {"NAME": "src.base.validators.NoUpperCaseValidator"},
+    {"NAME": "src.base.validators.NoLowerCaseValidator"},
+    {"NAME": "src.base.validators.NoNumbersValidator"},
     {
-        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
-    },
-    {
-        "NAME": "src.base.validators.CustomPasswordValidator",
-    },
-    {
-        "NAME": "src.base.validators.NoUpperCaseValidator",
-    },
-    {
-        "NAME": "src.base.validators.NoLowerCaseValidator",
-    },
-    {
-        "NAME": "src.base.validators.NoNumbersValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"
     },
 ]
 
-# Internationalization
-
+# Интернационализация
 LANGUAGE_CODE = "ru"
-
 TIME_ZONE = "UTC"
-
 USE_I18N = True
-
 USE_TZ = True
 
-# Static files (CSS, JavaScript, Images)
-
+# Статические файлы и медиа
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "src/static"
-
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "src/media"
 
-# User model
-
+# Пользовательская модель и тип первичного ключа
 AUTH_USER_MODEL = "users.CustomUser"
-
-# Default primary key field type
-
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# SWAGGER_SETTINGS
-
+# Настройки Swagger
 SWAGGER_SETTINGS = {
     "SECURITY_DEFINITIONS": {
         "JWT [Bearer {JWT}]": {
@@ -214,55 +164,38 @@ SWAGGER_SETTINGS = {
     "DEFAULT_AUTO_SCHEMA_CLASS": "src.apps.swagger.auto_schema_tags.CustomAutoSchema",
 }
 
-
-# Social AUTH Key's
-
-SOCIAL_AUTH_VK_OAUTH2_KEY = config(
-    "SOCIAL_AUTH_VK_OAUTH2_KEY", default="b57308fc10884dc5ab8e5f39d728c99d"
-)
+# Настройки социальных сетей (ключи из .env)
+SOCIAL_AUTH_VK_OAUTH2_KEY = config("SOCIAL_AUTH_VK_OAUTH2_KEY", default="12345678")
 SOCIAL_AUTH_VK_OAUTH2_SECRET = config(
-    "SOCIAL_AUTH_VK_OAUTH2_SECRET", default="60921ea4d2e94741888d5a9ba4009811"
+    "SOCIAL_AUTH_VK_OAUTH2_SECRET", default="12345678"
 )
-
 SOCIAL_AUTH_YANDEX_OAUTH2_KEY = config(
-    "SOCIAL_AUTH_YANDEX_OAUTH2_KEY", default="5fbd3f9c1f4f4d9d9a1f3c9f1f5f7f9f8"
+    "SOCIAL_AUTH_YANDEX_OAUTH2_KEY", default="12345678"
 )
 SOCIAL_AUTH_YANDEX_OAUTH2_SECRET = config(
-    "SOCIAL_AUTH_YANDEX_OAUTH2_SECRET", default="5fbd3f9c1f4f4d9d9a1f3c9f1f5f7f9f8"
+    "SOCIAL_AUTH_YANDEX_OAUTH2_SECRET", default="12345678"
+)
+SOCIAL_AUTH_JSONFIELD_ENABLED = True
+SOCIAL_AUTH_LOGIN_REDIRECT_URL = config(
+    "SOCIAL_AUTH_LOGIN_REDIRECT_URL", default="/api/v1/auth/o/vk_oauth2/"
 )
 
-
-SOCIAL_AUTH_JSONFIELD_ENABLED = True
-
-# Settings for django-taggit
-
+# Настройки django-taggit
 TAGGIT_STRIP_UNICODE_WHEN_SLUGIFYING = True
 
-
-# Settings for django-cors-headers
+# Настройки CORS
 CORS_ALLOW_ALL_ORIGINS = True
 
-
-# Pagination
+# Пагинация
 COMMENT_PAGE_SIZE = 10
 FEED_PAGE_SIZE = 5
 FOLLOWER_PAGE_SIZE = 10
 USER_LIST_PAGE_SIZE = 10
 
-# Variables
-
+# Переменные проекта
 ACTIVITY_INTERVAL = 30
 DRAFTS_MAX_AMOUNT = 3
-
-# Shorthand
-
 SHORT_RECIPE_SYMBOLS = 100
 SHORT_BIO_SYMBOLS = 50
-
-# TIME
-
 TIME_FROM_VIEW_RECIPE = 20
-
-# Regex for custom user
-
 REGEX = r"^[a-zA-Zа-яА-Я\s\-\‘\u00C0-\u017F]+$"

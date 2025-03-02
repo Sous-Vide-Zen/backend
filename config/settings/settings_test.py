@@ -1,6 +1,6 @@
 import sys
 
-from .settings import *
+from .production import *
 
 SECRET_KEY = "test_secret_key"
 
