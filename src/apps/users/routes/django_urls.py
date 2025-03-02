@@ -5,6 +5,7 @@ from src.apps.users.views import (
     ListUsersViewSet,
     CustomUserMeViewSet,
     CustomUserViewSet,
+    UserActivationViewSet,
 )
 
 router = DefaultRouter()
@@ -44,8 +45,13 @@ router.register("user", CustomUserViewSet, basename="user")
 
 
 urlpatterns = [
-    path("", include(router_for_djoser.urls)),
-    path("", include(router.urls)),
+    path(
+        "auth/users/activate/<uid>/<token>/",
+        UserActivationViewSet.as_view({"get": "activation"}),
+        name="activation",
+    ),
     path("auth/", include("djoser.urls")),
     path("auth/", include("djoser.urls.jwt")),
+    path("", include(router_for_djoser.urls)),
+    path("", include(router.urls)),
 ]

@@ -7,6 +7,8 @@ from rest_framework.mixins import (
     DestroyModelMixin,
 )
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.status import HTTP_204_NO_CONTENT
 from rest_framework.viewsets import GenericViewSet
 
 from src.apps.follow.models import Follow
@@ -89,3 +91,43 @@ class CustomUserViewSet(
         """
 
         return CustomUser.objects.filter(username=self.kwargs.get("username"))
+
+
+class UserActivationViewSet(UserViewSet):
+    """
+    ViewSet для активации пользователя
+    """
+
+    swagger_tags = ["CustomUser"]
+    http_method_names = ["get"]
+
+    def get_serializer(self, *args, **kwargs):
+        """
+        Оптимизированный метод для получения сериализатора
+        """
+        data = kwargs.get("data", {})
+
+        if not isinstance(data, dict):
+            data = dict(data)
+
+        data.update(
+            {
+                "uid": self.kwargs.get("uid"),
+                "token": self.kwargs.get("token"),
+            }
+        )
+        kwargs["data"] = data
+
+        if "context" not in kwargs:
+            kwargs["context"] = self.get_serializer_context()
+
+        return super().get_serializer(*args, **kwargs)
+
+    def activation(self, request, uid, token, *args, **kwargs):
+        """
+        Оптимизированный метод активации пользователя
+        """
+
+        super().activation(request, uid=uid, token=token, *args, **kwargs)
+
+        return Response(status=HTTP_204_NO_CONTENT)
