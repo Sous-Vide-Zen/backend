@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.contrib.contenttypes.fields import GenericRelation
+from django.core.exceptions import ValidationError
 from django.core.validators import (
     FileExtensionValidator,
     MaxValueValidator,
@@ -11,6 +12,7 @@ from taggit.managers import TaggableManager
 from src.apps.ingredients.models import IngredientInRecipe
 from src.apps.reactions.models import Reaction
 from src.base.services import recipe_preview_path, validate_avatar_size
+from src.base.code_text import VALIDATE_REPOST_OWN_POST
 
 
 class Recipe(models.Model):
@@ -52,24 +54,21 @@ class Recipe(models.Model):
         ],
     )
     ingredients = models.ManyToManyField(
-        IngredientInRecipe, related_name="recipes", blank=True, db_index=True
+        IngredientInRecipe, related_name="recipes", blank=True
     )
     tag = TaggableManager(blank=True)
-    category = models.ManyToManyField(
-        "Category", related_name="recipes", blank=True, db_index=True
-    )
+    category = models.ManyToManyField("Category", related_name="recipes", blank=True)
     cooking_time = models.PositiveIntegerField(
         validators=[
             MinValueValidator(10),
             MaxValueValidator(60 * 24),
-        ],
-        db_index=True,
+        ]
     )
     pub_date = models.DateTimeField(auto_now_add=True, db_index=True)
     updated_at = models.DateTimeField(auto_now=True)
     reactions = GenericRelation(Reaction, related_query_name="recipe_reactions")
     is_repost = models.BooleanField(default=False)
-    published = models.BooleanField(default=False)
+    published = models.BooleanField(default=False, db_index=True)
     original_recipe = models.ForeignKey(
         "self",
         null=True,
@@ -80,9 +79,37 @@ class Recipe(models.Model):
     )
 
     class Meta:
-        index_together = ["title", "slug"]
+        """
+        Meta
+
+        Attrs:
+        • indexes (list): indexes of recipe model.
+        • verbose_name (str): verbose name of recipe model.
+        • verbose_name_plural (str): verbose name of recipe model.
+        """
+
+        indexes = [
+            models.Index(fields=["title", "slug"]),
+            models.Index(fields=["published", "pub_date"]),
+        ]
         verbose_name = "Recipe"
         verbose_name_plural = "Recipes"
+
+    def clean(self):
+        """
+        Clean method
+
+        Raises:
+        • ValidationError: if recipe was reposted by the author.
+        """
+
+        super().clean()
+        if (
+            self.is_repost
+            and self.original_recipe
+            and self.original_recipe.author == self.author
+        ):
+            raise ValidationError(VALIDATE_REPOST_OWN_POST)
 
     def __str__(self):
         """
