@@ -17,6 +17,7 @@ PASSWORD_MUST_CONTAIN_ONE_UPPERCASE_LETTER: str = (
 PASSWORD_MUST_CONTAIN_ONE_NUMBER: str = (
     "Пароль должен содержать хотя бы одну цифру (0-9)."
 )
+VALIDATE_REPOST_OWN_POST: str = "Вы не можете делать репост собственного рецепта."
 
 # Base
 PAGE_NOT_FOUND: dict = {"detail": "Страница не найдена."}

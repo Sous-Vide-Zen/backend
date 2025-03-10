@@ -18,6 +18,15 @@ class FeedUserList(mixins.ListModelMixin, viewsets.GenericViewSet):
     """
     Listing all posts with sorting by activity_count, filtering by subs and
     username
+
+    Attrs:
+        pagination_class (class): pagination class
+        serializer_class (class): serializer class
+        filter_backends (list): filter backends
+        ordering_fields (list): ordering fields
+        ordering (list): ordering
+        search_fields (list): search fields
+        filterset_class (class): filterset class
     """
 
     pagination_class = FeedPagination
@@ -36,6 +45,9 @@ class FeedUserList(mixins.ListModelMixin, viewsets.GenericViewSet):
         """
         Get all posts with sorting by activity_count, filtering by subs and
         username
+
+        Returns:
+            queryset
         """
 
         last_month_start = make_aware(
@@ -89,20 +101,25 @@ class FeedUserList(mixins.ListModelMixin, viewsets.GenericViewSet):
                     filter=Q(reactions__pub_date__gte=last_month_start),
                     distinct=True,
                 ),
+                latest_reposts_count=Count(
+                    "reposts",
+                    filter=Q(reposts__pub_date__gte=last_month_start),
+                    distinct=True,
+                ),
                 comments_count=Count("comments", distinct=True),
                 views_count=Count("views", distinct=True),
                 reactions_count=Count("reactions", distinct=True),
+                reposts_count=Count("reposts", distinct=True),
                 activity_count=F("latest_comments_count")
                 + F("latest_views_count")
-                + F("latest_reactions_count"),
+                + F("latest_reactions_count")
+                + F("latest_reposts_count"),
             )
         )
         return queryset
 
     def get_permissions(self):
-        """
-        Get permissions for feed list
-        """
+        """Get permissions for feed list"""
 
         subscription = self.request.query_params.get("filter")
         if subscription == "subscriptions":
