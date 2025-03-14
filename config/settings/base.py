@@ -83,6 +83,7 @@ REST_FRAMEWORK = {
         "rest_framework.authentication.SessionAuthentication",
     ],
     "DEFAULT_THROTTLE_RATES": {"reactions": "100/second"},
+    "EXCEPTION_HANDLER": "src.base.permissions.custom_exception_handler",
 }
 
 # Настройки Djoser
