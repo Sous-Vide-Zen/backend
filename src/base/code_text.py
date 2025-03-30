@@ -102,3 +102,7 @@ CANT_ADD_TWO_SIMILAR_INGREDIENT: dict = {
 
 # Favorites status
 LIST_OF_FAVORITES_IS_EMPTY: dict = {"detail": "Список избранных рецептов пуст."}
+
+# Deleted objects
+DELETED_USER: str = "Удалённый пользователь."
+DELETED_RECIPE: str = "Удалённый рецепт."
