@@ -496,3 +496,46 @@ class TestRecipeUrls:
 
         assert response.status_code == 404
         assert response.data == {"detail": "Страница не найдена."}
+
+    def test_dont_have_permissions(self, api_client, new_user, new_recipe):
+        """
+        Test for don't have permissions
+        [PATCH] http://127.0.0.1:8000/api/v1/recipe/{slug}/
+        """
+
+        api_client.force_authenticate(user=new_user)
+
+        response = api_client.patch(
+            f"/api/v1/recipe/{new_recipe.slug}/",
+            {"title": "New title"},
+            format="json",
+        )
+
+        assert response.status_code == 403
+        assert response.data == DONT_HAVE_PERMISSIONS
+
+    def test_not_found_slug(self, api_client, new_author):
+        """
+        Test for not found slug
+        [PATCH] http://127.0.0.1:8000/api/v1/recipe/{slug}/
+        """
+        api_client.force_authenticate(user=new_author)
+
+        response = api_client.patch(
+            "/api/v1/recipe/nonexistent-slug/",
+            {"title": "New title"},
+            format="json",
+        )
+
+        assert response.status_code == 404
+        assert response.data == {"detail": "Страница не найдена."}
+
+    def test_list_draft_recipes_unauthorized_russian_message(self, api_client):
+        """
+        Test that unauthorized access to draft recipes returns error message in Russian
+        [GET] http://127.0.0.1:8000/api/v1/recipe/drafts/
+        """
+        response = api_client.get("/api/v1/recipe/drafts/")
+
+        assert response.status_code == 401
+        assert response.data == {"detail": "Учетные данные не были предоставлены."}
