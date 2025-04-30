@@ -1,6 +1,5 @@
 from collections import OrderedDict
 
-from src.apps.recipes.models import Recipe
 import pytest
 
 from src.apps.recipes.models import Recipe
@@ -100,7 +99,7 @@ class TestRecipeUrls:
 
         assert len(draft_recipes) == 3
         for i in range(3):
-            assert str(draft_recipes[i]) == f"{new_author.username}_chernovik_{i+1}"
+            assert str(draft_recipes[i]) == f"{new_author.username}_chernovik_{i + 1}"
 
         fourth_draft_response = api_client.post("/api/v1/recipe/", format="json")
         assert fourth_draft_response.status_code == 400
@@ -496,3 +495,20 @@ class TestRecipeUrls:
 
         assert response.status_code == 404
         assert response.data == {"detail": "Страница не найдена."}
+
+    def test_recipe_none_update_pub_date(self, api_client, new_author, new_recipe):
+        """
+        Test for update recipe pub_date
+        [PATCH] http://127.0.0.1:8000/api/v1/recipe/{slug}/
+        """
+        api_client.force_authenticate(user=new_author)
+        data_time = "2024-02-27 17:14:46.043000"
+        response = api_client.patch(
+            f"/api/v1/recipe/{new_recipe.slug}/",
+            {"title": "GG", "pub_date": data_time},
+            format="json",
+        )
+
+        assert response.status_code == 200
+        assert response.data["pub_date"] != data_time
+        assert response.data["title"] == "GG"

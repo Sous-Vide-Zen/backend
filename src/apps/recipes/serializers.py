@@ -117,6 +117,7 @@ class BaseRecipeSerializer(ModelSerializer):
             "pub_date",
             "updated_at",
         )
+        read_only_fields = ("pub_date", "updated_at")
 
     def validate(self, data):
         """
