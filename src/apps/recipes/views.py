@@ -231,7 +231,7 @@ class RecipeViewSet(
     def list_draft_recipes(self, request):
         """Getting a list of user's draft recipes."""
         queryset = Recipe.objects.filter(author=request.user, published=False)
-        serializer = DraftSerializer(queryset, many=True)
+        serializer = RecipeRetrieveSerializer(queryset, many=True)
 
         return Response(serializer.data)
 
