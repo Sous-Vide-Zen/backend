@@ -17,7 +17,6 @@ from src.base.services import (
     shorten_text,
     create_ingredients_in_recipe,
     create_recipe_slug,
-    validate_recipe_publishing,
 )
 
 
@@ -188,9 +187,6 @@ class RecipePublicateSerializer(BaseRecipeSerializer):
     class Meta(BaseRecipeSerializer.Meta):
         fields = BaseRecipeSerializer.Meta.fields + ("published",)
 
-    def validate(self, data):
-        # validate_recipe_publishing(recipe, serializer)
-        return super().validate(data)
 
 class RecipeUpdateSerializer(BaseRecipeSerializer):
     """
