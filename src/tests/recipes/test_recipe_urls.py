@@ -238,7 +238,7 @@ class TestRecipeUrls:
         assert response.status_code == 200
         assert draft_recipe.published == False
 
-    def test_publicate_recipe_without_title(
+    def test_publicate_recipe_without_reqiered_fields(
         self, api_client, new_author, draft_recipe, new_ingredient_in_recipe
     ):
         """
@@ -259,8 +259,11 @@ class TestRecipeUrls:
                 )
             ],
         }
+        response = api_client.post(
+            f"/api/v1/recipe/drafts/{draft_recipe.slug}/publicate/", format="json"
+        )
         response = api_client.patch(
-            f"/api/v1/recipe/drafts/{draft_recipe.slug}/", request_data, format="json"
+            f"/api/v1/recipe/{draft_recipe.slug}/", request_data, format="json"
         )
         response = api_client.post(
             f"/api/v1/recipe/drafts/{draft_recipe.slug}/publicate/", format="json"

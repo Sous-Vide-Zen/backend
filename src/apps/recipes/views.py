@@ -158,7 +158,7 @@ class RecipeViewSet(
     def publicate_recipe(self, request, *args, **kwargs):
         recipe = self.get_object()
         serializer = self.get_serializer(recipe, partial=False)
-        validate_recipe_publishing(recipe, serializer)
+        validate_recipe_publishing(recipe)
         recipe.slug = create_recipe_slug(Recipe, serializer.data)["slug"]
         recipe.published = True
         recipe.pub_date = now()
@@ -231,7 +231,7 @@ class RecipeViewSet(
     def list_draft_recipes(self, request):
         """Getting a list of user's draft recipes."""
         queryset = Recipe.objects.filter(author=request.user, published=False)
-        serializer = DraftSerializer(queryset, many=True)
+        serializer = RecipeRetrieveSerializer(queryset, many=True)
 
         return Response(serializer.data)
 

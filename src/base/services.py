@@ -4,9 +4,10 @@ from random import sample
 from typing import List, Any, Set
 from typing import Type
 
+from django.db.models.fields.related import ManyToManyRel
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
-from django.db import transaction
+from django.db import models, transaction
 from django.db.models import Count, Model
 from django.http import HttpRequest
 from django.utils import timezone
@@ -20,7 +21,14 @@ from src.base.code_text import (
     CANT_ADD_TWO_SIMILAR_INGREDIENT,
     ENTER_RECIPE_NAME_BEFORE_PUBLISHING,
     ENTER_INGREDIENTS_BEFORE_PUBLISHING,
+    ENTER_FULL_TEXT_BEFORE_PUBLISHING,
 )
+
+RECIPE_REQUIRED_FIELDS = {
+    "title": ENTER_RECIPE_NAME_BEFORE_PUBLISHING,
+    "ingredients": ENTER_INGREDIENTS_BEFORE_PUBLISHING,
+    "full_text": ENTER_FULL_TEXT_BEFORE_PUBLISHING,
+}
 
 
 def validate_avatar_size(value: Any) -> None:
@@ -32,13 +40,17 @@ def validate_avatar_size(value: Any) -> None:
         )
 
 
-def validate_recipe_publishing(instance: Model, serializer: Model) -> None:
+def validate_recipe_publishing(instance: Model) -> None:
     errors = []
-    title = serializer.data.get("title", None)
-    if title and "черновик" in title.lower():
-        errors.append(ENTER_RECIPE_NAME_BEFORE_PUBLISHING)
-    if not serializer.data.get("ingredients", None):
-        errors.append(ENTER_INGREDIENTS_BEFORE_PUBLISHING)
+    for field, error in RECIPE_REQUIRED_FIELDS.items():
+        value = getattr(instance, field)
+        class_of_field = instance._meta.get_field(field)
+        if isinstance(class_of_field, models.ManyToManyField):
+            value = value.exists()
+        if not value:
+            errors.append(error)
+    if "черновик" in instance.title.lower():
+        errors.append(RECIPE_REQUIRED_FIELDS["title"])
     if errors:
         raise ValidationError(errors)
 

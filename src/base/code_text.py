@@ -94,6 +94,9 @@ MAX_COUNT_OF_INGREDIENT: dict = {
 ENTER_INGREDIENTS_BEFORE_PUBLISHING: dict = {
     "detail": "Введите ингредиенты перед публикацией рецепта."
 }
+ENTER_FULL_TEXT_BEFORE_PUBLISHING: dict = {
+    "detail": "Введите текст рецепта перед публикацией рецепта."
+}
 
 # Errors status
 CANT_ADD_TWO_SIMILAR_INGREDIENT: dict = {
